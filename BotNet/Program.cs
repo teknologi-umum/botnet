@@ -1,9 +1,16 @@
 ﻿using BotNet.Bot;
+using BotNet.Services.Giphy;
 using Orleans;
 using Orleans.Hosting;
 
-using IHost host = Host.CreateDefaultBuilder(args)
+Host.CreateDefaultBuilder(args)
 	.ConfigureServices((hostBuilderContext, services) => {
+		// DI Services
+		services.Configure<GiphyOptions>(hostBuilderContext.Configuration.GetSection("GiphyOptions"));
+		services.AddHttpClient();
+		services.AddGiphyClient();
+
+		// Hosted Services
 		services.Configure<BotOptions>(hostBuilderContext.Configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
 		services.AddHostedService<BotService>();
@@ -18,12 +25,5 @@ using IHost host = Host.CreateDefaultBuilder(args)
 		siloBuilder
 			.UseLocalhostClustering();
 	})
-	.Build();
-
-await host.StartAsync();
-
-Console.WriteLine("Press any key to exit.");
-Console.ReadKey();
-await host.StopAsync();
-
-return 0;
+	.Build()
+	.Run();
