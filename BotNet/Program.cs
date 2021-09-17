@@ -1,9 +1,22 @@
-﻿using BotNet.Bot;
+﻿using BotNet;
+using BotNet.Bot;
+using BotNet.Services.Giphy;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Orleans;
 using Orleans.Hosting;
 
-using IHost host = Host.CreateDefaultBuilder(args)
+Host.CreateDefaultBuilder(args)
+	.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
 	.ConfigureServices((hostBuilderContext, services) => {
+		// DI Services
+		services.Configure<GiphyOptions>(hostBuilderContext.Configuration.GetSection("GiphyOptions"));
+		services.AddHttpClient();
+		services.AddGiphyClient();
+
+		// Hosted Services
 		services.Configure<BotOptions>(hostBuilderContext.Configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
 		services.AddHostedService<BotService>();
@@ -12,18 +25,12 @@ using IHost host = Host.CreateDefaultBuilder(args)
 		configurationBuilder
 			.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 			.AddJsonFile($"appsettings.{hostBuilderContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+			.AddKeyPerFile("/run/secrets", optional: true, reloadOnChange: true)
 			.AddUserSecrets<BotService>(optional: true, reloadOnChange: true);
 	})
 	.UseOrleans((hostBuilderContext, siloBuilder) => {
 		siloBuilder
 			.UseLocalhostClustering();
 	})
-	.Build();
-
-await host.StartAsync();
-
-Console.WriteLine("Press any key to exit.");
-Console.ReadKey();
-await host.StopAsync();
-
-return 0;
+	.Build()
+	.Run();

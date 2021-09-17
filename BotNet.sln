@@ -9,11 +9,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
+		Dockerfile = Dockerfile
+		fly.toml = fly.toml
+		global.json = global.json
+		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotNet.GrainInterfaces", "BotNet.GrainInterfaces\BotNet.GrainInterfaces.csproj", "{5AAC9675-B32B-4833-B903-8A3E4718BE73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotNet.GrainInterfaces", "BotNet.GrainInterfaces\BotNet.GrainInterfaces.csproj", "{5AAC9675-B32B-4833-B903-8A3E4718BE73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotNet.Grains", "BotNet.Grains\BotNet.Grains.csproj", "{2EB5B6A9-997E-4A69-B91C-784B2939F0F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotNet.Grains", "BotNet.Grains\BotNet.Grains.csproj", "{2EB5B6A9-997E-4A69-B91C-784B2939F0F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{60A8C575-693D-4650-814C-AA06665583A5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotNet.Services", "BotNet.Services\BotNet.Services.csproj", "{40BC4FC8-F60B-435E-B78C-CD31D10E0CC7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{806F39E0-A505-4ADE-8B65-0692137A4D4E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{D7A991AB-A314-412A-A355-F6D0DD360346}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotNet.Tests", "BotNet.Tests\BotNet.Tests.csproj", "{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +50,20 @@ Global
 		{2EB5B6A9-997E-4A69-B91C-784B2939F0F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EB5B6A9-997E-4A69-B91C-784B2939F0F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EB5B6A9-997E-4A69-B91C-784B2939F0F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40BC4FC8-F60B-435E-B78C-CD31D10E0CC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40BC4FC8-F60B-435E-B78C-CD31D10E0CC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40BC4FC8-F60B-435E-B78C-CD31D10E0CC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40BC4FC8-F60B-435E-B78C-CD31D10E0CC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D7A991AB-A314-412A-A355-F6D0DD360346} = {806F39E0-A505-4ADE-8B65-0692137A4D4E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {43E2EADB-3235-4CF1-B111-97B9465DFDB7}

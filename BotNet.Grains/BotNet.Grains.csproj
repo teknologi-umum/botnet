@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BotNet.GrainInterfaces\BotNet.GrainInterfaces.csproj" />
+    <ProjectReference Include="..\BotNet.Services\BotNet.Services.csproj" />
   </ItemGroup>
 
 </Project>
