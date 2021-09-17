@@ -1,5 +1,9 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using BotNet.Services.Giphy.Models;
 using Microsoft.Extensions.Options;
 

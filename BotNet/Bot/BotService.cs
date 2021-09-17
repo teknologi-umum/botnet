@@ -1,5 +1,12 @@
-﻿using BotNet.Services.Giphy;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using BotNet.Services.Giphy;
 using BotNet.Services.Giphy.Models;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
