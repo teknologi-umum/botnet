@@ -64,7 +64,7 @@ public class BotService : IHostedService {
 							await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, gifObjects.Select(gifObject => new InlineQueryResultGif(
 								id: gifObject.Id,
 								gifUrl: gifObject.Url,
-								thumbUrl: gifObject.Url
+								thumbUrl: gifObject.Images.PreviewGif.Url
 							)).ToList(), cancellationToken: cancellationToken);
 							break;
 						}
