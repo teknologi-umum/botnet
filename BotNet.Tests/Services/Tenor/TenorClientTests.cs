@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
@@ -28,9 +29,9 @@ namespace BotNet.Tests.Services.Tenor {
 						httpClient: httpClient,
 						tenorOptionsAccessor: optionsAccessorMock.Object);
 
-					(string Id, string Url, string PreviewUrl)[] gifs = await tenorClient.SearchGifsAsync("jokowi", CancellationToken.None);
+					ImmutableList<(string Id, string Url, string PreviewUrl)> gifs = await tenorClient.SearchGifsAsync("jokowi", CancellationToken.None);
 
-					gifs.Length.Should().Be(20);
+					gifs.Count.Should().Be(20);
 					foreach ((string id, string url, string previewUrl) in gifs) {
 						id.Should().NotBeNullOrEmpty();
 						url.Should().NotBeNullOrEmpty();
@@ -71,9 +72,9 @@ namespace BotNet.Tests.Services.Tenor {
 						httpClient: httpClient,
 						tenorOptionsAccessor: optionsAccessorMock.Object);
 
-					(string Id, string Url, string PreviewUrl)[] gifs = await tenorClient.SearchGifsAsync("jokowi", CancellationToken.None);
+					ImmutableList<(string Id, string Url, string PreviewUrl)> gifs = await tenorClient.SearchGifsAsync("jokowi", CancellationToken.None);
 
-					gifs.Length.Should().Be(0);
+					gifs.Count.Should().Be(0);
 				});
 		}
 
@@ -92,9 +93,9 @@ namespace BotNet.Tests.Services.Tenor {
 						httpClient: httpClient,
 						tenorOptionsAccessor: optionsAccessorMock.Object);
 
-					(string Id, string Url, string PreviewUrl)[] gifs = await tenorClient.SearchGifsAsync("jokowi", CancellationToken.None);
+					ImmutableList<(string Id, string Url, string PreviewUrl)> gifs = await tenorClient.SearchGifsAsync("jokowi", CancellationToken.None);
 
-					gifs.Length.Should().Be(0);
+					gifs.Count.Should().Be(0);
 				});
 		}
 
