@@ -55,7 +55,7 @@ public class BotService : IHostedService {
 					_logger.LogInformation($"Received inline query from [{update.InlineQuery.From.FirstName} {update.InlineQuery.From.LastName}]: '{update.InlineQuery.Query}'.");
 					if (update.InlineQuery.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
 						IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>(query);
-						IEnumerable<InlineQueryResultBase> inlineQueryResults = await inlineQueryGrain.GetResultsAsync();
+						IEnumerable<InlineQueryResultBase> inlineQueryResults = await inlineQueryGrain.GetResultsAsync(update.InlineQuery);
 						await botClient.AnswerInlineQueryAsync(
 							inlineQueryId: update.InlineQuery.Id,
 							results: inlineQueryResults,
