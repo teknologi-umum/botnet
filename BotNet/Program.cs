@@ -1,6 +1,5 @@
 ﻿using BotNet;
 using BotNet.Bot;
-using BotNet.Services.Giphy;
 using BotNet.Services.Tenor;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -13,10 +12,8 @@ Host.CreateDefaultBuilder(args)
 	.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
 	.ConfigureServices((hostBuilderContext, services) => {
 		// DI Services
-		services.Configure<GiphyOptions>(hostBuilderContext.Configuration.GetSection("GiphyOptions"));
 		services.Configure<TenorOptions>(hostBuilderContext.Configuration.GetSection("TenorOptions"));
 		services.AddHttpClient();
-		services.AddGiphyClient();
 		services.AddTenorClient();
 
 		// Hosted Services
