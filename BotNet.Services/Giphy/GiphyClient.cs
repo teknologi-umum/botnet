@@ -21,7 +21,7 @@ namespace BotNet.Services.Giphy {
 			IOptions<GiphyOptions> giphyOptionsAccessor
 		) {
 			GiphyOptions giphyOptions = giphyOptionsAccessor.Value;
-			_apiKey = giphyOptions.ApiKey ?? throw new InvalidOperationException("Giphy api key not configured.");
+			_apiKey = giphyOptions.ApiKey ?? throw new InvalidOperationException("Giphy api key not configured. Please add a .NET secret with key 'GiphyOptions:ApiKey' or a Docker secret with key 'GiphyOptions__ApiKey'");
 			_httpClient = httpClient;
 			_jsonSerializerOptions = new JsonSerializerOptions {
 				PropertyNamingPolicy = new SnakeCaseNamingPolicy()

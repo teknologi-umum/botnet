@@ -27,10 +27,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{806F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{D7A991AB-A314-412A-A355-F6D0DD360346}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+		.github\workflows\pr.yml = .github\workflows\pr.yml
+		.github\workflows\push.yml = .github\workflows\push.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotNet.Tests", "BotNet.Tests\BotNet.Tests.csproj", "{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotNet.Tests", "BotNet.Tests\BotNet.Tests.csproj", "{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

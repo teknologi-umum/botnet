@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.Giphy;
-using BotNet.Services.Giphy.Models;
+using BotNet.Services.Tenor;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,19 +18,19 @@ namespace BotNet.Bot;
 
 public class BotService : IHostedService {
 	private readonly TelegramBotClient _botClient;
-	private readonly GiphyClient _giphyClient;
+	private readonly TenorClient _tenorClient;
 	private readonly ILogger<BotService> _logger;
 	private CancellationTokenSource? _cancellationTokenSource;
 
 	public BotService(
-		GiphyClient giphyClient,
+		TenorClient tenorClient,
 		IOptions<BotOptions> optionsAccessor,
 		ILogger<BotService> logger
 	) {
 		BotOptions options = optionsAccessor.Value;
-		if (options.AccessToken is null) throw new InvalidOperationException("Bot access token is not configured.");
+		if (options.AccessToken is null) throw new InvalidOperationException("Bot access token is not configured. Please add a .NET secret with key 'BotOptions:AccessToken' or a Docker secret with key 'BotOptions__AccessToken'");
 		_botClient = new(options.AccessToken);
-		_giphyClient = giphyClient;
+		_tenorClient = tenorClient;
 		_logger = logger;
 	}
 
@@ -60,11 +59,11 @@ public class BotService : IHostedService {
 						}, cancellationToken: cancellationToken);
 						break;
 					case string { Length: >= 3 } query: {
-							GifObject[] gifObjects = await _giphyClient.SearchGifsAsync(query, cancellationToken);
-							await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, gifObjects.Select(gifObject => new InlineQueryResultGif(
-								id: gifObject.Id,
-								gifUrl: gifObject.Url,
-								thumbUrl: gifObject.Images.PreviewGif.Url
+							(string Id, string Url, string PreviewUrl)[] gifs = await _tenorClient.SearchGifsAsync(query, cancellationToken);
+							await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, gifs.Select(gif => new InlineQueryResultGif(
+								id: gif.Id,
+								gifUrl: gif.Url,
+								thumbUrl: gif.PreviewUrl
 							)).ToList(), cancellationToken: cancellationToken);
 							break;
 						}
