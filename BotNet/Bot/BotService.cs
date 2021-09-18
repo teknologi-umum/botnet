@@ -46,31 +46,35 @@ public class BotService : IHostedService {
 	}
 
 	private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken) {
-		switch (update.Type) {
-			case UpdateType.Message:
-				_logger.LogInformation($"Received message from [{update.Message.From.FirstName} {update.Message.From.LastName}]: '{update.Message.Text}' in chat {update.Message.Chat.Id}.");
-				break;
-			case UpdateType.InlineQuery:
-				switch (update.InlineQuery.Query.Trim().ToLowerInvariant()) {
-					case "illuminati":
-						await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, new List<InlineQueryResultGif> {
+		try {
+			switch (update.Type) {
+				case UpdateType.Message:
+					_logger.LogInformation($"Received message from [{update.Message.From.FirstName} {update.Message.From.LastName}]: '{update.Message.Text}' in chat {update.Message.Chat.Id}.");
+					break;
+				case UpdateType.InlineQuery:
+					switch (update.InlineQuery.Query.Trim().ToLowerInvariant()) {
+						case "illuminati":
+							await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, new List<InlineQueryResultGif> {
 							new InlineQueryResultGif("illuminati1", "https://media.giphy.com/media/uFOW5cbNaoTaU/giphy.gif", "https://media.giphy.com/media/uFOW5cbNaoTaU/giphy.gif"),
 							new InlineQueryResultGif("illuminati2", "https://media4.giphy.com/media/ZTfTSegFNMnC0/giphy.gif", "https://media4.giphy.com/media/ZTfTSegFNMnC0/giphy.gif")
 						}, cancellationToken: cancellationToken);
-						break;
-					case string { Length: >= 3 } query: {
-							(string Id, string Url, string PreviewUrl)[] gifs = await _tenorClient.SearchGifsAsync(query, cancellationToken);
-							await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, gifs.Select(gif => new InlineQueryResultGif(
-								id: gif.Id,
-								gifUrl: gif.Url,
-								thumbUrl: gif.PreviewUrl
-							)).ToList(), cancellationToken: cancellationToken);
 							break;
-						}
-						
-				}
-				_logger.LogInformation($"Received inline query from [{update.InlineQuery.From.FirstName} {update.InlineQuery.From.LastName}]: '{update.InlineQuery.Query}'.");
-				break;
+						case string { Length: >= 3 } query: {
+								(string Id, string Url, string PreviewUrl)[] gifs = await _tenorClient.SearchGifsAsync(query, cancellationToken);
+								await botClient.AnswerInlineQueryAsync(update.InlineQuery.Id, gifs.Select(gif => new InlineQueryResultGif(
+									id: gif.Id,
+									gifUrl: gif.Url,
+									thumbUrl: gif.PreviewUrl
+								)).ToList(), cancellationToken: cancellationToken);
+								break;
+							}
+
+					}
+					_logger.LogInformation($"Received inline query from [{update.InlineQuery.From.FirstName} {update.InlineQuery.From.LastName}]: '{update.InlineQuery.Query}'.");
+					break;
+			}
+		} catch (Exception exc) {
+			_logger.LogError(exc, exc.Message);
 		}
 	}
 
