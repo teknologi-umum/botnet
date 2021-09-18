@@ -6,9 +6,9 @@ using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.GrainInterfaces {
 	/// <summary>
-	/// Key: search keywords, trimmed, converted to lowercase, not empty
+	/// Key: search keywords, trimmed, converted to lowercase, not empty, concatenated with user Id
 	/// </summary>
 	public interface IInlineQueryGrain : IGrainWithStringKey {
-		Task<ImmutableList<InlineQueryResultBase>> GetResultsAsync(InlineQuery inlineQuery);
+		Task<ImmutableList<InlineQueryResultBase>> GetResultsAsync(string query, long userId);
 	}
 }
