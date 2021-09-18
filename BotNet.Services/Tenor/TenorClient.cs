@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -29,14 +30,18 @@ namespace BotNet.Services.Tenor {
 			};
 		}
 
-		public async Task<(string Id, string Url, string PreviewUrl)[]> SearchGifsAsync(string query, CancellationToken cancellationToken) {
-			string requestUrl = $"{GIF_SEARCH_ENDPOINT}?key={_apiKey}&q={WebUtility.UrlEncode(query)}&locale=id_ID&contentfilter=high&media_filter=minimal";
-			GifSearchResult? gifSearchResult = await _httpClient.GetFromJsonAsync<GifSearchResult>(requestUrl, _jsonSerializerOptions, cancellationToken);
-			return gifSearchResult?.Results.Select(result => (
-				Id: result.Id,
-				Url: result.Media[0][MediaFormatType.Gif].Url,
-				PreviewUrl: result.Media[0][MediaFormatType.TinyGif].Preview
-			)).ToArray() ?? Array.Empty<(string Id, string Url, string PreviewUrl)>();
+		public async Task<ImmutableList<(string Id, string Url, string PreviewUrl)>> SearchGifsAsync(string query, CancellationToken cancellationToken) {
+			string requestUrl = $"{GIF_SEARCH_ENDPOINT}?key={_apiKey}&q={WebUtility.UrlEncode(query)}&locale=id_ID&contentfilter=medium&media_filter=minimal";
+			try {
+				GifSearchResult? gifSearchResult = await _httpClient.GetFromJsonAsync<GifSearchResult>(requestUrl, _jsonSerializerOptions, cancellationToken);
+				return gifSearchResult?.Results.Select(result => (
+					Id: result.Id,
+					Url: result.Media[0][MediaFormatType.Gif].Url,
+					PreviewUrl: result.Media[0][MediaFormatType.TinyGif].Preview
+				)).ToImmutableList() ?? ImmutableList<(string Id, string Url, string PreviewUrl)>.Empty;
+			} catch (JsonException) {
+				return ImmutableList<(string Id, string Url, string PreviewUrl)>.Empty;
+			}
 		}
 	}
 }

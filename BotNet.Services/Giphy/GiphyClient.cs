@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,6 +11,8 @@ using BotNet.Services.Json;
 using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.Giphy {
+	[Obsolete("Use TenorClient instead.")]
+	[ExcludeFromCodeCoverage]
 	public class GiphyClient {
 		private const string GIF_SEARCH_ENDPOINT = "https://api.giphy.com/v1/gifs/search";
 		private readonly HttpClient _httpClient;
