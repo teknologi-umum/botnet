@@ -1,7 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Orleans;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.GrainInterfaces {

@@ -23,32 +23,33 @@ namespace BotNet.Grains {
 		public async Task<ImmutableList<InlineQueryResultBase>> GetResultsAsync(string query, long userId) {
 			if (_results != null
 				&& _lastPopulated.HasValue
-				&& Math.Floor(_lastPopulated.Value.TimeOfDay.TotalMinutes) == Math.Floor(DateTime.Now.TimeOfDay.TotalMinutes)) {
+				&& DateTime.Now.Subtract(_lastPopulated.Value).TotalMinutes < 1) {
 				return _results;
 			}
-			if (_results is null) {
-				List<Task<ImmutableList<InlineQueryResultBase>>> resultTasks = new();
 
-				if (query.Split(' ').FirstOrDefault() is "joke" or "jokes" or "dad" or "bapak" or "bapack" or "dadjoke" or "dadjokes" or "bapak2" or "bapack2") {
-					resultTasks.Add(
-						GrainFactory
-							.GetGrain<IDadJokeGrain>(userId % 10)
-							.GetRandomJokesAsync()
-							.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url)).ToImmutableList<InlineQueryResultBase>())
-					);
-				}
+			List<Task<ImmutableList<InlineQueryResultBase>>> resultTasks = new();
 
-				if (query.Length >= 3) {
-					resultTasks.Add(
-						GrainFactory
-							.GetGrain<ITenorGrain>(query)
-							.SearchGifsAsync()
-							.ContinueWith(task => task.Result.Select(gif => new InlineQueryResultGif(gif.Id, gif.Url, gif.PreviewUrl)).ToImmutableList<InlineQueryResultBase>())
-					);
-				}
-
-				_results = (await Task.WhenAll(resultTasks)).SelectMany(results => results).ToImmutableList();
+			if (query.Split(' ').FirstOrDefault() is "joke" or "jokes" or "dad" or "bapak" or "bapack" or "dadjoke" or "dadjokes" or "bapak2" or "bapack2") {
+				resultTasks.Add(
+					GrainFactory
+						.GetGrain<IDadJokeGrain>(userId % 10)
+						.GetRandomJokesAsync()
+						.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url)).ToImmutableList<InlineQueryResultBase>())
+				);
 			}
+
+			if (query.Length >= 3) {
+				resultTasks.Add(
+					GrainFactory
+						.GetGrain<ITenorGrain>(query)
+						.SearchGifsAsync()
+						.ContinueWith(task => task.Result.Select(gif => new InlineQueryResultGif(gif.Id, gif.Url, gif.PreviewUrl)).ToImmutableList<InlineQueryResultBase>())
+				);
+			}
+
+			_results = (await Task.WhenAll(resultTasks)).SelectMany(results => results).ToImmutableList();
+			_lastPopulated = DateTime.Now;
+
 			return _results;
 		}
 	}
