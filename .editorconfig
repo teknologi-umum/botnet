@@ -120,6 +120,10 @@ dotnet_naming_symbols.locals.applicable_kinds = locals
 ###############################
 # C# Coding Conventions       #
 ###############################
+
+# IDE0060: Remove unused parameter
+dotnet_diagnostic.IDE0060.severity = warning
+
 [*.cs]
 # var preferences
 csharp_style_var_for_built_in_types = false:error
@@ -240,6 +244,9 @@ dotnet_diagnostic.RG0022.severity = error
 
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity = warning
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = warning
 
 [*.vb]
 # Modifier preferences
