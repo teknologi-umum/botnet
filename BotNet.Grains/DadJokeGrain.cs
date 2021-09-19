@@ -36,7 +36,7 @@ namespace BotNet.Grains {
 				_jokeCount = metadata.JokeCount;
 			}
 
-			// Let's not risk the colissions
+			// Let's not risk the collisions
 			if (_jokeCount < 100) return ImmutableList<(string Id, string Url)>.Empty;
 
 			while (_jokeIds.Count < MAX_JOKES) {

@@ -1,6 +1,9 @@
 ﻿using BotNet;
 using BotNet.Bot;
+using BotNet.Services.ColorCard;
+using BotNet.Services.Hosting;
 using BotNet.Services.Tenor;
+using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,13 +14,18 @@ using Orleans.Hosting;
 Host.CreateDefaultBuilder(args)
 	.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
 	.ConfigureServices((hostBuilderContext, services) => {
+		IConfiguration configuration = hostBuilderContext.Configuration;
+
 		// DI Services
-		services.Configure<TenorOptions>(hostBuilderContext.Configuration.GetSection("TenorOptions"));
+		services.Configure<HostingOptions>(configuration.GetSection("HostingOptions"));
+		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
+		services.AddFontService();
+		services.AddColorCardRenderer();
 
 		// Hosted Services
-		services.Configure<BotOptions>(hostBuilderContext.Configuration.GetSection("BotOptions"));
+		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
 		services.AddHostedService<BotService>();
 	})

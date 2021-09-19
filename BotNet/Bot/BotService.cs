@@ -36,7 +36,7 @@ public class BotService : IHostedService {
 
 	public Task StartAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource = new();
-		_botClient.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), _cancellationTokenSource.Token);
+		_botClient.StartReceiving(new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync), cancellationToken: _cancellationTokenSource.Token);
 		return Task.CompletedTask;
 	}
 
@@ -49,13 +49,13 @@ public class BotService : IHostedService {
 		try {
 			switch (update.Type) {
 				case UpdateType.Message:
-					_logger.LogInformation($"Received message from [{update.Message.From.FirstName} {update.Message.From.LastName}]: '{update.Message.Text}' in chat {update.Message.Chat.Title ?? update.Message.Chat.Id.ToString()}.");
+					_logger.LogInformation("Received message from [{firstName} {lastName}]: '{message}' in chat {chatName}.", update.Message!.From!.FirstName, update.Message.From.LastName, update.Message.Text, update.Message.Chat.Title ?? update.Message.Chat.Id.ToString());
 					break;
 				case UpdateType.InlineQuery:
-					_logger.LogInformation($"Received inline query from [{update.InlineQuery.From.FirstName} {update.InlineQuery.From.LastName}]: '{update.InlineQuery.Query}'.");
+					_logger.LogInformation("Received inline query from [{firstName} {lastName}]: '{query}'.", update.InlineQuery!.From.FirstName, update.InlineQuery.From.LastName, update.InlineQuery.Query);
 					if (update.InlineQuery.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
 						IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>($"{query}|{update.InlineQuery.From.Id}");
-						IEnumerable<InlineQueryResultBase> inlineQueryResults = await inlineQueryGrain.GetResultsAsync(query, update.InlineQuery.From.Id);
+						IEnumerable<InlineQueryResult> inlineQueryResults = await inlineQueryGrain.GetResultsAsync(query, update.InlineQuery.From.Id);
 						await botClient.AnswerInlineQueryAsync(
 							inlineQueryId: update.InlineQuery.Id,
 							results: inlineQueryResults,
@@ -66,7 +66,7 @@ public class BotService : IHostedService {
 		} catch (OperationCanceledException) {
 			throw;
 		} catch (Exception exc) {
-			_logger.LogError(exc, exc.Message);
+			_logger.LogError(exc, "{message}", exc.Message);
 		}
 	}
 
@@ -75,7 +75,7 @@ public class BotService : IHostedService {
 			ApiRequestException apiRequestException => $"Telegram API Error:\n{apiRequestException.ErrorCode}\n{apiRequestException.Message}",
 			_ => exception.ToString()
 		};
-		_logger.LogError(exception, errorMessage);
+		_logger.LogError(exception, "{message}", errorMessage);
 		return Task.CompletedTask;
 	}
 }
