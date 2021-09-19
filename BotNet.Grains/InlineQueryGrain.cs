@@ -32,7 +32,7 @@ namespace BotNet.Grains {
 
 			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = new();
 
-			if (query.Length == 7 && query[0] == '#' && query[1..].All(c => c is >= 'a' and <= 'f' || c is >= 'A' and <= 'F' || char.IsDigit(c))) {
+			if (query.Length is 4 or 7 && query[0] == '#' && query[1..].All(c => c is >= 'a' and <= 'f' || c is >= 'A' and <= 'F' || char.IsDigit(c))) {
 				HostingOptions hostingOptions = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value;
 				string url = $"https://{hostingOptions.HostName}/renderer/color?name={WebUtility.UrlEncode(query)}";
 				resultTasks.Add(Task.FromResult(ImmutableList.Create<InlineQueryResult>(

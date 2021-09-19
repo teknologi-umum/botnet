@@ -27,16 +27,5 @@ namespace BotNet.Controllers {
 				return NotFound();
 			}
 		}
-
-		[HttpGet("color/preview")]
-		public IActionResult RenderColorCardPreview(string name) {
-			try {
-				byte[] colorCardPng = _colorCardRenderer.RenderColorCardPreview(name);
-				return File(colorCardPng, "image/png", true);
-			} catch (Exception exc) {
-				_logger.LogError(exc, "Cannot render color card.");
-				return NotFound();
-			}
-		}
 	}
 }
