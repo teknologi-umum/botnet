@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
+using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,18 +21,21 @@ public class BotService : IHostedService {
 	private readonly TelegramBotClient _botClient;
 	private readonly IClusterClient _clusterClient;
 	private readonly ILogger<BotService> _logger;
+	private readonly TelemetryClient _telemetryClient;
 	private CancellationTokenSource? _cancellationTokenSource;
 
 	public BotService(
 		IClusterClient clusterClient,
 		IOptions<BotOptions> optionsAccessor,
-		ILogger<BotService> logger
+		ILogger<BotService> logger,
+		TelemetryClient telemetryClient
 	) {
 		BotOptions options = optionsAccessor.Value;
 		if (options.AccessToken is null) throw new InvalidOperationException("Bot access token is not configured. Please add a .NET secret with key 'BotOptions:AccessToken' or a Docker secret with key 'BotOptions__AccessToken'");
 		_botClient = new(options.AccessToken);
 		_clusterClient = clusterClient;
 		_logger = logger;
+		_telemetryClient = telemetryClient;
 	}
 
 	public Task StartAsync(CancellationToken cancellationToken) {
@@ -67,6 +71,7 @@ public class BotService : IHostedService {
 			throw;
 		} catch (Exception exc) {
 			_logger.LogError(exc, "{message}", exc.Message);
+			_telemetryClient.TrackException(exc);
 		}
 	}
 
@@ -76,6 +81,7 @@ public class BotService : IHostedService {
 			_ => exception.ToString()
 		};
 		_logger.LogError(exception, "{message}", errorMessage);
+		_telemetryClient.TrackException(exception);
 		return Task.CompletedTask;
 	}
 }

@@ -24,6 +24,9 @@ Host.CreateDefaultBuilder(args)
 		services.AddFontService();
 		services.AddColorCardRenderer();
 
+		// Telemetry
+		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));
+
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();

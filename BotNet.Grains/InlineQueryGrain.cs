@@ -36,7 +36,15 @@ namespace BotNet.Grains {
 				HostingOptions hostingOptions = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value;
 				string url = $"https://{hostingOptions.HostName}/renderer/color?name={WebUtility.UrlEncode(query)}";
 				string previewUrl = $"https://{hostingOptions.HostName}/renderer/color/preview?name={WebUtility.UrlEncode(query)}";
-				resultTasks.Add(Task.FromResult(ImmutableList.Create<InlineQueryResult>(new InlineQueryResultPhoto($"color{query[1..]}", url, previewUrl))));
+				resultTasks.Add(Task.FromResult(ImmutableList.Create<InlineQueryResult>(
+					new InlineQueryResultPhoto($"color{query[1..]}", url, previewUrl) {
+						Title = query,
+						Description = query,
+						Caption = query,
+						PhotoWidth = 200,
+						PhotoHeight = 200
+					}
+				)));
 			}
 
 			if (query.Split(' ').FirstOrDefault() is "joke" or "jokes" or "dad" or "bapak" or "bapack" or "dadjoke" or "dadjokes" or "bapak2" or "bapack2") {
