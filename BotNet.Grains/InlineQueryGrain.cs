@@ -35,12 +35,10 @@ namespace BotNet.Grains {
 			if (query.Length == 7 && query[0] == '#' && query[1..].All(c => c is >= 'a' and <= 'f' || c is >= 'A' and <= 'F' || char.IsDigit(c))) {
 				HostingOptions hostingOptions = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value;
 				string url = $"https://{hostingOptions.HostName}/renderer/color?name={WebUtility.UrlEncode(query)}";
-				string previewUrl = $"https://{hostingOptions.HostName}/renderer/color/preview?name={WebUtility.UrlEncode(query)}";
 				resultTasks.Add(Task.FromResult(ImmutableList.Create<InlineQueryResult>(
-					new InlineQueryResultPhoto($"color{query[1..]}", url, previewUrl) {
+					new InlineQueryResultPhoto($"color{query[1..]}", url, url) {
 						Title = query,
 						Description = query,
-						Caption = query,
 						PhotoWidth = 200,
 						PhotoHeight = 200
 					}

@@ -48,7 +48,7 @@ namespace BotNet.Services.ColorCard {
 			canvas.FontName = "JetBrainsMonoNL-Regular";
 			canvas.FontColor = textColor;
 			canvas.FontSize = 24f;
-			canvas.DrawString(trimmedColorName, 0f, 0f, 200f, 200f, HorizontalAlignment.Center, VerticalAlignment.Center);
+			canvas.DrawString(trimmedColorName.ToUpperInvariant(), 0f, 0f, 200f, 200f, HorizontalAlignment.Center, VerticalAlignment.Center);
 			canvas.RestoreState();
 
 			using MemoryStream memoryStream = new();
