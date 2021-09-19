@@ -32,6 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="SafeSearch\bad-word-list\websites\**\*.*" />
+    <EmbeddedResource Include="SafeSearch\bad-word-list\words\**\*.*" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />

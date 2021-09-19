@@ -1,0 +1,3 @@
+[submodule "BotNet.Services/SafeSearch/bad-word-list"]
+	path = BotNet.Services/SafeSearch/bad-word-list
+	url = https://github.com/teknologi-umum/bad-word-list.git

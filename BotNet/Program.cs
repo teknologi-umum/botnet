@@ -2,6 +2,7 @@
 using BotNet.Bot;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Hosting;
+using BotNet.Services.SafeSearch;
 using BotNet.Services.Tenor;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +24,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddTenorClient();
 		services.AddFontService();
 		services.AddColorCardRenderer();
+		services.AddSafeSearch();
 
 		// Telemetry
 		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));
