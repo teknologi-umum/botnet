@@ -9,6 +9,7 @@ using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orleans;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.Grains {
@@ -51,6 +52,30 @@ namespace BotNet.Grains {
 						.GetGrain<IDadJokeGrain>(userId % 10)
 						.GetRandomJokesAsync()
 						.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url)).ToImmutableList<InlineQueryResult>())
+				);
+			}
+
+			if (query.Length >= 3) {
+				resultTasks.Add(
+					GrainFactory
+						.GetGrain<IDuckDuckGoGrain>(query)
+						.SearchAsync()
+						.ContinueWith(task => {
+							string? hostName = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value.HostName;
+							return task.Result.Select(resultItem => new InlineQueryResultArticle(
+								id: resultItem.Url.GetHashCode(StringComparison.InvariantCultureIgnoreCase).ToString(),
+								title: resultItem.Title,
+								inputMessageContent: new InputTextMessageContent($"<a href=\"{resultItem.Url}\">{WebUtility.HtmlEncode(resultItem.Title)}</a>\n<pre>{resultItem.UrlText}</pre>\n\n{WebUtility.HtmlEncode(resultItem.Snippet)}") {
+									ParseMode = ParseMode.Html
+								}
+							) {
+								ThumbUrl = hostName is not null
+									? $"{hostName}/opengraph/image?url={WebUtility.UrlEncode(resultItem.Url)}"
+									: null,
+								Url = resultItem.Url,
+								Description = WebUtility.HtmlEncode(resultItem.Snippet)
+							}).ToImmutableList<InlineQueryResult>();
+						})
 				);
 			}
 

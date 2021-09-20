@@ -15,4 +15,8 @@
     <PackageReference Include="Telegram.Bot" Version="17.0.0-alpha.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BotNet.Services\BotNet.Services.csproj" />
+  </ItemGroup>
+
 </Project>
