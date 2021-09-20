@@ -1,7 +1,9 @@
 ﻿using BotNet;
 using BotNet.Bot;
 using BotNet.Services.ColorCard;
+using BotNet.Services.DuckDuckGo;
 using BotNet.Services.Hosting;
+using BotNet.Services.OpenGraph;
 using BotNet.Services.SafeSearch;
 using BotNet.Services.Tenor;
 using BotNet.Services.Typography;
@@ -25,6 +27,8 @@ Host.CreateDefaultBuilder(args)
 		services.AddFontService();
 		services.AddColorCardRenderer();
 		services.AddSafeSearch();
+		services.AddDuckDuckGo();
+		services.AddOpenGraph();
 
 		// Telemetry
 		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));
