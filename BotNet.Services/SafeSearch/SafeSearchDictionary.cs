@@ -5,28 +5,44 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.SafeSearch.Models;
 
 namespace BotNet.Services.SafeSearch {
 	public class SafeSearchDictionary {
 		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"' };
 		private static readonly object DISALLOWED = new();
 		private readonly SemaphoreSlim _semaphore = new(1, 1);
-		private Trie<object>? _disallowedWebsites;
-		private Trie<object>? _disallowedWords;
-		private Trie<HashSet<string>>? _disallowedPhrases;
+		private HashSet<string>? _disallowedWebsites;
+		private HashSet<string>? _disallowedWords;
+		private Dictionary<string, HashSet<string>>? _disallowedPhrases;
 
 		public async Task<bool> IsUrlAllowedAsync(string url, CancellationToken cancellationToken) {
 			await EnsureInitializedAsync(cancellationToken);
-			return !Enumerable.Range(0, url.Length - 1)
-				.Any(i => _disallowedWebsites!.ContainsKeyWhichIsTheBeginningOf(url[i..]));
+
+			// strip protocol
+			if (url.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase)) url = url[7..];
+			if (url.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase)) url = url[8..];
+
+			// extract domain name
+			int slashPos = url.IndexOf('/', StringComparison.InvariantCultureIgnoreCase);
+			if (slashPos != -1) url = url[..slashPos];
+
+			string[] domainParts = url.Split('.');
+			int subdomainsSkipped = 0;
+
+			do {
+				string domain = string.Join('.', domainParts.Skip(subdomainsSkipped));
+				if (_disallowedWebsites!.Contains(domain)) return false;
+				subdomainsSkipped++;
+			} while (subdomainsSkipped < domainParts.Length - 1);
+
+			return true;
 		}
 
 		public async Task<bool> IsContentAllowedAsync(string content, CancellationToken cancellationToken) {
 			await EnsureInitializedAsync(cancellationToken);
 			string[] words = content.Split(CONTENT_DELIMITERS, StringSplitOptions.RemoveEmptyEntries);
 			return !words.Any(word => {
-				if (_disallowedWords!.ContainsKey(word)) return true;
+				if (_disallowedWords!.Contains(word)) return true;
 				if (_disallowedPhrases!.TryGetValue(word, out HashSet<string>? phrases)) {
 					foreach (string phrase in phrases) {
 						string[] phraseWords = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -45,27 +61,30 @@ namespace BotNet.Services.SafeSearch {
 					|| _disallowedPhrases == null) {
 					Assembly servicesAssembly = Assembly.GetAssembly(typeof(SafeSearchDictionary))!;
 
-					Trie<object> disallowedWebsites = new();
+					HashSet<string> disallowedWebsites = new(StringComparer.InvariantCultureIgnoreCase);
 					foreach (string disallowedWebsitesResourceName in from resourceName in servicesAssembly.GetManifestResourceNames()
-																	  where resourceName.StartsWith("BotNet.Services.SafeSearch.bad-word-list.websites.")
+																	  where resourceName.StartsWith("BotNet.Services.SafeSearch.bad_word_list.websites.")
 																	  select resourceName) {
 						using Stream stream = servicesAssembly.GetManifestResourceStream(disallowedWebsitesResourceName)!;
 						using StreamReader streamReader = new(stream);
-						while (await streamReader.ReadLineAsync() is string { Length: > 0 } disallowedWebsite) {
+						while (await streamReader.ReadLineAsync() is string disallowedWebsite) {
 							cancellationToken.ThrowIfCancellationRequested();
-							disallowedWebsites.Add(disallowedWebsite, DISALLOWED);
+							if (!string.IsNullOrWhiteSpace(disallowedWebsite)) {
+								disallowedWebsites.Add(disallowedWebsite);
+							}
 						}
 					}
 					_disallowedWebsites = disallowedWebsites;
 
-					Trie<object> disallowedWords = new();
-					Trie<HashSet<string>> disallowedPhrases = new();
+					HashSet<string> disallowedWords = new(StringComparer.InvariantCultureIgnoreCase);
+					Dictionary<string, HashSet<string>> disallowedPhrases = new(StringComparer.InvariantCultureIgnoreCase);
 					foreach (string disallowedWordsResourceName in from resourceName in servicesAssembly.GetManifestResourceNames()
-																   where resourceName.StartsWith("BotNet.Services.SafeSearch.bad-word-list.words.")
+																   where resourceName.StartsWith("BotNet.Services.SafeSearch.bad_word_list.words.")
 																   select resourceName) {
 						using Stream stream = servicesAssembly.GetManifestResourceStream(disallowedWordsResourceName)!;
 						using StreamReader streamReader = new(stream);
-						while (await streamReader.ReadLineAsync() is string { Length: > 0 } disallowedWordOrPhrase) {
+						while (await streamReader.ReadLineAsync() is string disallowedWordOrPhrase) {
+							cancellationToken.ThrowIfCancellationRequested();
 							if (disallowedWordOrPhrase.Contains(' ')) {
 								foreach (string phraseWord in disallowedWordOrPhrase.Split(' ', StringSplitOptions.RemoveEmptyEntries)) {
 									if (disallowedPhrases.TryGetValue(phraseWord, out HashSet<string>? phrases)) {
@@ -75,7 +94,7 @@ namespace BotNet.Services.SafeSearch {
 									}
 								}
 							} else {
-								disallowedWords.Add(disallowedWordOrPhrase, DISALLOWED);
+								disallowedWords.Add(disallowedWordOrPhrase);
 							}
 						}
 					}

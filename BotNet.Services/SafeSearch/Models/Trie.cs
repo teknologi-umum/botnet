@@ -96,7 +96,7 @@ namespace BotNet.Services.SafeSearch.Models {
 				out _,
 				out TrieNode<TValue> lastNode);
 			if (status == TrieTraverseStatus.FullMatch) {
-				return lastNode.Value!;
+				return lastNode.Value ?? throw new KeyNotFoundException($"Entry with key '{key}' was not found in the trie.");
 			} else {
 				throw new KeyNotFoundException($"Entry with key '{key}' was not found in the trie.");
 			}
@@ -111,8 +111,8 @@ namespace BotNet.Services.SafeSearch.Models {
 				out _,
 				out _,
 				out TrieNode<TValue> lastNode);
-			if (status == TrieTraverseStatus.FullMatch) {
-				value = lastNode.Value!;
+			if (status == TrieTraverseStatus.FullMatch && lastNode.Value is not null) {
+				value = lastNode.Value;
 				return true;
 			} else {
 				value = null;
@@ -128,8 +128,8 @@ namespace BotNet.Services.SafeSearch.Models {
 				out _,
 				out _,
 				out _,
-				out _);
-			return status == TrieTraverseStatus.FullMatch;
+				out TrieNode<TValue> lastNode);
+			return status == TrieTraverseStatus.FullMatch && lastNode.Value is not null;
 		}
 
 		public bool ContainsKeyWhichIsTheBeginningOf(string s) {
@@ -140,8 +140,8 @@ namespace BotNet.Services.SafeSearch.Models {
 				out _,
 				out _,
 				out _,
-				out _);
-			return status is TrieTraverseStatus.FullMatch or TrieTraverseStatus.Extraneous;
+				out TrieNode<TValue> lastNode);
+			return status is TrieTraverseStatus.FullMatch or TrieTraverseStatus.Extraneous && lastNode.Value is not null;
 		}
 
 		public ISet<TValue> FindValuesBeginningWith(string key) {
