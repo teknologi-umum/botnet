@@ -12,13 +12,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-    - name: Checkout submodules
-      uses: actions/checkout@v2
       with:
-        token: '${{ secrets.GITHUB_PAT }}'
-        repository: teknologi-umum/bad-word-list
-        path: BotNet.Services/SafeSearch/bad-word-list
-        ref: 'master'
+        submodules: recursive
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
