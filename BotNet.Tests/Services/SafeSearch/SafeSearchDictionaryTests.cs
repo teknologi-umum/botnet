@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BotNet.Services.MemoryPressureCoordinator;
 using BotNet.Services.SafeSearch;
 using FluentAssertions;
 using Xunit;
@@ -9,8 +10,10 @@ namespace BotNet.Tests.Services.SafeSearch {
 	public class SafeSearchDictionaryTests {
 		[Fact]
 		public async Task CanBuildDictionaryAndCheckContentAsync() {
+			MemoryPressureSemaphore memoryPressureSemaphore = new();
+
 			long startingAllocation = GC.GetTotalAllocatedBytes(true);
-			SafeSearchDictionary safeSearchDictionary = new();
+			SafeSearchDictionary safeSearchDictionary = new(memoryPressureSemaphore);
 			bool isAllowed = await safeSearchDictionary.IsUrlAllowedAsync("https://www.apple.com/", CancellationToken.None);
 			long finalAllocation = GC.GetTotalAllocatedBytes(true);
 			isAllowed.Should().BeTrue();

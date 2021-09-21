@@ -25,6 +25,7 @@ Host.CreateDefaultBuilder(args)
 		// DI Services
 		services.Configure<HostingOptions>(configuration.GetSection("HostingOptions"));
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
+		services.Configure<IronOcrOptions>(configuration.GetSection("IronOcrOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
