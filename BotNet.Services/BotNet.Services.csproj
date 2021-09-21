@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0-rc.1.21451.13" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="6.0.100-rc.1.413" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0-preview.140" />
+    <PackageReference Include="Telegram.Bot" Version="17.0.0-alpha.3" />
   </ItemGroup>
 
   <ItemGroup>

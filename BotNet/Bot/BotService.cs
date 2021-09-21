@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
-using BotNet.Services.ImageFlip;
+using BotNet.Services.BotCommands;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,7 +16,6 @@ using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
-using Telegram.Bot.Types.InputFiles;
 
 namespace BotNet.Bot;
 
@@ -79,10 +76,10 @@ public class BotService : IHostedService {
 						}
 						switch (command.ToLowerInvariant()) {
 							case "/flip":
-								await HandleFlipAsync(botClient, update.Message, cancellationToken);
+								await FlipFlop.HandleFlipAsync(botClient, update.Message, cancellationToken);
 								break;
 							case "/flop":
-								await HandleFlopAsync(botClient, update.Message, cancellationToken);
+								await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
 								break;
 						}
 					}
@@ -117,69 +114,5 @@ public class BotService : IHostedService {
 		_logger.LogError(exception, "{message}", errorMessage);
 		_telemetryClient.TrackException(exception);
 		return Task.CompletedTask;
-	}
-
-	private static async Task HandleFlipAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken) {
-		if (message.ReplyToMessage is null) {
-			await botClient.SendTextMessageAsync(
-				chatId: message.Chat.Id,
-				text: "Apa yang mau diflip? Untuk ngeflip gambar, reply `/flip` ke pesan yang ada gambarnya\\.",
-				parseMode: ParseMode.MarkdownV2,
-				replyToMessageId: message.MessageId,
-				cancellationToken: cancellationToken);
-		} else if (message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0) {
-			await botClient.SendTextMessageAsync(
-				chatId: message.Chat.Id,
-				text: "Pesan ini tidak ada gambarnya\\. Untuk ngeflip gambar, reply `/flip` ke pesan yang ada gambarnya\\.",
-				parseMode: ParseMode.MarkdownV2,
-				replyToMessageId: message.MessageId,
-				cancellationToken: cancellationToken);
-		} else {
-			using MemoryStream originalImageStream = new();
-			Telegram.Bot.Types.File fileInfo = await botClient.GetInfoAndDownloadFileAsync(
-				fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
-				destination: originalImageStream,
-				cancellationToken: cancellationToken);
-
-			byte[] flippedImage = Flipper.FlipImage(originalImageStream.ToArray());
-			using MemoryStream flippedImageStream = new(flippedImage);
-
-			await botClient.SendPhotoAsync(
-				chatId: message.Chat.Id,
-				photo: new InputOnlineFile(flippedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
-				replyToMessageId: message.ReplyToMessage.MessageId);
-		}
-	}
-
-	private static async Task HandleFlopAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken) {
-		if (message.ReplyToMessage is null) {
-			await botClient.SendTextMessageAsync(
-				chatId: message.Chat.Id,
-				text: "Apa yang mau diflop? Untuk ngeflop gambar, reply `/flop` ke pesan yang ada gambarnya\\.",
-				parseMode: ParseMode.MarkdownV2,
-				replyToMessageId: message.MessageId,
-				cancellationToken: cancellationToken);
-		} else if (message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0) {
-			await botClient.SendTextMessageAsync(
-				chatId: message.Chat.Id,
-				text: "Pesan ini tidak ada gambarnya\\. Untuk ngeflop gambar, reply `/flop` ke pesan yang ada gambarnya\\.",
-				parseMode: ParseMode.MarkdownV2,
-				replyToMessageId: message.MessageId,
-				cancellationToken: cancellationToken);
-		} else {
-			using MemoryStream originalImageStream = new();
-			Telegram.Bot.Types.File fileInfo = await botClient.GetInfoAndDownloadFileAsync(
-				fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
-				destination: originalImageStream,
-				cancellationToken: cancellationToken);
-
-			byte[] floppedImage = Flipper.FlopImage(originalImageStream.ToArray());
-			using MemoryStream flippedImageStream = new(floppedImage);
-
-			await botClient.SendPhotoAsync(
-				chatId: message.Chat.Id,
-				photo: new InputOnlineFile(flippedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
-				replyToMessageId: message.ReplyToMessage.MessageId);
-		}
 	}
 }
