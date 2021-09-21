@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BotNet.Services.SafeSearch {
 	public class SafeSearchDictionary {
-		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"' };
+		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"', '@', '(', ')', '|', '-' };
 		private static readonly object DISALLOWED = new();
 		private readonly SemaphoreSlim _semaphore = new(1, 1);
 		private HashSet<string>? _disallowedWebsites;
@@ -100,6 +100,7 @@ namespace BotNet.Services.SafeSearch {
 					}
 					_disallowedWords = disallowedWords;
 					_disallowedPhrases = disallowedPhrases;
+					GC.Collect();
 				}
 			} finally {
 				_semaphore.Release();

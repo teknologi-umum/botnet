@@ -59,7 +59,9 @@ public class BotService : IHostedService {
 					_logger.LogInformation("Received inline query from [{firstName} {lastName}]: '{query}'.", update.InlineQuery!.From.FirstName, update.InlineQuery.From.LastName, update.InlineQuery.Query);
 					if (update.InlineQuery.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
 						IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>($"{query}|{update.InlineQuery.From.Id}");
-						IEnumerable<InlineQueryResult> inlineQueryResults = await inlineQueryGrain.GetResultsAsync(query, update.InlineQuery.From.Id);
+						using GrainCancellationTokenSource grainCancellationTokenSource = new();
+						using CancellationTokenRegistration tokenRegistration = cancellationToken.Register(() => grainCancellationTokenSource.Cancel());
+						IEnumerable<InlineQueryResult> inlineQueryResults = await inlineQueryGrain.GetResultsAsync(query, update.InlineQuery.From.Id, grainCancellationTokenSource.Token);
 						await botClient.AnswerInlineQueryAsync(
 							inlineQueryId: update.InlineQuery.Id,
 							results: inlineQueryResults,

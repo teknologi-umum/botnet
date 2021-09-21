@@ -8,6 +8,6 @@ namespace BotNet.GrainInterfaces {
 	/// Key: search query, trimmed, to lowercase
 	/// </summary>
 	public interface IDuckDuckGoGrain : IGrainWithStringKey {
-		Task<ImmutableList<SearchResultItem>> SearchAsync();
+		Task<ImmutableList<SearchResultItem>> SearchAsync(GrainCancellationToken grainCancellationToken);
 	}
 }

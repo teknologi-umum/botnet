@@ -10,7 +10,8 @@ using Orleans;
 namespace BotNet.Grains {
 	public class OpenGraphGrain : Grain, IOpenGraphGrain {
 		private readonly IServiceProvider _serviceProvider;
-		private OpenGraphMetadata? _metadata;
+		private Task<OpenGraphMetadata>? _metadataTask;
+		private CancellationTokenSource? _cancellationTokenSource;
 
 		public OpenGraphGrain(
 			IServiceProvider serviceProvider
@@ -18,15 +19,41 @@ namespace BotNet.Grains {
 			_serviceProvider = serviceProvider;
 		}
 
-		public async Task<OpenGraphMetadata> GetMetadataAsync() {
-			if (_metadata is null) {
-				string url = this.GetPrimaryKeyString();
+		public override Task OnActivateAsync() {
+			_cancellationTokenSource = new();
+			return Task.CompletedTask;
+		}
 
-				_metadata = await _serviceProvider
+		public override Task OnDeactivateAsync() {
+			_cancellationTokenSource?.Cancel();
+			_cancellationTokenSource?.Dispose();
+			return Task.CompletedTask;
+		}
+
+		public async Task<OpenGraphMetadata?> GetMetadataAsync(TimeSpan timeout) {
+			if (_metadataTask is null) {
+				string url = this.GetPrimaryKeyString();
+				_metadataTask = _serviceProvider
 					.GetRequiredService<OpenGraphService>()
-					.GetMetadataAsync(url, CancellationToken.None);
+					.GetMetadataAsync(url, _cancellationTokenSource!.Token);
+			} else if (_metadataTask.IsCompleted) {
+				DelayDeactivation(TimeSpan.FromMinutes(1));
+				return _metadataTask.Result;
+			} else if (_metadataTask.IsCanceled) {
+				DelayDeactivation(TimeSpan.FromMinutes(1));
+				throw new OperationCanceledException();
+			} else if (_metadataTask.IsFaulted) {
+				DelayDeactivation(TimeSpan.FromMinutes(1));
+				throw _metadataTask.Exception!;
 			}
-			return _metadata;
+
+			Task completedTask = await Task.WhenAny(
+				task1: _metadataTask,
+				task2: Task.Delay(timeout));
+
+			DelayDeactivation(TimeSpan.FromMinutes(1));
+
+			return completedTask == _metadataTask ? _metadataTask.Result : null;
 		}
 	}
 }

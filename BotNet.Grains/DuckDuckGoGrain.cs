@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.DuckDuckGo;
@@ -20,26 +19,31 @@ namespace BotNet.Grains {
 			_serviceProvider = serviceProvider;
 		}
 
-		public async Task<ImmutableList<SearchResultItem>> SearchAsync() {
+		public async Task<ImmutableList<SearchResultItem>> SearchAsync(GrainCancellationToken grainCancellationToken) {
 			if (_searchResultItems is null) {
 				string query = this.GetPrimaryKeyString();
 
 				ImmutableList<SearchResultItem> resultItems = await _serviceProvider
 					.GetRequiredService<DuckDuckGoClient>()
-					.SearchAsync(query, CancellationToken.None);
+					.SearchAsync(query, grainCancellationToken.CancellationToken);
 
 				SafeSearchDictionary safeSearchDictionary = _serviceProvider.GetRequiredService<SafeSearchDictionary>();
 				ImmutableList<SearchResultItem>.Builder safeResultItemsBuilder = ImmutableList.CreateBuilder<SearchResultItem>();
 				foreach (SearchResultItem resultItem in resultItems) {
-					if (await safeSearchDictionary.IsUrlAllowedAsync(resultItem.Url, CancellationToken.None)
-						&& await safeSearchDictionary.IsContentAllowedAsync(resultItem.Title, CancellationToken.None)
-						&& await safeSearchDictionary.IsUrlAllowedAsync(resultItem.IconUrl, CancellationToken.None)
-						&& await safeSearchDictionary.IsContentAllowedAsync(resultItem.Snippet, CancellationToken.None)) {
+					if (await safeSearchDictionary.IsUrlAllowedAsync(resultItem.Url, grainCancellationToken.CancellationToken)
+						&& await safeSearchDictionary.IsContentAllowedAsync(resultItem.Url, grainCancellationToken.CancellationToken)
+						&& await safeSearchDictionary.IsContentAllowedAsync(resultItem.Title, grainCancellationToken.CancellationToken)
+						&& await safeSearchDictionary.IsUrlAllowedAsync(resultItem.IconUrl, grainCancellationToken.CancellationToken)
+						&& await safeSearchDictionary.IsContentAllowedAsync(resultItem.Snippet, grainCancellationToken.CancellationToken)) {
 						safeResultItemsBuilder.Add(resultItem);
 					}
 				}
 				_searchResultItems = safeResultItemsBuilder.ToImmutable();
 			}
+
+			// Cache until there is no call in a 1 minute window
+			DelayDeactivation(TimeSpan.FromMinutes(1));
+
 			return _searchResultItems;
 		}
 	}

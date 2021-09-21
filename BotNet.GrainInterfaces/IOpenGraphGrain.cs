@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using BotNet.Services.OpenGraph.Models;
 using Orleans;
 
 namespace BotNet.GrainInterfaces {
 	public interface IOpenGraphGrain : IGrainWithStringKey {
-		Task<OpenGraphMetadata> GetMetadataAsync();
+		Task<OpenGraphMetadata?> GetMetadataAsync(TimeSpan timeout);
 	}
 }

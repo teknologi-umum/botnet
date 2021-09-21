@@ -7,6 +7,6 @@ namespace BotNet.GrainInterfaces {
 	/// Key: search keywords, trimmed, converted to lowercase, not empty
 	/// </summary>
 	public interface ITenorGrain : IGrainWithStringKey {
-		Task<ImmutableList<(string Id, string Url, string PreviewUrl)>> SearchGifsAsync();
+		Task<ImmutableList<(string Id, string Url, string PreviewUrl)>> SearchGifsAsync(GrainCancellationToken grainCancellationToken);
 	}
 }

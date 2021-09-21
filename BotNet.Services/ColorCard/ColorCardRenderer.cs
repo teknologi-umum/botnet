@@ -39,9 +39,9 @@ namespace BotNet.Services.ColorCard {
 				? Color.FromRgba(0xff, 0xff, 0xff, 0xdd)
 				: Color.FromRgba(0x00, 0x00, 0x00, 0xdd);
 
-			BitmapExportContext bitmapContext = SkiaGraphicsService.Instance.CreateBitmapExportContext(200, 200, displayScale: 4f);
+			BitmapExportContext exportContext = SkiaGraphicsService.Instance.CreateBitmapExportContext(200, 200, displayScale: 4f);
 
-			ICanvas canvas = bitmapContext.Canvas;
+			ICanvas canvas = exportContext.Canvas;
 
 			canvas.SaveState();
 			canvas.FillColor = fillColor;
@@ -58,7 +58,7 @@ namespace BotNet.Services.ColorCard {
 			canvas.RestoreState();
 
 			using MemoryStream memoryStream = new();
-			bitmapContext.WriteToStream(memoryStream);
+			exportContext.WriteToStream(memoryStream);
 
 			return memoryStream.ToArray();
 		}

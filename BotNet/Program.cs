@@ -3,6 +3,7 @@ using BotNet.Bot;
 using BotNet.Services.ColorCard;
 using BotNet.Services.DuckDuckGo;
 using BotNet.Services.Hosting;
+using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.SafeSearch;
 using BotNet.Services.Tenor;
@@ -29,6 +30,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddSafeSearch();
 		services.AddDuckDuckGo();
 		services.AddOpenGraph();
+		services.AddImageConverter();
 
 		// Telemetry
 		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));

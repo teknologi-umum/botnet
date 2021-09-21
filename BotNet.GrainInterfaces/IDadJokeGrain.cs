@@ -7,6 +7,6 @@ namespace BotNet.GrainInterfaces {
 	/// Key: Last digit of user id
 	/// </summary>
 	public interface IDadJokeGrain : IGrainWithIntegerKey {
-		Task<ImmutableList<(string Id, string Url)>> GetRandomJokesAsync();
+		Task<ImmutableList<(string Id, string Url)>> GetRandomJokesAsync(GrainCancellationToken grainCancellationToken);
 	}
 }

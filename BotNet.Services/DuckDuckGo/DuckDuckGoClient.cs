@@ -23,7 +23,7 @@ namespace BotNet.Services.DuckDuckGo {
 		}
 
 		public async Task<ImmutableList<SearchResultItem>> SearchAsync(string query, CancellationToken cancellationToken) {
-			string url = $"{HTML_SEARCH_ENDPOINT}?kp=1&q={WebUtility.UrlEncode(query)}";
+			string url = $"{HTML_SEARCH_ENDPOINT}?kp=1&kl=id-en&q={WebUtility.UrlEncode(query)}";
 			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url) {
 				Headers = {
 					{ "Accept", "text/html" },
@@ -46,7 +46,7 @@ namespace BotNet.Services.DuckDuckGo {
 					&& resultItemNode.QuerySelector<IHtmlAnchorElement>(".result__title > a") is { TextContent: string itemTitle }
 					&& resultItemNode.QuerySelector<IHtmlAnchorElement>(".result__url") is { TextContent: string itemUrlText } && itemUrlText.Trim() is string trimmedItemUrlText
 					&& resultItemNode.QuerySelector<IHtmlImageElement>(".result__icon__img") is { Source: string itemIconUrl }
-					&& resultItemNode.QuerySelector<IHtmlAnchorElement>(".result__snippet") is { TextContent: string itemSnippet }) {
+					&& resultItemNode.QuerySelector<IHtmlAnchorElement>(".result__snippet") is { TextContent: string itemSnippet, InnerHtml: string itemSnippetHtml }) {
 					if (itemUrl.StartsWith(PROXY_LINK_PREFIX, StringComparison.InvariantCultureIgnoreCase)) {
 						itemUrl = itemUrl[PROXY_LINK_PREFIX.Length..];
 						int delimiterIndex = itemUrl.IndexOf(PROXY_LINK_DELIMITER, StringComparison.InvariantCultureIgnoreCase);
@@ -58,7 +58,8 @@ namespace BotNet.Services.DuckDuckGo {
 						Title: itemTitle,
 						UrlText: trimmedItemUrlText,
 						IconUrl: itemIconUrl,
-						Snippet: itemSnippet
+						Snippet: itemSnippet,
+						SnippetHtml: itemSnippetHtml
 					));
 				}
 			}

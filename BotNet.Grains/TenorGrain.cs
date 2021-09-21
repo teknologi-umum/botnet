@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.Tenor;
@@ -15,8 +14,8 @@ namespace BotNet.Grains {
 			_tenorClient = tenorClient;
 		}
 
-		public Task<ImmutableList<(string Id, string Url, string PreviewUrl)>> SearchGifsAsync() {
-			return _tenorClient.SearchGifsAsync(this.GetPrimaryKeyString(), CancellationToken.None);
+		public Task<ImmutableList<(string Id, string Url, string PreviewUrl)>> SearchGifsAsync(GrainCancellationToken grainCancellationToken) {
+			return _tenorClient.SearchGifsAsync(this.GetPrimaryKeyString(), grainCancellationToken.CancellationToken);
 		}
 	}
 }

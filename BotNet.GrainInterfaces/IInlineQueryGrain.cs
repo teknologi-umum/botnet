@@ -8,6 +8,6 @@ namespace BotNet.GrainInterfaces {
 	/// Key: search keywords, trimmed, converted to lowercase, not empty, concatenated with user Id
 	/// </summary>
 	public interface IInlineQueryGrain : IGrainWithStringKey {
-		Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, long userId);
+		Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, long userId, GrainCancellationToken grainCancellationToken);
 	}
 }

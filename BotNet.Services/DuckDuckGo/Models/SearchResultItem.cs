@@ -4,6 +4,7 @@
 		string Title,
 		string UrlText,
 		string IconUrl,
-		string Snippet
+		string Snippet,
+		string SnippetHtml
 	);
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
+using BotNet.Services.DuckDuckGo.Models;
 using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,6 @@ namespace BotNet.Grains {
 	public class InlineQueryGrain : Grain, IInlineQueryGrain {
 		private readonly IServiceProvider _serviceProvider;
 		private ImmutableList<InlineQueryResult>? _results;
-		private DateTime? _lastPopulated;
 
 		public InlineQueryGrain(
 			IServiceProvider serviceProvider
@@ -24,14 +24,41 @@ namespace BotNet.Grains {
 			_serviceProvider = serviceProvider;
 		}
 
-		public async Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, long userId) {
-			if (_results != null
-				&& _lastPopulated.HasValue
-				&& DateTime.Now.Subtract(_lastPopulated.Value).TotalMinutes < 1) {
+		public async Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, long userId, GrainCancellationToken grainCancellationToken) {
+			if (_results != null) {
+				DelayDeactivation(TimeSpan.FromMinutes(1));
 				return _results;
 			}
 
 			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = new();
+
+			if (query.Length >= 3) {
+				resultTasks.Add(
+					GrainFactory
+						.GetGrain<IDuckDuckGoGrain>(query)
+						.SearchAsync(grainCancellationToken)
+						.ContinueWith(resultItemsTask => {
+							ImmutableList<SearchResultItem> resultItems = resultItemsTask.Result;
+							if (resultItems.IsEmpty) return ImmutableList<InlineQueryResult>.Empty;
+
+							string? hostName = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value.HostName;
+
+							return resultItems.Select(resultItem => new InlineQueryResultArticle(
+										id: resultItem.Url.GetHashCode(StringComparison.InvariantCultureIgnoreCase).ToString(),
+										title: resultItem.Title,
+										inputMessageContent: new InputTextMessageContent($"\n<a href=\"{resultItem.Url}\">{WebUtility.HtmlEncode(resultItem.Title)}</a>\n<pre>{resultItem.UrlText}</pre>\n\n{WebUtility.HtmlEncode(resultItem.Snippet)}") {
+											ParseMode = ParseMode.Html
+										}
+									) {
+								ThumbUrl = hostName is not null
+									? $"{hostName}/opengraph/image?url={WebUtility.UrlEncode(resultItem.Url)}"
+									: resultItem.IconUrl,
+								Url = resultItem.Url,
+								Description = resultItem.Snippet
+							}).ToImmutableList<InlineQueryResult>();
+						}, grainCancellationToken.CancellationToken)
+				);
+			}
 
 			if (query.Length is 4 or 7 && query[0] == '#' && query[1..].All(c => c is >= 'a' and <= 'f' || c is >= 'A' and <= 'F' || char.IsDigit(c))) {
 				HostingOptions hostingOptions = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value;
@@ -50,32 +77,11 @@ namespace BotNet.Grains {
 				resultTasks.Add(
 					GrainFactory
 						.GetGrain<IDadJokeGrain>(userId % 10)
-						.GetRandomJokesAsync()
-						.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url)).ToImmutableList<InlineQueryResult>())
-				);
-			}
-
-			if (query.Length >= 3) {
-				resultTasks.Add(
-					GrainFactory
-						.GetGrain<IDuckDuckGoGrain>(query)
-						.SearchAsync()
-						.ContinueWith(task => {
-							string? hostName = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value.HostName;
-							return task.Result.Select(resultItem => new InlineQueryResultArticle(
-								id: resultItem.Url.GetHashCode(StringComparison.InvariantCultureIgnoreCase).ToString(),
-								title: resultItem.Title,
-								inputMessageContent: new InputTextMessageContent($"<a href=\"{resultItem.Url}\">{WebUtility.HtmlEncode(resultItem.Title)}</a>\n<pre>{resultItem.UrlText}</pre>\n\n{WebUtility.HtmlEncode(resultItem.Snippet)}") {
-									ParseMode = ParseMode.Html
-								}
-							) {
-								ThumbUrl = hostName is not null
-									? $"{hostName}/opengraph/image?url={WebUtility.UrlEncode(resultItem.Url)}"
-									: null,
-								Url = resultItem.Url,
-								Description = WebUtility.HtmlEncode(resultItem.Snippet)
-							}).ToImmutableList<InlineQueryResult>();
-						})
+						.GetRandomJokesAsync(grainCancellationToken)
+						.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url) {
+							Title = "Random dad joke",
+							Description = "Jokes bapack-bapack yang dipilih khusus buat kamu"
+						}).ToImmutableList<InlineQueryResult>())
 				);
 			}
 
@@ -83,13 +89,12 @@ namespace BotNet.Grains {
 				resultTasks.Add(
 					GrainFactory
 						.GetGrain<ITenorGrain>(query)
-						.SearchGifsAsync()
+						.SearchGifsAsync(grainCancellationToken)
 						.ContinueWith(task => task.Result.Select(gif => new InlineQueryResultGif(gif.Id, gif.Url, gif.PreviewUrl)).ToImmutableList<InlineQueryResult>())
 				);
 			}
 
 			_results = (await Task.WhenAll(resultTasks)).SelectMany(results => results).ToImmutableList();
-			_lastPopulated = DateTime.Now;
 
 			return _results;
 		}
