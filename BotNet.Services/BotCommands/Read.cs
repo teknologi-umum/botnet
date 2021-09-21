@@ -29,7 +29,7 @@ namespace BotNet.Services.BotCommands {
 			} else {
 				using MemoryStream originalImageStream = new();
 				Telegram.Bot.Types.File fileInfo = await botClient.GetInfoAndDownloadFileAsync(
-					fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
+					fileId: message.ReplyToMessage.Photo.OrderBy(photoSize => photoSize.Width).First().FileId,
 					destination: originalImageStream,
 					cancellationToken: cancellationToken);
 

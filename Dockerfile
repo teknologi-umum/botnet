@@ -1,6 +1,7 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/nightly/aspnet:6.0.0-rc.1-bullseye-slim-amd64 AS base
+RUN apt-get update && apt-get install -y libc6-dev libgdiplus
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
