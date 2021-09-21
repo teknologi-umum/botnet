@@ -5,15 +5,23 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using BotNet.Services.MemoryPressureCoordinator;
 
 namespace BotNet.Services.SafeSearch {
-	public class SafeSearchDictionary {
+	public class SafeSearchDictionary : IPressurable {
 		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"', '@', '(', ')', '|', '-' };
 		private static readonly object DISALLOWED = new();
 		private readonly SemaphoreSlim _semaphore = new(1, 1);
+		private readonly MemoryPressureSemaphore _memoryPressureSemaphore;
 		private HashSet<string>? _disallowedWebsites;
 		private HashSet<string>? _disallowedWords;
 		private Dictionary<string, HashSet<string>>? _disallowedPhrases;
+
+		public SafeSearchDictionary(
+			MemoryPressureSemaphore memoryPressureSemaphore
+		) {
+			_memoryPressureSemaphore = memoryPressureSemaphore;
+		}
 
 		public async Task<bool> IsUrlAllowedAsync(string url, CancellationToken cancellationToken) {
 			await EnsureInitializedAsync(cancellationToken);
@@ -55,6 +63,7 @@ namespace BotNet.Services.SafeSearch {
 
 		private async Task EnsureInitializedAsync(CancellationToken cancellationToken) {
 			await _semaphore.WaitAsync(cancellationToken);
+			await _memoryPressureSemaphore.WaitAsync(this);
 			try {
 				if (_disallowedWebsites == null
 					|| _disallowedWords == null
@@ -103,8 +112,20 @@ namespace BotNet.Services.SafeSearch {
 					GC.Collect();
 				}
 			} finally {
+				_memoryPressureSemaphore.Release(this);
 				_semaphore.Release();
 			}
+		}
+
+		public async Task ApplyPressureAsync() {
+			await _semaphore.WaitAsync();
+			_disallowedWebsites = null;
+			_disallowedWords = null;
+			_disallowedPhrases = null;
+		}
+
+		public void ReleasePressure() {
+			_semaphore.Release();
 		}
 	}
 }

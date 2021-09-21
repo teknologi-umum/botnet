@@ -4,13 +4,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.OCR;
+using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.BotCommands {
 	public static class Read {
-		public static async Task HandleReadAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken) {
+		public static async Task HandleReadAsync(IServiceProvider serviceProvider, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken) {
 			if (message.ReplyToMessage is null) {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
@@ -32,7 +33,11 @@ namespace BotNet.Services.BotCommands {
 					destination: originalImageStream,
 					cancellationToken: cancellationToken);
 
-				string textResult = await Reader.ReadImageAsync(originalImageStream.ToArray());
+				GC.Collect();
+				string textResult = await serviceProvider
+					.GetRequiredService<Reader>()
+					.ReadImageAsync(originalImageStream.ToArray(), cancellationToken);
+				GC.Collect();
 
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
@@ -54,9 +59,9 @@ namespace BotNet.Services.BotCommands {
 						.Replace("#", "\\#", StringComparison.InvariantCultureIgnoreCase)
 						.Replace("/", "\\/", StringComparison.InvariantCultureIgnoreCase)
 						.Replace("`", "\\`", StringComparison.InvariantCultureIgnoreCase)
-						.Replace("&", "&amp;", StringComparison.InvariantCultureIgnoreCase)
-						.Replace("<", "&lt;", StringComparison.InvariantCultureIgnoreCase)
-						.Replace(">", "&gt;", StringComparison.InvariantCultureIgnoreCase),
+						.Replace("&", "\\&", StringComparison.InvariantCultureIgnoreCase)
+						.Replace("<", "\\<", StringComparison.InvariantCultureIgnoreCase)
+						.Replace(">", "\\>", StringComparison.InvariantCultureIgnoreCase),
 					parseMode: ParseMode.MarkdownV2,
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
