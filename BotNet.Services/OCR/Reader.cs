@@ -25,9 +25,12 @@ namespace BotNet.Services.OCR {
 			await _memoryPressureSemaphore.WaitAsync(this);
 			try {
 				Installation.LicenseKey = _ironOcrLicenseKey;
-				IronTesseract ironTesseract = new();
-				ironTesseract.Language = OcrLanguage.EnglishFast;
-				//ironTesseract.AddSecondaryLanguage(OcrLanguage.Japanese);
+				IronTesseract ironTesseract = new(new TesseractConfiguration {
+					EngineMode = TesseractEngineMode.LstmOnly,
+					PageSegmentationMode = TesseractPageSegmentationMode.AutoOnly
+				});
+				ironTesseract.Language = OcrLanguage.IndonesianFast;
+				//ironTesseract.AddSecondaryLanguage(OcrLanguage.JapaneseBest);
 				using OcrInput ocrInput = new(originalImage);
 				OcrResult result = await ironTesseract.ReadAsync(ocrInput);
 				return result.Text;
