@@ -19,7 +19,8 @@ namespace BotNet.Services.BotCommands {
 					parseMode: ParseMode.MarkdownV2,
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);
-			} else if (message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0) {
+			} else if ((message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0)
+				&& message.ReplyToMessage.Sticker is null) {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
 					text: "Pesan ini tidak ada gambarnya\\. Untuk ngeflip gambar, reply `/flip` ke pesan yang ada gambarnya\\.",
@@ -28,10 +29,15 @@ namespace BotNet.Services.BotCommands {
 					cancellationToken: cancellationToken);
 			} else {
 				using MemoryStream originalImageStream = new();
-				Telegram.Bot.Types.File fileInfo = await botClient.GetInfoAndDownloadFileAsync(
-					fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
-					destination: originalImageStream,
-					cancellationToken: cancellationToken);
+				Telegram.Bot.Types.File fileInfo = message.ReplyToMessage.Photo?.Length > 0
+					? await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken)
+					: await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Sticker!.FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken);
 
 				byte[] flippedImage = Flipper.FlipImage(originalImageStream.ToArray());
 				using MemoryStream flippedImageStream = new(flippedImage);
@@ -52,7 +58,8 @@ namespace BotNet.Services.BotCommands {
 					parseMode: ParseMode.MarkdownV2,
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);
-			} else if (message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0) {
+			} else if ((message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0)
+				&& message.ReplyToMessage.Sticker is null) {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
 					text: "Pesan ini tidak ada gambarnya\\. Untuk ngeflop gambar, reply `/flop` ke pesan yang ada gambarnya\\.",
@@ -61,17 +68,22 @@ namespace BotNet.Services.BotCommands {
 					cancellationToken: cancellationToken);
 			} else {
 				using MemoryStream originalImageStream = new();
-				Telegram.Bot.Types.File fileInfo = await botClient.GetInfoAndDownloadFileAsync(
-					fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
-					destination: originalImageStream,
-					cancellationToken: cancellationToken);
+				Telegram.Bot.Types.File fileInfo = message.ReplyToMessage.Photo?.Length > 0
+					? await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken)
+					: await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Sticker!.FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken);
 
 				byte[] floppedImage = Flipper.FlopImage(originalImageStream.ToArray());
-				using MemoryStream flippedImageStream = new(floppedImage);
+				using MemoryStream floppedImageStream = new(floppedImage);
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(flippedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					photo: new InputOnlineFile(floppedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
 			}

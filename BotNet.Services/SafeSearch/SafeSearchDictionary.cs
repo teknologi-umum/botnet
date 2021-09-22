@@ -9,7 +9,7 @@ using BotNet.Services.MemoryPressureCoordinator;
 
 namespace BotNet.Services.SafeSearch {
 	public class SafeSearchDictionary : IPressurable {
-		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"', '@', '(', ')', '|', '-' };
+		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"', '@', '(', ')', '|', '-', '_', '/', '?', '!', '&', '#', '+' };
 		private static readonly object DISALLOWED = new();
 		private readonly SemaphoreSlim _semaphore = new(1, 1);
 		private readonly MemoryPressureSemaphore _memoryPressureSemaphore;
@@ -51,6 +51,7 @@ namespace BotNet.Services.SafeSearch {
 			string[] words = content.Split(CONTENT_DELIMITERS, StringSplitOptions.RemoveEmptyEntries);
 			return !words.Any(word => {
 				if (_disallowedWords!.Contains(word)) return true;
+				if (_disallowedWords.Where(disallowedWord => disallowedWord.Length >= 4).Any(disallowedWord => word.StartsWith(disallowedWord, StringComparison.InvariantCultureIgnoreCase))) return true;
 				if (_disallowedPhrases!.TryGetValue(word, out HashSet<string>? phrases)) {
 					foreach (string phrase in phrases) {
 						string[] phraseWords = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
