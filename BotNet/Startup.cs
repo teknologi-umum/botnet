@@ -9,19 +9,25 @@ namespace BotNet {
 	[ExcludeFromCodeCoverage]
 	public class Startup {
 		public IConfiguration Configuration { get; }
+		public IWebHostEnvironment Environment { get; }
 
-		public Startup(IConfiguration configuration) {
+		public Startup(IConfiguration configuration, IWebHostEnvironment environment) {
 			Configuration = configuration;
+			Environment = environment;
 		}
 
 		public void ConfigureServices(IServiceCollection services) {
-			services.AddControllers();
+			IMvcBuilder mvcBuilder = services.AddControllersWithViews();
+			if (Environment.IsDevelopment()) {
+				mvcBuilder.AddRazorRuntimeCompilation();
+			}
+
 			services.AddResponseCaching();
 			services.AddResponseCompression();
 		}
 
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-			if (env.IsDevelopment()) {
+		public void Configure(IApplicationBuilder app) {
+			if (Environment.IsDevelopment()) {
 				app.UseDeveloperExceptionPage();
 			} else {
 				app.UseHsts();
