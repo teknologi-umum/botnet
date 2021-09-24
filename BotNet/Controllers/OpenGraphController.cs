@@ -35,10 +35,15 @@ namespace BotNet.Controllers {
 					byte[] iconPng = await _icoToPngConverter.ConvertFromUrlAsync(iconUrl, cancellationToken);
 					return File(iconPng, "image/png", true);
 				} catch (HttpRequestException) { }
+				try {
+					string iconUrl = $"https://{domain}/favicon.ico";
+					byte[] iconPng = await _icoToPngConverter.ConvertFromUrlAsync(iconUrl, cancellationToken);
+					return File(iconPng, "image/png", true);
+				} catch (HttpRequestException) { }
 			}
 			OpenGraphMetadata? metadata = await _clusterClient
 				.GetGrain<IOpenGraphGrain>(url.Trim().ToLowerInvariant())
-				.GetMetadataAsync(TimeSpan.FromSeconds(30));
+				.GetMetadataAsync(TimeSpan.FromSeconds(3));
 			if (metadata?.Image is string previewImageUrl) {
 				if (previewImageUrl.EndsWith(".ico")) {
 					try {

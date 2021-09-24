@@ -1,26 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Reflection;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.MemoryPressureCoordinator;
+using BotNet.Services.Github;
+using BotNet.Services.Github.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.SafeSearch {
-	public class SafeSearchDictionary : IPressurable {
+	public class SafeSearchDictionary {
 		private static readonly char[] CONTENT_DELIMITERS = { ' ', '\t', '\r', '\n', '.', ',', ':', ';', '"', '@', '(', ')', '|', '-', '_', '/', '?', '!', '&', '#', '+' };
 		private static readonly object DISALLOWED = new();
+		private readonly IServiceProvider _serviceProvider;
 		private readonly SemaphoreSlim _semaphore = new(1, 1);
-		private readonly MemoryPressureSemaphore _memoryPressureSemaphore;
-		private HashSet<string>? _disallowedWebsites;
-		private HashSet<string>? _disallowedWords;
-		private Dictionary<string, HashSet<string>>? _disallowedPhrases;
+		private ImmutableHashSet<string>? _disallowedWebsites;
+		private ImmutableHashSet<string>? _disallowedWords;
+		private ImmutableDictionary<string, ImmutableHashSet<string>>? _disallowedPhrases;
 
 		public SafeSearchDictionary(
-			MemoryPressureSemaphore memoryPressureSemaphore
+			IServiceProvider serviceProvider
 		) {
-			_memoryPressureSemaphore = memoryPressureSemaphore;
+			_serviceProvider = serviceProvider;
 		}
 
 		public async Task<bool> IsUrlAllowedAsync(string url, CancellationToken cancellationToken) {
@@ -52,7 +54,7 @@ namespace BotNet.Services.SafeSearch {
 			return !words.Any(word => {
 				if (_disallowedWords!.Contains(word)) return true;
 				if (_disallowedWords.Where(disallowedWord => disallowedWord.Length >= 4).Any(disallowedWord => word.StartsWith(disallowedWord, StringComparison.InvariantCultureIgnoreCase))) return true;
-				if (_disallowedPhrases!.TryGetValue(word, out HashSet<string>? phrases)) {
+				if (_disallowedPhrases!.TryGetValue(word, out ImmutableHashSet<string>? phrases)) {
 					foreach (string phrase in phrases) {
 						string[] phraseWords = phrase.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 						if (phraseWords.All(phraseWord => words.Contains(phraseWord, StringComparer.InvariantCultureIgnoreCase))) return true;
@@ -62,71 +64,83 @@ namespace BotNet.Services.SafeSearch {
 			});
 		}
 
-		private async Task EnsureInitializedAsync(CancellationToken cancellationToken) {
+		public async Task EnsureInitializedAsync(CancellationToken cancellationToken) {
 			await _semaphore.WaitAsync(cancellationToken);
-			await _memoryPressureSemaphore.WaitAsync(this);
 			try {
 				if (_disallowedWebsites == null
 					|| _disallowedWords == null
 					|| _disallowedPhrases == null) {
-					Assembly servicesAssembly = Assembly.GetAssembly(typeof(SafeSearchDictionary))!;
+					GithubClient githubClient = _serviceProvider.GetRequiredService<GithubClient>();
+					HttpClient httpClient = _serviceProvider.GetRequiredService<HttpClient>();
+					SafeSearchOptions safeSearchOptions = _serviceProvider.GetRequiredService<IOptions<SafeSearchOptions>>().Value;
 
-					HashSet<string> disallowedWebsites = new(StringComparer.InvariantCultureIgnoreCase);
-					foreach (string disallowedWebsitesResourceName in from resourceName in servicesAssembly.GetManifestResourceNames()
-																	  where resourceName.StartsWith("BotNet.Services.SafeSearch.bad_word_list.websites.")
-																	  select resourceName) {
-						using Stream stream = servicesAssembly.GetManifestResourceStream(disallowedWebsitesResourceName)!;
-						using StreamReader streamReader = new(stream);
-						while (await streamReader.ReadLineAsync() is string disallowedWebsite) {
-							cancellationToken.ThrowIfCancellationRequested();
-							if (!string.IsNullOrWhiteSpace(disallowedWebsite)) {
-								disallowedWebsites.Add(disallowedWebsite);
-							}
-						}
+					if (safeSearchOptions.DisallowedWordsPath is null) {
+						throw new InvalidOperationException("Disallowed words path not configured. Please add a .NET secret with key 'SafeSearchOptions:DisallowedWordsPath' or a Docker secret with key 'SafeSearchOptions__DisallowedWordsPath'");
 					}
-					_disallowedWebsites = disallowedWebsites;
 
-					HashSet<string> disallowedWords = new(StringComparer.InvariantCultureIgnoreCase);
-					Dictionary<string, HashSet<string>> disallowedPhrases = new(StringComparer.InvariantCultureIgnoreCase);
-					foreach (string disallowedWordsResourceName in from resourceName in servicesAssembly.GetManifestResourceNames()
-																   where resourceName.StartsWith("BotNet.Services.SafeSearch.bad_word_list.words.")
-																   select resourceName) {
-						using Stream stream = servicesAssembly.GetManifestResourceStream(disallowedWordsResourceName)!;
-						using StreamReader streamReader = new(stream);
-						while (await streamReader.ReadLineAsync() is string disallowedWordOrPhrase) {
-							cancellationToken.ThrowIfCancellationRequested();
-							if (disallowedWordOrPhrase.Contains(' ')) {
-								foreach (string phraseWord in disallowedWordOrPhrase.Split(' ', StringSplitOptions.RemoveEmptyEntries)) {
-									if (disallowedPhrases.TryGetValue(phraseWord, out HashSet<string>? phrases)) {
-										phrases.Add(disallowedWordOrPhrase);
-									} else {
-										disallowedPhrases.Add(phraseWord, new HashSet<string>(StringComparer.InvariantCultureIgnoreCase) { disallowedWordOrPhrase });
-									}
-								}
-							} else {
-								disallowedWords.Add(disallowedWordOrPhrase);
-							}
-						}
-					}
-					_disallowedWords = disallowedWords;
-					_disallowedPhrases = disallowedPhrases;
+					// Disallowed websites
+
+					ImmutableList<GithubContent> disallowedWebsitesFiles = await githubClient.GetContentAsync(
+						owner: safeSearchOptions.BadWordListOwner ?? throw new InvalidOperationException("Bad word list owner name not configured. Please add a .NET secret with key 'SafeSearchOptions:BadWordListOwner' or a Docker secret with key 'SafeSearchOptions__BadWordListOwner'"),
+						repo: safeSearchOptions.BadWordListRepository ?? throw new InvalidOperationException("Bad word list repository name not configured. Please add a .NET secret with key 'SafeSearchOptions:BadWordListRepository' or a Docker secret with key 'SafeSearchOptions__BadWordListRepository'"),
+						path: safeSearchOptions.DisallowedWebsitesPath ?? throw new InvalidOperationException("Disallowed websites path not configured. Please add a .NET secret with key 'SafeSearchOptions:DisallowedWebsitesPath' or a Docker secret with key 'SafeSearchOptions__DisallowedWebsitesPath'"),
+						cancellationToken: cancellationToken);
+
+					string[] disallowedWebsitesLists = await Task.WhenAll(
+						disallowedWebsitesFiles.Select(file => httpClient.GetStringAsync(file.DownloadUrl, cancellationToken))
+					);
+
+					_disallowedWebsites = disallowedWebsitesLists
+						.SelectMany(disallowedWebsitesList => disallowedWebsitesList.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+						.Where(disallowedWebsite => !string.IsNullOrWhiteSpace(disallowedWebsite))
+						.Distinct(StringComparer.InvariantCultureIgnoreCase)
+						.ToImmutableHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+					// Disallowed words & phrases
+
+					ImmutableList<GithubContent> disallowedWordsFiles = await githubClient.GetContentAsync(
+						owner: safeSearchOptions.BadWordListOwner,
+						repo: safeSearchOptions.BadWordListRepository,
+						path: safeSearchOptions.DisallowedWordsPath,
+						cancellationToken: cancellationToken);
+
+					string[] disallowedWordsLists = await Task.WhenAll(
+						disallowedWordsFiles.Select(file => httpClient.GetStringAsync(file.DownloadUrl, cancellationToken))
+					);
+
+					ImmutableList<string> disallowedWords = disallowedWordsLists
+						.SelectMany(disallowedWordsList => disallowedWordsList.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+						.ToImmutableList();
+
+					_disallowedWords = disallowedWords
+						.Where(disallowedWord => !disallowedWord.Contains(' ', StringComparison.InvariantCultureIgnoreCase))
+						.Distinct(StringComparer.InvariantCultureIgnoreCase)
+						.ToImmutableHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+					_disallowedPhrases = disallowedWords
+						.Where(disallowedWord => disallowedWord.Contains(' ', StringComparison.InvariantCultureIgnoreCase))
+						.SelectMany(disallowedPhrase => {
+							string[] wordsInPhrase = disallowedPhrase.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+							return wordsInPhrase.Select(wordInPhrase => new {
+								Word = wordInPhrase,
+								Phrase = disallowedPhrase
+							});
+						})
+						.GroupBy(
+							keySelector: wordInPhrase => wordInPhrase.Word,
+							elementSelector: wordInPhrase => wordInPhrase.Phrase
+						)
+						.ToImmutableDictionary(
+							keySelector: g => g.Key,
+							elementSelector: g => g.Distinct(StringComparer.InvariantCultureIgnoreCase).ToImmutableHashSet(StringComparer.InvariantCultureIgnoreCase),
+							keyComparer: StringComparer.InvariantCultureIgnoreCase
+						);
+
 					GC.Collect();
 				}
 			} finally {
-				_memoryPressureSemaphore.Release(this);
 				_semaphore.Release();
 			}
-		}
-
-		public async Task ApplyPressureAsync() {
-			await _semaphore.WaitAsync();
-			_disallowedWebsites = null;
-			_disallowedWords = null;
-			_disallowedPhrases = null;
-		}
-
-		public void ReleasePressure() {
-			_semaphore.Release();
 		}
 	}
 }

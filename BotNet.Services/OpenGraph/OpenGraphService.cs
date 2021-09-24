@@ -31,13 +31,13 @@ namespace BotNet.Services.OpenGraph {
 
 		public async Task<OpenGraphMetadata> GetMetadataAsync(string url, CancellationToken cancellationToken) {
 			Uri pageUri = new(url);
-			using HttpRequestMessage httpRequest = new(HttpMethod.Get, pageUri) {
+			using HttpRequestMessage request = new(HttpMethod.Get, pageUri) {
 				Headers = {
 					{ "Accept", "text/html" },
 					{ "User-Agent", "TEKNUM" }
 				}
 			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
 			string html = await response.Content.ReadAsStringAsync(cancellationToken);

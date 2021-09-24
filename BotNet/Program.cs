@@ -2,9 +2,9 @@
 using BotNet.Bot;
 using BotNet.Services.ColorCard;
 using BotNet.Services.DuckDuckGo;
+using BotNet.Services.Github;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
-using BotNet.Services.MemoryPressureCoordinator;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.SafeSearch;
 using BotNet.Services.Tenor;
@@ -24,6 +24,8 @@ Host.CreateDefaultBuilder(args)
 		// DI Services
 		services.Configure<HostingOptions>(configuration.GetSection("HostingOptions"));
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
+		services.Configure<GithubOptions>(configuration.GetSection("GithubOptions"));
+		services.Configure<SafeSearchOptions>(configuration.GetSection("SafeSearchOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -32,7 +34,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddDuckDuckGo();
 		services.AddOpenGraph();
 		services.AddImageConverter();
-		services.AddMemoryPressureCoordinator();
+		services.AddGithubClient();
 
 		// Telemetry
 		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));

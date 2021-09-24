@@ -16,10 +16,10 @@ namespace BotNet.Tests.Services.SafeSearch {
 			trie.Traverse(
 				"apple".ToCharArray(),
 				out TrieTraverseStatus status,
-				out System.ReadOnlyMemory<char> keyprefix,
-				out System.ReadOnlyMemory<char> matchingKey,
-				out System.ReadOnlyMemory<char> remainingNodeKey,
-				out System.ReadOnlyMemory<char> remainingKey,
+				out ReadOnlyMemory<char> keyprefix,
+				out ReadOnlyMemory<char> matchingKey,
+				out ReadOnlyMemory<char> remainingNodeKey,
+				out ReadOnlyMemory<char> remainingKey,
 				out TrieNode<object>? lastNode);
 
 			status.Should().Be(TrieTraverseStatus.FullMatch);
