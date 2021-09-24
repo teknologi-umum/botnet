@@ -5,7 +5,6 @@ using BotNet.Services.DuckDuckGo;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.MemoryPressureCoordinator;
-using BotNet.Services.OCR;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.SafeSearch;
 using BotNet.Services.Tenor;
@@ -25,7 +24,6 @@ Host.CreateDefaultBuilder(args)
 		// DI Services
 		services.Configure<HostingOptions>(configuration.GetSection("HostingOptions"));
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
-		services.Configure<IronOcrOptions>(configuration.GetSection("IronOcrOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -34,7 +32,6 @@ Host.CreateDefaultBuilder(args)
 		services.AddDuckDuckGo();
 		services.AddOpenGraph();
 		services.AddImageConverter();
-		services.AddOCR();
 		services.AddMemoryPressureCoordinator();
 
 		// Telemetry

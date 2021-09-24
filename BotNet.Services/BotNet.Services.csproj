@@ -26,9 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.16.1-alpha-99" />
-    <PackageReference Include="IronOcr" Version="2021.9.0" />
-    <PackageReference Include="IronOcr.Languages.Indonesian" Version="2020.11.2" />
-    <PackageReference Include="IronOcr.Languages.Japanese" Version="2020.11.2" />
     <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.100-rc.1.413" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0-rc.1.21451.13" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="6.0.100-rc.1.413" />

@@ -81,9 +81,6 @@ public class BotService : IHostedService {
 							case "/flop":
 								await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
 								break;
-							case "/read":
-								await Read.HandleReadAsync(_serviceProvider, botClient, update.Message, cancellationToken);
-								break;
 						}
 					}
 					break;
