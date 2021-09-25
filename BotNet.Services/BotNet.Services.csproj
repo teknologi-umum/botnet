@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="StackExchange\Tags.json" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />
@@ -25,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.16.1-alpha-99" />
+    <PackageReference Include="AngleSharp" Version="0.16.0" />
+    <PackageReference Include="HtmlSanitizer" Version="6.0.441" />
     <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.100-rc.1.413" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0-rc.1.21451.13" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="6.0.100-rc.1.413" />
@@ -34,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="StackExchange\Tags.json" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />

@@ -83,13 +83,21 @@ public class BotService : IHostedService {
 							// Normalize command
 							command = command[..ampersandPos];
 						}
-						switch (command.ToLowerInvariant()) {
-							case "/flip":
-								await FlipFlop.HandleFlipAsync(botClient, update.Message, cancellationToken);
-								break;
-							case "/flop":
-								await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
-								break;
+						try {
+							switch (command.ToLowerInvariant()) {
+								case "/flip":
+									await FlipFlop.HandleFlipAsync(botClient, update.Message, cancellationToken);
+									break;
+								case "/flop":
+									await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
+									break;
+								case "/ask":
+									await Ask.HandleAskAsync(_serviceProvider, botClient, update.Message, cancellationToken);
+									break;
+							}
+						} catch (Exception exc) when (exc is not OperationCanceledException) {
+							await Error.HandleErrorAsync(exc, botClient, update.Message, cancellationToken);
+							throw;
 						}
 					}
 					break;
@@ -107,9 +115,7 @@ public class BotService : IHostedService {
 					}
 					break;
 			}
-		} catch (OperationCanceledException) {
-			throw;
-		} catch (Exception exc) {
+		} catch (Exception exc) when (exc is not OperationCanceledException) {
 			_logger.LogError(exc, "{message}", exc.Message);
 			_telemetryClient.TrackException(exc);
 		}

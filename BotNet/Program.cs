@@ -7,6 +7,7 @@ using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.SafeSearch;
+using BotNet.Services.StackExchange;
 using BotNet.Services.Tenor;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
@@ -35,6 +36,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddOpenGraph();
 		services.AddImageConverter();
 		services.AddGithubClient();
+		services.AddStackExchangeClient();
 
 		// Telemetry
 		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));
