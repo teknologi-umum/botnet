@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="FancyText\CharMaps\Bold.json" />
+    <None Remove="FancyText\CharMaps\BoldItalic.json" />
+    <None Remove="FancyText\CharMaps\Cursive.json" />
+    <None Remove="FancyText\CharMaps\Italic.json" />
+    <None Remove="FancyText\CharMaps\Medieval.json" />
+    <None Remove="FancyText\CharMaps\Monospace.json" />
+    <None Remove="FancyText\CharMaps\WideText.json" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />
@@ -34,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="FancyText\CharMaps\**\*.*" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />

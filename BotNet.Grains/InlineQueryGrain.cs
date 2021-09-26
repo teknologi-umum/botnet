@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.DuckDuckGo.Models;
+using BotNet.Services.FancyText;
 using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -58,6 +59,18 @@ namespace BotNet.Grains {
 							}).ToImmutableList<InlineQueryResult>();
 						}, grainCancellationToken.CancellationToken)
 				);
+			}
+
+			if (query.Length > 0) {
+				string[] fancyTexts = await Task.WhenAll(
+					Enum.GetValues<FancyTextStyle>()
+						.Select(style => FancyTextGenerator.GenerateAsync(query, style, grainCancellationToken.CancellationToken))
+				);
+				resultTasks.Add(Task.FromResult(fancyTexts.Select(fancyText => new InlineQueryResultArticle(
+					id: Guid.NewGuid().ToString("N"),
+					title: fancyText,
+					inputMessageContent: new InputTextMessageContent(fancyText)
+				)).ToImmutableList<InlineQueryResult>()));
 			}
 
 			if (query.Length is 4 or 7 && query[0] == '#' && query[1..].All(c => c is >= 'a' and <= 'f' || c is >= 'A' and <= 'F' || char.IsDigit(c))) {
