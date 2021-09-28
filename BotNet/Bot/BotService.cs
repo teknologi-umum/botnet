@@ -90,6 +90,9 @@ public class BotService : IHostedService {
 							case "/flop":
 								await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
 								break;
+							case "/fuck":
+								await Fuck.HandleFuckAsync(botClient, update.Message, cancellationToken);
+								break;
 						}
 					}
 					break;

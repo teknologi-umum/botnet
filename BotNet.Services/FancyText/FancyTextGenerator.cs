@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text;
@@ -25,7 +24,7 @@ namespace BotNet.Services.FancyText {
 				charMap = map.ToImmutableDictionary(kvp => kvp.Key[0], kvp => kvp.Value);
 				CHAR_MAP_BY_STYLE.Add(style, charMap!);
 				return charMap;
-			} catch (Exception exc) {
+			} catch {
 				throw;
 			} finally {
 				SEMAPHORE.Release();
@@ -35,7 +34,7 @@ namespace BotNet.Services.FancyText {
 		public static async Task<string> GenerateAsync(string text, FancyTextStyle style, CancellationToken cancellationToken) {
 			ImmutableDictionary<char, string> charMap = await GetCharMapAsync(style, cancellationToken);
 			StringBuilder fancyTextBuilder = new();
-			foreach(char c in text) {
+			foreach (char c in text) {
 				if (charMap.TryGetValue(c, out string? replacement)) {
 					fancyTextBuilder.Append(replacement);
 				} else if (charMap.TryGetValue(char.ToLowerInvariant(c), out replacement)) {
