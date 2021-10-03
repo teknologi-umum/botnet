@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
+using BotNet.Services.Brainfuck;
 using BotNet.Services.DuckDuckGo.Models;
 using BotNet.Services.FancyText;
 using BotNet.Services.Hosting;
@@ -71,6 +72,23 @@ namespace BotNet.Grains {
 					title: fancyText,
 					inputMessageContent: new InputTextMessageContent(fancyText)
 				)).ToImmutableList<InlineQueryResult>()));
+			}
+
+			if (query.Length > 0) {
+				string brainfuck = _serviceProvider
+					.GetRequiredService<BrainfuckTranspiler>()
+					.TranspileBrainfuck(query);
+				resultTasks.Add(
+					Task.FromResult(
+						ImmutableList.Create<InlineQueryResult>(
+							new InlineQueryResultArticle(
+								id: Guid.NewGuid().ToString("N"),
+								title: brainfuck,
+								inputMessageContent: new InputTextMessageContent(brainfuck)
+							)
+						)
+					)
+				);
 			}
 
 			if (query.Length is 4 or 7 && query[0] == '#' && query[1..].All(c => c is >= 'a' and <= 'f' || c is >= 'A' and <= 'F' || char.IsDigit(c))) {

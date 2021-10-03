@@ -1,5 +1,6 @@
 ﻿using BotNet;
 using BotNet.Bot;
+using BotNet.Services.Brainfuck;
 using BotNet.Services.ColorCard;
 using BotNet.Services.DuckDuckGo;
 using BotNet.Services.Github;
@@ -35,6 +36,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddOpenGraph();
 		services.AddImageConverter();
 		services.AddGithubClient();
+		services.AddBrainfuckTranspiler();
 
 		// Telemetry
 		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));
