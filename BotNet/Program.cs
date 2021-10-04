@@ -38,9 +38,6 @@ Host.CreateDefaultBuilder(args)
 		services.AddGithubClient();
 		services.AddBrainfuckTranspiler();
 
-		// Telemetry
-		services.AddApplicationInsightsTelemetry(configuration.GetConnectionString("AppInsights"));
-
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
@@ -51,6 +48,7 @@ Host.CreateDefaultBuilder(args)
 			.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 			.AddJsonFile($"appsettings.{hostBuilderContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
 			.AddKeyPerFile("/run/secrets", optional: true, reloadOnChange: true)
+			.AddEnvironmentVariables("ASPNETCORE_")
 			.AddUserSecrets<BotService>(optional: true, reloadOnChange: true);
 	})
 	.UseOrleans((hostBuilderContext, siloBuilder) => {

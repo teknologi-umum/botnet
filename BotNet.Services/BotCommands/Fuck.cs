@@ -60,6 +60,13 @@ namespace BotNet.Services.BotCommands {
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
+					} catch (TimeoutException) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: "<code>Operation timed out</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
 					}
 				} else {
 					await botClient.SendTextMessageAsync(

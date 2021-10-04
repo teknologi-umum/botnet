@@ -12,6 +12,7 @@ using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orleans;
+using RG.Ninja;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 
@@ -116,10 +117,10 @@ namespace BotNet.Grains {
 				);
 			}
 
-			if (query.Length >= 3) {
+			if (query.StartsWith("gif ", StringComparison.InvariantCultureIgnoreCase, out string? gifQuery)) {
 				resultTasks.Add(
 					GrainFactory
-						.GetGrain<ITenorGrain>(query)
+						.GetGrain<ITenorGrain>(gifQuery)
 						.SearchGifsAsync(grainCancellationToken)
 						.ContinueWith(task => task.Result.Select(gif => new InlineQueryResultGif(gif.Id, gif.Url, gif.PreviewUrl)).ToImmutableList<InlineQueryResult>())
 				);

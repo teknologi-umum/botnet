@@ -22,6 +22,9 @@ namespace BotNet {
 				mvcBuilder.AddRazorRuntimeCompilation();
 			}
 
+			// Telemetry
+			services.AddApplicationInsightsTelemetry(Configuration.GetConnectionString("AppInsights"));
+
 			services.AddResponseCaching();
 			services.AddResponseCompression();
 		}
