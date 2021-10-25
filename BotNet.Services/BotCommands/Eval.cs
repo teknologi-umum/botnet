@@ -99,7 +99,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk mengevaluasi javascript, silahkan ketik /eval diikuti ekspresi javascript.",
+						text: "Untuk mengevaluasi javascript, silahkan ketik /evaljs diikuti ekspresi javascript.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
