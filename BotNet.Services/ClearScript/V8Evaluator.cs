@@ -29,8 +29,8 @@ namespace BotNet.Services.ClearScript {
 				MaxRuntimeStackUsage = _v8Options.StackUsage
 			};
 			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(1));
-			using CancellationTokenRegistration timeoutRegistration = timeoutSource.Token.Register(engine.Interrupt);
-			using CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(engine.Interrupt);
+			timeoutSource.Token.Register(engine.Interrupt);
+			cancellationToken.Register(engine.Interrupt);
 			return await Task.Run(() => {
 				object? result = engine.Evaluate(script);
 				return JsonSerializer.Serialize(result, JSON_SERIALIZER_OPTIONS);

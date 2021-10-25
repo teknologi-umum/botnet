@@ -11,7 +11,7 @@ namespace BotNet.Services.ClearScript.JsonConverters {
 		public override ScriptObject? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
 
 		public override void Write(Utf8JsonWriter writer, ScriptObject value, JsonSerializerOptions options) {
-			if (value is IList list) {
+			if (value is IList) {
 				writer.WriteStartArray();
 				foreach (int index in value.PropertyIndices) {
 					JsonSerializer.Serialize(writer, value[index], options);
