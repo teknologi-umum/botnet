@@ -29,7 +29,9 @@ namespace BotNet.Services.BotCommands {
 						} else {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: $"Expression:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(result)}</code>",
+								text: result.Length >= 2 && result[0] == '"' && result[^1] == '"'
+									? $"Expression:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nString Result:\n<code>{WebUtility.HtmlEncode(result[1..^2].Replace("\\n", "\n"))}</code>"
+									: $"Expression:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(result)}</code>",
 								parseMode: ParseMode.Html,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
@@ -69,7 +71,9 @@ namespace BotNet.Services.BotCommands {
 						} else {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: $"Expression:\n<code>{WebUtility.HtmlEncode(repliedToMessage)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(result)}</code>",
+								text: result.Length >= 2 && result[0] == '"' && result[^1] == '"'
+									? $"Expression:\n<code>{WebUtility.HtmlEncode(repliedToMessage)}</code>\n\nString Result:\n<code>{WebUtility.HtmlEncode(result[1..^2].Replace("\\n", "\n"))}</code>"
+									: $"Expression:\n<code>{WebUtility.HtmlEncode(repliedToMessage)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(result)}</code>",
 								parseMode: ParseMode.Html,
 								replyToMessageId: message.ReplyToMessage.MessageId,
 								cancellationToken: cancellationToken);

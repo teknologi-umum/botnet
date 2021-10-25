@@ -35,11 +35,11 @@
     <PackageReference Include="AngleSharp" Version="0.16.1-alpha-99" />
     <PackageReference Include="Microsoft.ClearScript" Version="7.1.7" />
     <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.1.7" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.100-rc.1.413" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0-rc.1.21451.13" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="6.0.100-rc.1.413" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.101-preview.9.512" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="6.0.101-preview.9.512" />
     <PackageReference Include="RG.Ninja" Version="1.0.8" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0-preview.140" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0-preview.152" />
     <PackageReference Include="Telegram.Bot" Version="17.0.0-alpha.3" />
   </ItemGroup>
 
