@@ -1,6 +1,7 @@
 ﻿using BotNet;
 using BotNet.Bot;
 using BotNet.Services.Brainfuck;
+using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Github;
 using BotNet.Services.Hosting;
@@ -24,6 +25,7 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<HostingOptions>(configuration.GetSection("HostingOptions"));
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
 		services.Configure<GithubOptions>(configuration.GetSection("GithubOptions"));
+		services.Configure<V8Options>(configuration.GetSection("V8Options"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -32,6 +34,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddImageConverter();
 		services.AddGithubClient();
 		services.AddBrainfuckTranspiler();
+		services.AddV8Evaluator();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
