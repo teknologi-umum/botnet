@@ -6,14 +6,12 @@ using System.Net;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.Brainfuck;
-using BotNet.Services.DuckDuckGo.Models;
 using BotNet.Services.FancyText;
 using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orleans;
 using RG.Ninja;
-using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.Grains {
@@ -34,34 +32,6 @@ namespace BotNet.Grains {
 			}
 
 			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = new();
-
-			if (query.Length >= 3) {
-				resultTasks.Add(
-					GrainFactory
-						.GetGrain<IDuckDuckGoGrain>(query)
-						.SearchAsync(grainCancellationToken)
-						.ContinueWith(resultItemsTask => {
-							ImmutableList<SearchResultItem> resultItems = resultItemsTask.Result;
-							if (resultItems.IsEmpty) return ImmutableList<InlineQueryResult>.Empty;
-
-							string? hostName = _serviceProvider.GetRequiredService<IOptions<HostingOptions>>().Value.HostName;
-
-							return resultItems.Select(resultItem => new InlineQueryResultArticle(
-								id: resultItem.Url.GetHashCode(StringComparison.InvariantCultureIgnoreCase).ToString(),
-								title: resultItem.Title,
-								inputMessageContent: new InputTextMessageContent($"\n<a href=\"{resultItem.Url}\">{WebUtility.HtmlEncode(resultItem.Title)}</a>\n<pre>{resultItem.UrlText}</pre>\n\n{WebUtility.HtmlEncode(resultItem.Snippet)}") {
-									ParseMode = ParseMode.Html
-								}
-							) {
-								ThumbUrl = hostName is not null
-									? $"{hostName}/opengraph/image?url={WebUtility.UrlEncode(resultItem.Url)}"
-									: resultItem.IconUrl,
-								Url = resultItem.Url,
-								Description = resultItem.Snippet
-							}).ToImmutableList<InlineQueryResult>();
-						}, grainCancellationToken.CancellationToken)
-				);
-			}
 
 			if (query.Length > 0) {
 				string[] fancyTexts = await Task.WhenAll(

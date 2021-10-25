@@ -5,9 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.BotCommands;
-using BotNet.Services.SafeSearch;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -48,9 +46,6 @@ public class BotService : IHostedService {
 
 	public async Task StartAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource = new();
-
-		// Initialize services to prevent timeout
-		await _serviceProvider.GetRequiredService<SafeSearchDictionary>().EnsureInitializedAsync(_cancellationTokenSource.Token);
 
 		// Get bot identity
 		_me = await _botClient.GetMeAsync(cancellationToken);
