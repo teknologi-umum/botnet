@@ -12,6 +12,7 @@ namespace BotNet.Services.ClearScript {
 			Converters = {
 				new ScriptObjectConverter(),
 				new DoubleConverter(),
+				new BigIntegerConverter(),
 				new UndefinedConverter()
 			}
 		};
