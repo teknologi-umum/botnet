@@ -56,7 +56,7 @@ public class BotService : IHostedService {
 
 	public Task StopAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource?.Cancel();
-		return Task.CompletedTask;
+		return _botClient.CloseAsync(cancellationToken);
 	}
 
 	private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken) {
@@ -90,6 +90,33 @@ public class BotService : IHostedService {
 								break;
 							case "/evaljs":
 								await Eval.EvalJSAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+								break;
+							case "/c":
+							case "/clojure":
+							case "/crystal":
+							case "/dart":
+							case "/elixir":
+							case "/go":
+							case "/java":
+							case "/kotlin":
+							case "/lua":
+							case "/pascal":
+							case "/php":
+							case "/python":
+							case "/ruby":
+							case "/rust":
+							case "/scala":
+							case "/swift":
+								await Exec.ExecAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken);
+								break;
+							case "/cpp":
+								await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "c++", cancellationToken);
+								break;
+							case "/js":
+								await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "javascript", cancellationToken);
+								break;
+							case "/ts":
+								await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "typescript", cancellationToken);
 								break;
 						}
 					}

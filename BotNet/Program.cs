@@ -3,10 +3,10 @@ using BotNet.Bot;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
-using BotNet.Services.Github;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenGraph;
+using BotNet.Services.Piston;
 using BotNet.Services.Tenor;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
@@ -24,17 +24,17 @@ Host.CreateDefaultBuilder(args)
 		// DI Services
 		services.Configure<HostingOptions>(configuration.GetSection("HostingOptions"));
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
-		services.Configure<GithubOptions>(configuration.GetSection("GithubOptions"));
 		services.Configure<V8Options>(configuration.GetSection("V8Options"));
+		services.Configure<PistonOptions>(configuration.GetSection("PistonOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
 		services.AddColorCardRenderer();
 		services.AddOpenGraph();
 		services.AddImageConverter();
-		services.AddGithubClient();
 		services.AddBrainfuckTranspiler();
 		services.AddV8Evaluator();
+		services.AddPistonClient();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
