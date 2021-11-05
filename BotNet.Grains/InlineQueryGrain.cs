@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.Brainfuck;
+using BotNet.Services.CopyPasta;
 using BotNet.Services.FancyText;
 using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,15 @@ namespace BotNet.Grains {
 			}
 
 			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = new();
+
+			if (query.ToLowerInvariant().Trim() is string pastaKey
+				&& CopyPastaLookup.TryGetAutoText(pastaKey, out ImmutableList<string>? pastas)) {
+				resultTasks.Add(Task.FromResult(pastas.Select(pasta => new InlineQueryResultArticle(
+					id: Guid.NewGuid().ToString("N"),
+					title: pasta,
+					inputMessageContent: new InputTextMessageContent(pasta)
+				)).ToImmutableList<InlineQueryResult>()));
+			}
 
 			if (query.Length > 0) {
 				string[] fancyTexts = await Task.WhenAll(
