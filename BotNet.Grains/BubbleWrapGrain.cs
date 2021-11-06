@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using Orleans;
 
@@ -20,6 +21,7 @@ namespace BotNet.Grains {
 					}
 				}
 			}
+			DelayDeactivation(TimeSpan.FromSeconds(5));
 			return Task.CompletedTask;
 		}
 	}
