@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
@@ -16,6 +17,7 @@ using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Bot;
 
@@ -118,6 +120,14 @@ public class BotService : IHostedService {
 							case "/ts":
 								await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "typescript", cancellationToken);
 								break;
+							case "/pop":
+								await botClient.SendTextMessageAsync(
+									chatId: update.Message.Chat.Id,
+									text: "Here's a bubble wrap. Enjoy!",
+									parseMode: ParseMode.Html,
+									replyMarkup: Pop.GenerateBubbleWrap(Pop.NewSheet())
+								);
+								break;
 						}
 					}
 					break;
@@ -133,6 +143,16 @@ public class BotService : IHostedService {
 							results: inlineQueryResults,
 							cancellationToken: cancellationToken);
 					}
+					break;
+				case UpdateType.CallbackQuery:
+					IBubbleWrapGrain bubbleWrapGrain = _clusterClient.GetGrain<IBubbleWrapGrain>($"{update.CallbackQuery!.Message!.Chat.Id}_{update.CallbackQuery.Message.MessageId}");
+					await bubbleWrapGrain.PopAsync(Pop.ParseCallbackData(update.CallbackQuery.Data!));
+					bool[,]? data = await bubbleWrapGrain.GetSheetStateAsync();
+					await botClient.EditMessageReplyMarkupAsync(
+						chatId: update.CallbackQuery!.Message!.Chat.Id,
+						messageId: update.CallbackQuery.Message.MessageId,
+						replyMarkup: Pop.GenerateBubbleWrap(data!)
+					);
 					break;
 			}
 		} catch (OperationCanceledException) {

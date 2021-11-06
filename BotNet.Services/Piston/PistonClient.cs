@@ -39,7 +39,7 @@ namespace BotNet.Services.Piston {
 			if (_runtimes is null) {
 				_runtimes = await _httpClient.GetFromJsonAsync<ImmutableList<RuntimeResult>>($"{_baseUrl}api/v2/runtimes", cancellationToken);
 			}
-			return _runtimes
+			return _runtimes!
 				.Where(runtime => runtime.Language == language)
 				.OrderByDescending(runtime => runtime.Version)
 				.FirstOrDefault();
