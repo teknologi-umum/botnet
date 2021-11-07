@@ -18,6 +18,14 @@ using Orleans.Hosting;
 
 Host.CreateDefaultBuilder(args)
 	.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
+	.ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) => {
+		configurationBuilder
+			.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+			.AddJsonFile($"appsettings.{hostBuilderContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+			.AddKeyPerFile("/run/secrets", optional: true, reloadOnChange: true)
+			.AddEnvironmentVariables("ASPNETCORE_")
+			.AddUserSecrets<BotService>(optional: true, reloadOnChange: true);
+	})
 	.ConfigureServices((hostBuilderContext, services) => {
 		IConfiguration configuration = hostBuilderContext.Configuration;
 
@@ -40,14 +48,9 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
 		services.AddHostedService<BotService>();
-	})
-	.ConfigureAppConfiguration((hostBuilderContext, configurationBuilder) => {
-		configurationBuilder
-			.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-			.AddJsonFile($"appsettings.{hostBuilderContext.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-			.AddKeyPerFile("/run/secrets", optional: true, reloadOnChange: true)
-			.AddEnvironmentVariables("ASPNETCORE_")
-			.AddUserSecrets<BotService>(optional: true, reloadOnChange: true);
+
+		// Telegram Bot
+		services.AddTelegramBot(botToken: configuration["BotOptions:AccessToken"]);
 	})
 	.UseOrleans((hostBuilderContext, siloBuilder) => {
 		siloBuilder

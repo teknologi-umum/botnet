@@ -5,5 +5,6 @@ namespace BotNet.Services.Hosting {
 	public class HostingOptions {
 		public string? HostName { get; set; }
 		public long Memory { get; set; }
+		public bool UseLongPolling { get; set; }
 	}
 }
