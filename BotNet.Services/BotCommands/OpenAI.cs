@@ -17,7 +17,7 @@ namespace BotNet.Services.BotCommands {
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(commandArgument + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, 3, cancellationToken);
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciCodexAutocompleteAsync(commandArgument + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, 3, cancellationToken);
 						result = "1. " + result;
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -35,7 +35,7 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(repliedToMessage + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, 3, cancellationToken);
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciCodexAutocompleteAsync(repliedToMessage + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, 3, cancellationToken);
 						result = "1. " + result;
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -71,12 +71,12 @@ namespace BotNet.Services.BotCommands {
 							+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
 							+ $"{message.From!.FirstName}: Halo, apa kabar?\n"
 							+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
-							+ $"{message.From!.FirstName}: {commandArgument}"
+							+ $"{message.From!.FirstName}: {commandArgument}\n"
 							+ "TeknumBot: ";
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciCodexAutocompleteAsync(
 							source: story,
-							stop: new[] { $"{message.From!.FirstName}:" },
-							maxRecursion: 3,
+							stop: new[] { $"{message.From!.FirstName}:", "TeknumBot:" },
+							maxRecursion: 0,
 							cancellationToken: cancellationToken
 						);
 						await botClient.SendTextMessageAsync(
@@ -99,12 +99,12 @@ namespace BotNet.Services.BotCommands {
 							+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
 							+ $"{message.From!.FirstName}: Halo, apa kabar?\n"
 							+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
-							+ $"{message.From!.FirstName}: {repliedToMessage}"
+							+ $"{message.From!.FirstName}: {repliedToMessage}\n"
 							+ "TeknumBot: ";
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciCodexAutocompleteAsync(
 							source: story,
-							stop: new[] { $"{message.From!.FirstName}:" },
-							maxRecursion: 3,
+							stop: new[] { $"{message.From!.FirstName}:", "TeknumBot:" },
+							maxRecursion: 0,
 							cancellationToken: cancellationToken
 						);
 						await botClient.SendTextMessageAsync(
