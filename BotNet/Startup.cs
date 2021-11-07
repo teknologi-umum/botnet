@@ -25,6 +25,10 @@ namespace BotNet {
 			// Telemetry
 			services.AddApplicationInsightsTelemetry(Configuration.GetConnectionString("AppInsights"));
 
+			// Yes. Those f***ers still use NewtonsoftJson
+			services.AddControllers()
+				.AddNewtonsoftJson();
+
 			services.AddResponseCaching();
 			services.AddResponseCompression();
 		}
