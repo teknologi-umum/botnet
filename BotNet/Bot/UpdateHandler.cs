@@ -110,10 +110,19 @@ namespace BotNet.Bot {
 									);
 									break;
 								case "/explain":
-									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en", cancellationToken);
+									break;
+								case "/jelaskan":
+									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "id", cancellationToken);
 									break;
 								case "/ask":
 									await OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
+								case "/enid":
+								case "/iden":
+								case "/eniden":
+								case "/idenid":
+									await OpenAI.TranslateAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken);
 									break;
 							}
 						}
