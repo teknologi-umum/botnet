@@ -66,7 +66,7 @@ namespace BotNet.Services.BotCommands {
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, how are you?\nAI: I am an AI created by OpenAI. How can I help you today?\n\nHuman: " + commandArgument + "\n\nAI: ", new[] { "Human:" }, cancellationToken);
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync("The following is a conversation with an assistant bot. The bot is helpful, creative, clever, and very friendly.\n\nHuman: Hello, how are you?\nTeknumBot: I am a bot created by TEKNUM. How can I help you today?\n\nHuman: " + commandArgument + "\n\nTeknumBot: ", new[] { "Human:" }, cancellationToken);
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
@@ -83,7 +83,7 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync("The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, how are you?\nAI: I am an AI created by OpenAI. How can I help you today?\n\nHuman: " + repliedToMessage + "\n\nAI: ", new[] { "Human:" }, cancellationToken);
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync("The following is a conversation with an assistant bot. The bot is helpful, creative, clever, and very friendly.\n\nHuman: Hello, how are you?\nTeknumBot: I am a bot created by TEKNUM. How can I help you today?\n\nHuman: " + repliedToMessage + "\n\nTeknumBot: ", new[] { "Human:" }, cancellationToken);
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
