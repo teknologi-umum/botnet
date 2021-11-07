@@ -27,24 +27,23 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> DavinciAutocompleteAsync(string source, string[] stop, int maxRecursion, CancellationToken cancellationToken) {
-			return AutocompleteAsync("davinci", DAVINCI_COMPLETIONS_URL, source, stop, maxRecursion, cancellationToken);
+			return AutocompleteAsync(DAVINCI_COMPLETIONS_URL, source, stop, maxRecursion, cancellationToken);
 		}
 
 		public Task<string> DavinciCodexAutocompleteAsync(string source, string[] stop, int maxRecursion, CancellationToken cancellationToken) {
-			return AutocompleteAsync("davinci-codex", DAVINCI_CODEX_COMPLETIONS_URL, source, stop, maxRecursion, cancellationToken);
+			return AutocompleteAsync(DAVINCI_CODEX_COMPLETIONS_URL, source, stop, maxRecursion, cancellationToken);
 		}
 
-		private async Task<string> AutocompleteAsync(string engine, string url, string source, string[]? stop, int maxRecursion, CancellationToken cancellationToken) {
+		private async Task<string> AutocompleteAsync(string url, string source, string[]? stop, int maxRecursion, CancellationToken cancellationToken) {
 			using HttpRequestMessage request = new(HttpMethod.Post, url) {
 				Headers = {
 					{ "Authorization", $"Bearer {_apiKey}" }
 				},
 				Content = JsonContent.Create(
 					inputValue: new {
-						Engine = engine,
 						Prompt = source,
 						Temperature = 0.0,
-						MaxTokens = 256,
+						MaxTokens = 64,
 						TopP = 1.0,
 						FrequencyPenalty = 0.0,
 						PresencePenalty = 0.0,
@@ -60,7 +59,7 @@ namespace BotNet.Services.OpenAI {
 			Choice firstChoice = completionResult.Choices.First();
 
 			if (maxRecursion > 0 && firstChoice.Text!.Length > 0 && firstChoice.FinishReason == "length") {
-				return firstChoice.Text! + await AutocompleteAsync(engine, url, source + firstChoice.Text, stop, maxRecursion - 1, cancellationToken);
+				return firstChoice.Text! + await AutocompleteAsync(url, source + firstChoice.Text, stop, maxRecursion - 1, cancellationToken);
 			} else {
 				return firstChoice.Text!;
 			}

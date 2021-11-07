@@ -75,7 +75,7 @@ namespace BotNet.Services.BotCommands {
 							+ "TeknumBot: ";
 						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciCodexAutocompleteAsync(
 							source: story,
-							stop: new[] { $"{message.From!.FirstName}:", "TeknumBot:" },
+							stop: new[] { $"{message.From!.FirstName}:" },
 							maxRecursion: 0,
 							cancellationToken: cancellationToken
 						);
