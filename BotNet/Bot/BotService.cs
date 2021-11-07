@@ -35,7 +35,7 @@ public class BotService : IHostedService {
 			_telegramBotClient.StartReceiving(_updateHandler, cancellationToken: _cancellationTokenSource.Token);
 			return Task.CompletedTask;
 		} else {
-			string webhookAddress = $"https://{_hostName}/webhook/{_botToken}";
+			string webhookAddress = $"https://{_hostName}/webhook/{_botToken.Split(':')[1]}";
 			return _telegramBotClient.SetWebhookAsync(
 				url: webhookAddress,
 				allowedUpdates: new[] {

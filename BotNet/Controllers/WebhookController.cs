@@ -7,9 +7,10 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace BotNet.Controllers {
+	[Route("webhook")]
 	public class WebhookController : ControllerBase {
 		private readonly ITelegramBotClient _telegramBotClient;
-		private readonly string _botToken;
+		private readonly string _secretPath;
 		private readonly UpdateHandler _updateHandler;
 
 		public WebhookController(
@@ -18,13 +19,13 @@ namespace BotNet.Controllers {
 			ITelegramBotClient telegramBotClient
 		) {
 			_updateHandler = updateHandler;
-			_botToken = botOptionsAccessor.Value.AccessToken!;
+			_secretPath = botOptionsAccessor.Value.AccessToken!.Split(':')[1];
 			_telegramBotClient = telegramBotClient;
 		}
 
-		[HttpPost("{token}")]
-		public async Task<IActionResult> PostAsync(string token, [FromBody] Update update, CancellationToken cancellationToken) {
-			if (token != _botToken) return NotFound();
+		[HttpPost("{secretPath}")]
+		public async Task<IActionResult> PostAsync(string secretPath, [FromBody] Update update, CancellationToken cancellationToken) {
+			if (secretPath != _secretPath) return NotFound();
 			await _updateHandler.HandleUpdateAsync(_telegramBotClient, update,  cancellationToken);
 			return Ok();
 		}
