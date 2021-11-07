@@ -14,7 +14,7 @@ namespace BotNet.Services.BotCommands {
 						popped[row, col] = false;
 						string poppedCallbackData = ToCallbackData(popped);
 						return InlineKeyboardButton.WithCallbackData(
-							text: data[row, col] ? "⚪" : "pop!",
+							text: data[row, col] ? "⚪" : "💥",
 							callbackData: poppedCallbackData
 						);
 					});
