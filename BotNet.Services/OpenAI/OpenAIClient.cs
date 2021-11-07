@@ -25,7 +25,7 @@ namespace BotNet.Services.OpenAI {
 			_apiKey = openAIOptionsAccessor.Value.ApiKey!;
 		}
 
-		public async Task<string> DavinciAutocompleteAsync(string source, string[] stop, CancellationToken cancellationToken) {
+		public async Task<string> DavinciAutocompleteAsync(string source, string[] stop, int maxRecursion, CancellationToken cancellationToken) {
 			using HttpRequestMessage request = new(HttpMethod.Post, DAVINCI_COMPLETIONS_URL) {
 				Headers = {
 					{ "Authorization", $"Bearer {_apiKey}" }
@@ -49,7 +49,11 @@ namespace BotNet.Services.OpenAI {
 			CompletionResult completionResult = (await response.Content.ReadFromJsonAsync<CompletionResult>(JSON_SERIALIZER_OPTIONS, cancellationToken))!;
 			Choice firstChoice = completionResult.Choices.First();
 
-			return firstChoice.Text!;
+			if (maxRecursion > 0 && firstChoice.FinishReason == "length") {
+				return firstChoice.Text! + await DavinciAutocompleteAsync(source + firstChoice.Text, stop, maxRecursion - 1, cancellationToken);
+			} else {
+				return firstChoice.Text!;
+			}
 		}
 	}
 }

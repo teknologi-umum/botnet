@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -16,7 +17,7 @@ namespace BotNet.Services.BotCommands {
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(commandArgument + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, cancellationToken);
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(commandArgument + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, 3, cancellationToken);
 						result = "1. " + result;
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -34,7 +35,7 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(repliedToMessage + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, cancellationToken);
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(repliedToMessage + "\n\n\"\"\"\nHere's what the above code is doing:\n1. ", new[] { "\"\"\"" }, 3, cancellationToken);
 						result = "1. " + result;
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -66,7 +67,18 @@ namespace BotNet.Services.BotCommands {
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync("Berikut ini adalah sebuah percakapan dengan sebuah bot asisten. Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\nManusia: Halo, Apa kabar?\nTeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\nManusia: " + commandArgument + "\n\nTeknumBot: ", new[] { "Manusia:" }, cancellationToken);
+						string story = "Berikut ini adalah sebuah percakapan dengan sebuah bot asisten. "
+							+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
+							+ $"{message.From!.FirstName}: Halo, apa kabar?\n"
+							+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
+							+ $"{message.From!.FirstName}: {commandArgument}"
+							+ "TeknumBot: ";
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(
+							source: story,
+							stop: new[] { $"{message.From!.FirstName}:" },
+							maxRecursion: 3,
+							cancellationToken: cancellationToken
+						);
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
@@ -83,7 +95,18 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
-						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync("Berikut ini adalah sebuah percakapan dengan sebuah bot asisten. Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\nManusia: Halo, Apa kabar?\nTeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\nManusia: " + repliedToMessage + "\n\nTeknumBot: ", new[] { "Manusia:" }, cancellationToken);
+						string story = "Berikut ini adalah sebuah percakapan dengan sebuah bot asisten. "
+							+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
+							+ $"{message.From!.FirstName}: Halo, apa kabar?\n"
+							+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
+							+ $"{message.From!.FirstName}: {repliedToMessage}"
+							+ "TeknumBot: ";
+						string result = await serviceProvider.GetRequiredService<OpenAIClient>().DavinciAutocompleteAsync(
+							source: story,
+							stop: new[] { $"{message.From!.FirstName}:" },
+							maxRecursion: 3,
+							cancellationToken: cancellationToken
+						);
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
