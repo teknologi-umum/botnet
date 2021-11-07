@@ -109,6 +109,12 @@ namespace BotNet.Bot {
 										replyMarkup: Pop.GenerateBubbleWrap(Pop.NewSheet())
 									);
 									break;
+								case "/explain":
+									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
+								case "/ask":
+									await OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;

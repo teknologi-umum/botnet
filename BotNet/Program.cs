@@ -5,6 +5,7 @@ using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
+using BotNet.Services.OpenAI;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
 using BotNet.Services.Tenor;
@@ -34,6 +35,7 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
 		services.Configure<V8Options>(configuration.GetSection("V8Options"));
 		services.Configure<PistonOptions>(configuration.GetSection("PistonOptions"));
+		services.Configure<OpenAIOptions>(configuration.GetSection("OpenAIOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -43,6 +45,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddBrainfuckTranspiler();
 		services.AddV8Evaluator();
 		services.AddPistonClient();
+		services.AddOpenAIClient();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
