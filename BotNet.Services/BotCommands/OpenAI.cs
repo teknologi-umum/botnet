@@ -67,7 +67,7 @@ namespace BotNet.Services.BotCommands {
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
-						string story = "Berikut ini adalah sebuah percakapan dengan sebuah bot asisten. "
+						string story = $"Berikut ini adalah sebuah percakapan antara seorang manusia bernama {message.From!.FirstName}{message.From.LastName?.Let(ln => " " + ln)} dengan sebuah bot asisten. "
 							+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
 							+ "Manusia: Halo, apa kabar?\n"
 							+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
@@ -95,7 +95,7 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
-						string story = "Berikut ini adalah sebuah percakapan dengan sebuah bot asisten. "
+						string story = $"Berikut ini adalah sebuah percakapan antara seorang manusia bernama {message.From!.FirstName}{message.From.LastName?.Let(ln => " " + ln)} dengan sebuah bot asisten. "
 							+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
 							+ "Manusia: Halo, apa kabar?\n"
 							+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
