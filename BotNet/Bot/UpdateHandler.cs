@@ -124,6 +124,9 @@ namespace BotNet.Bot {
 								case "/idenid":
 									await OpenAI.TranslateAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken);
 									break;
+								case "/genjs":
+									await OpenAI.GenerateJavaScriptCodeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;

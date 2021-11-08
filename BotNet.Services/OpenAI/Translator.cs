@@ -58,10 +58,10 @@ namespace BotNet.Services.OpenAI {
 					+ "English:",
 				_ => throw new NotImplementedException()
 			};
-			return await _openAIClient.DavinciAutocompleteAsync(
-				source: prompt,
+			return await _openAIClient.DavinciCodexAutocompleteAsync(
+				prompt: prompt,
 				stop: new[] { "\n" },
-				maxRecursion: 0,
+				maxTokens: 64,
 				cancellationToken: cancellationToken
 			);
 		}

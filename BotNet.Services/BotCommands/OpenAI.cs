@@ -178,5 +178,59 @@ namespace BotNet.Services.BotCommands {
 				}
 			}
 		}
+
+		public static async Task GenerateJavaScriptCodeAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
+			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
+				&& message.Text![commandLength..].Trim() is string commandArgument) {
+				if (commandArgument.Length > 0) {
+					try {
+						string result = await serviceProvider.GetRequiredService<CodeGenerator>().GenerateJavaScriptCodeAsync(
+							instructions: commandArgument,
+							cancellationToken: cancellationToken
+						);
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>{WebUtility.HtmlEncode(result)}</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} catch (OperationCanceledException) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: "<code>Timeout exceeded.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					}
+				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
+					try {
+						string result = await serviceProvider.GetRequiredService<CodeGenerator>().GenerateJavaScriptCodeAsync(
+							instructions: repliedToMessage,
+							cancellationToken: cancellationToken
+						);
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>{WebUtility.HtmlEncode(result)}</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.ReplyToMessage.MessageId,
+							cancellationToken: cancellationToken);
+					} catch (OperationCanceledException) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: "<code>Timeout exceeded.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					}
+				} else {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"Untuk generate kode JavaScript, silahkan ketik /genjs diikuti instruksi.",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				}
+			}
+		}
 	}
 }
