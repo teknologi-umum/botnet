@@ -12,15 +12,14 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> AskSomethingAsync(string name, string question, CancellationToken cancellationToken) {
-			string prompt = $"Berikut ini adalah sebuah percakapan antara seorang manusia bernama {name} dengan sebuah bot asisten. "
-				+ "Bot ini sangat ramah, membantu, kreatif, dan cerdas.\n\n"
-				+ "Manusia: Halo, apa kabar?\n"
-				+ "TeknumBot: Saya bot yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
-				+ $"Manusia: {question}\n"
-				+ "TeknumBot: ";
+			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
+				+ "Human: Hello, how are you?\n"
+				+ "AI: I am an AI created by TEKNUM. How can I help you today?\n\n"
+				+ $"Human: {question}\n"
+				+ "AI: ";
 			return _openAIClient.DavinciCodexAutocompleteAsync(
 				source: prompt,
-				stop: new[] { "Manusia:" },
+				stop: new[] { "Human:" },
 				maxRecursion: 0,
 				cancellationToken: cancellationToken
 			);
