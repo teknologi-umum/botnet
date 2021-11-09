@@ -17,6 +17,9 @@ namespace BotNet.Services.OpenAI {
 				prompt: prompt,
 				stop: new[] { "\"\"\"" },
 				maxTokens: 128,
+				frequencyPenalty: 0.1,
+				presencePenalty: 0.2,
+				temperature: 0.0,
 				cancellationToken: cancellationToken
 			);
 			return "1." + explanation;
@@ -28,6 +31,9 @@ namespace BotNet.Services.OpenAI {
 				prompt: prompt,
 				stop: new[] { "\"\"\"" },
 				maxTokens: 128,
+				frequencyPenalty: 0.1,
+				presencePenalty: 0.0,
+				temperature: 0.0,
 				cancellationToken: cancellationToken
 			);
 			return "1." + explanation;
