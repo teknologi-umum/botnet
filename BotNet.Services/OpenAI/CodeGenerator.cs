@@ -26,7 +26,7 @@ namespace BotNet.Services.OpenAI {
 			string code = await _openAIClient.DavinciCodexAutocompleteAsync(
 				prompt: prompt,
 				stop: new[] { "/* Command:" },
-				maxTokens: 1000,
+				maxTokens: 128,
 				cancellationToken: cancellationToken
 			);
 			return code;
