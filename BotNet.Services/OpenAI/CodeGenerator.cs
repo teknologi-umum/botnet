@@ -27,6 +27,9 @@ namespace BotNet.Services.OpenAI {
 				prompt: prompt,
 				stop: new[] { "/* Command:" },
 				maxTokens: 1000,
+				frequencyPenalty: 0.3,
+				presencePenalty: 0.1,
+				temperature: 0.0,
 				cancellationToken: cancellationToken
 			);
 			return code;

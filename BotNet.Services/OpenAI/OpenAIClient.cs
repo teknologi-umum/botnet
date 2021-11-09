@@ -28,15 +28,15 @@ namespace BotNet.Services.OpenAI {
 			_apiKey = openAIOptionsAccessor.Value.ApiKey!;
 		}
 
-		public Task<string> DavinciAutocompleteAsync(string prompt, string[] stop, int maxTokens, CancellationToken cancellationToken) {
-			return AutocompleteAsync(DAVINCI_COMPLETIONS_URL, prompt, stop, maxTokens, cancellationToken);
+		public Task<string> DavinciAutocompleteAsync(string prompt, string[] stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
+			return AutocompleteAsync(DAVINCI_COMPLETIONS_URL, prompt, stop, maxTokens, frequencyPenalty, presencePenalty, temperature, cancellationToken);
 		}
 
-		public Task<string> DavinciCodexAutocompleteAsync(string prompt, string[] stop, int maxTokens, CancellationToken cancellationToken) {
-			return AutocompleteAsync(DAVINCI_CODEX_COMPLETIONS_URL, prompt, stop, maxTokens, cancellationToken);
+		public Task<string> DavinciCodexAutocompleteAsync(string prompt, string[] stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
+			return AutocompleteAsync(DAVINCI_CODEX_COMPLETIONS_URL, prompt, stop, maxTokens, frequencyPenalty, presencePenalty, temperature, cancellationToken);
 		}
 
-		private async Task<string> AutocompleteAsync(string url, string prompt, string[]? stop, int maxTokens, CancellationToken cancellationToken) {
+		private async Task<string> AutocompleteAsync(string url, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
 			using HttpRequestMessage request = new(HttpMethod.Post, url) {
 				Headers = {
 					{ "Authorization", $"Bearer {_apiKey}" },
@@ -45,12 +45,12 @@ namespace BotNet.Services.OpenAI {
 				Content = JsonContent.Create(
 					inputValue: new {
 						Prompt = prompt,
-						Temperature = 0.0,
+						Temperature = temperature,
 						MaxTokens = maxTokens,
 						Stream = true,
 						TopP = 1.0,
-						FrequencyPenalty = 0.0,
-						PresencePenalty = 0.0,
+						FrequencyPenalty = frequencyPenalty,
+						PresencePenalty = presencePenalty,
 						Stop = stop
 					},
 					options: JSON_SERIALIZER_OPTIONS
