@@ -4,18 +4,26 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.OpenAI;
+using BotNet.Services.RateLimit;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Services.BotCommands {
 	public static class OpenAI {
+		private static readonly RateLimiter EXPLAIN_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(5));
+		private static readonly RateLimiter EXPLAIN_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(3, TimeSpan.FromMinutes(5));
 		public static async Task ExplainAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string language, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
+						(message.Chat.Type == ChatType.Private
+							? EXPLAIN_PRIVATE_RATE_LIMITER
+							: EXPLAIN_GROUP_RATE_LIMITER
+						).ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = language switch {
 							"en" => await serviceProvider.GetRequiredService<CodeExplainer>().ExplainCodeInEnglishAsync(commandArgument, cancellationToken),
 							"id" => await serviceProvider.GetRequiredService<CodeExplainer>().ExplainCodeInIndonesianAsync(commandArgument, cancellationToken),
@@ -27,6 +35,25 @@ namespace BotNet.Services.BotCommands {
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						if (message.Chat.Type == ChatType.Private) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /explain. Coba lagi {cooldown}.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /explain di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								replyMarkup: new InlineKeyboardMarkup(
+									InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+								),
+								cancellationToken: cancellationToken);
+						}
 					} catch (OperationCanceledException) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -37,6 +64,10 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
+						(message.Chat.Type == ChatType.Private
+							? EXPLAIN_PRIVATE_RATE_LIMITER
+							: EXPLAIN_GROUP_RATE_LIMITER
+						).ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = language switch {
 							"en" => await serviceProvider.GetRequiredService<CodeExplainer>().ExplainCodeInEnglishAsync(repliedToMessage, cancellationToken),
 							"id" => await serviceProvider.GetRequiredService<CodeExplainer>().ExplainCodeInIndonesianAsync(repliedToMessage, cancellationToken),
@@ -48,6 +79,25 @@ namespace BotNet.Services.BotCommands {
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.ReplyToMessage.MessageId,
 							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						if (message.Chat.Type == ChatType.Private) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /explain. Coba lagi {cooldown}.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /explain di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								replyMarkup: new InlineKeyboardMarkup(
+									InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+								),
+								cancellationToken: cancellationToken);
+						}
 					} catch (OperationCanceledException) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -67,13 +117,19 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
+		private static readonly RateLimiter ASK_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(15));
+		private static readonly RateLimiter ASK_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(10, TimeSpan.FromMinutes(15));
 		public static async Task AskHelpAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
+						(message.Chat.Type == ChatType.Private
+							? ASK_PRIVATE_RATE_LIMITER
+							: ASK_GROUP_RATE_LIMITER
+						).ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = await serviceProvider.GetRequiredService<AssistantBot>().AskSomethingAsync(
-							name: $"{message.From!.FirstName}{message.From.LastName?.Let(ln => " " + ln)}",
+							name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
 							question: commandArgument,
 							cancellationToken: cancellationToken
 						);
@@ -83,6 +139,25 @@ namespace BotNet.Services.BotCommands {
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						if (message.Chat.Type == ChatType.Private) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /ask. Coba lagi {cooldown}.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /ask di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								replyMarkup: new InlineKeyboardMarkup(
+									InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+								),
+								cancellationToken: cancellationToken);
+						}
 					} catch (OperationCanceledException) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -93,8 +168,12 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
+						(message.Chat.Type == ChatType.Private
+							? ASK_PRIVATE_RATE_LIMITER
+							: ASK_GROUP_RATE_LIMITER
+						).ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = await serviceProvider.GetRequiredService<AssistantBot>().AskSomethingAsync(
-							name: $"{message.From!.FirstName}{message.From.LastName?.Let(ln => " " + ln)}",
+							name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
 							question: repliedToMessage,
 							cancellationToken: cancellationToken
 						);
@@ -104,6 +183,25 @@ namespace BotNet.Services.BotCommands {
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.ReplyToMessage.MessageId,
 							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						if (message.Chat.Type == ChatType.Private) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /ask. Coba lagi {cooldown}.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>Anda terlalu banyak menggunakan /ask di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								replyMarkup: new InlineKeyboardMarkup(
+									InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+								),
+								cancellationToken: cancellationToken);
+						}
 					} catch (OperationCanceledException) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -123,11 +221,13 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
+		private static readonly RateLimiter TRANSLATE_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(2));
 		public static async Task TranslateAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string languagePair, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
+						TRANSLATE_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = await serviceProvider.GetRequiredService<Translator>().TranslateAsync(
 							sentence: commandArgument,
 							languagePair: languagePair,
@@ -136,6 +236,13 @@ namespace BotNet.Services.BotCommands {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak menggunakan penerjemah. Coba lagi {cooldown}.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
@@ -149,6 +256,7 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
+						TRANSLATE_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = await serviceProvider.GetRequiredService<Translator>().TranslateAsync(
 							sentence: repliedToMessage,
 							languagePair: languagePair,
@@ -159,6 +267,13 @@ namespace BotNet.Services.BotCommands {
 							text: WebUtility.HtmlEncode(result),
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.ReplyToMessage.MessageId,
+							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak menggunakan penerjemah. Coba lagi {cooldown}.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} catch (OperationCanceledException) {
 						await botClient.SendTextMessageAsync(
@@ -179,11 +294,13 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
+		private static readonly RateLimiter CODEGEN_RATE_LIMITER = RateLimiter.PerUserPerChatPerDay(4);
 		public static async Task GenerateJavaScriptCodeAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
+						CODEGEN_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = await serviceProvider.GetRequiredService<CodeGenerator>().GenerateJavaScriptCodeAsync(
 							instructions: commandArgument,
 							cancellationToken: cancellationToken
@@ -191,6 +308,13 @@ namespace BotNet.Services.BotCommands {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: $"<code>{WebUtility.HtmlEncode(result)}</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak menggunakan code generator. Coba lagi {cooldown}.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
@@ -204,6 +328,7 @@ namespace BotNet.Services.BotCommands {
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
+						CODEGEN_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 						string result = await serviceProvider.GetRequiredService<CodeGenerator>().GenerateJavaScriptCodeAsync(
 							instructions: repliedToMessage,
 							cancellationToken: cancellationToken
@@ -213,6 +338,13 @@ namespace BotNet.Services.BotCommands {
 							text: $"<code>{WebUtility.HtmlEncode(result)}</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.ReplyToMessage.MessageId,
+							cancellationToken: cancellationToken);
+					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak menggunakan code generator. Coba lagi {cooldown}.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} catch (OperationCanceledException) {
 						await botClient.SendTextMessageAsync(
