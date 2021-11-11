@@ -25,7 +25,7 @@ namespace BotNet.Services.RateLimit.Internal {
 			while (queue.TryPeek(out lru)
 				&& DateTime.Now - lru > _window
 				&& queue.TryDequeue(out lru)) { }
-			if (queue.Count >= _actionCount) throw new RateLimitExceededException(CooldownFormatter.Format(DateTime.Now - lru));
+			if (queue.Count >= _actionCount) throw new RateLimitExceededException(CooldownFormatter.Format(_window - (DateTime.Now - lru)));
 			queue.Enqueue(DateTime.Now);
 		}
 	}
