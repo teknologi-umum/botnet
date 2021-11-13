@@ -23,12 +23,13 @@ namespace BotNet.Services.OpenAI {
 				+ "  document.body.removeChild(document.body.firstChild);\n"
 				+ "}\n\n"
 				+ string.Join('\n', instructions.Split('\n').Select(instruction => $"/* {instruction} */")) + "\n";
-			string code = await _openAIClient.DavinciCodexAutocompleteAsync(
+			string code = await _openAIClient.AutocompleteAsync(
+				engine: "davinci-codex",
 				prompt: prompt,
 				stop: new[] { "/* Command:" },
 				maxTokens: 1000,
-				frequencyPenalty: 0.3,
-				presencePenalty: 0.1,
+				frequencyPenalty: 0.5,
+				presencePenalty: 0.0,
 				temperature: 0.0,
 				cancellationToken: cancellationToken
 			);

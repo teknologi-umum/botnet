@@ -17,13 +17,14 @@ namespace BotNet.Services.OpenAI {
 				+ "AI: Saya adalah AI yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
 				+ $"{name}: {question}\n"
 				+ "AI: ";
-			return _openAIClient.DavinciCodexAutocompleteAsync(
+			return _openAIClient.AutocompleteAsync(
+				engine: "davinci-codex",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
 				frequencyPenalty: 0.0,
 				presencePenalty: 0.0,
-				temperature: 0.1,
+				temperature: 0.2,
 				cancellationToken: cancellationToken
 			);
 		}

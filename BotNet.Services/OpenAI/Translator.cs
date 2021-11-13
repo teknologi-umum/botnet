@@ -58,7 +58,8 @@ namespace BotNet.Services.OpenAI {
 					+ "English:",
 				_ => throw new NotImplementedException()
 			};
-			return await _openAIClient.DavinciCodexAutocompleteAsync(
+			return await _openAIClient.AutocompleteAsync(
+				engine: "davinci-codex",
 				prompt: prompt,
 				stop: new[] { "\n" },
 				maxTokens: 64,

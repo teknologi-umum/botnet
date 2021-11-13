@@ -12,8 +12,7 @@ using RG.Ninja;
 
 namespace BotNet.Services.OpenAI {
 	public class OpenAIClient {
-		private const string DAVINCI_COMPLETIONS_URL = "https://api.openai.com/v1/engines/davinci/completions";
-		private const string DAVINCI_CODEX_COMPLETIONS_URL = "https://api.openai.com/v1/engines/davinci-codex/completions";
+		private const string URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
 		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
 		};
@@ -28,16 +27,8 @@ namespace BotNet.Services.OpenAI {
 			_apiKey = openAIOptionsAccessor.Value.ApiKey!;
 		}
 
-		public Task<string> DavinciAutocompleteAsync(string prompt, string[] stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
-			return AutocompleteAsync(DAVINCI_COMPLETIONS_URL, prompt, stop, maxTokens, frequencyPenalty, presencePenalty, temperature, cancellationToken);
-		}
-
-		public Task<string> DavinciCodexAutocompleteAsync(string prompt, string[] stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
-			return AutocompleteAsync(DAVINCI_CODEX_COMPLETIONS_URL, prompt, stop, maxTokens, frequencyPenalty, presencePenalty, temperature, cancellationToken);
-		}
-
-		private async Task<string> AutocompleteAsync(string url, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
-			using HttpRequestMessage request = new(HttpMethod.Post, url) {
+		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
+			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(URL_TEMPLATE, engine)) {
 				Headers = {
 					{ "Authorization", $"Bearer {_apiKey}" },
 					{ "Accept", "text/event-stream" }
