@@ -13,8 +13,8 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Services.BotCommands {
 	public static class OpenAI {
-		private static readonly RateLimiter EXPLAIN_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(5));
-		private static readonly RateLimiter EXPLAIN_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(3, TimeSpan.FromMinutes(5));
+		private static readonly RateLimiter EXPLAIN_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(5));
+		private static readonly RateLimiter EXPLAIN_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(10, TimeSpan.FromMinutes(5));
 		public static async Task ExplainAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string language, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
@@ -117,8 +117,8 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		private static readonly RateLimiter ASK_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(15));
-		private static readonly RateLimiter ASK_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(10, TimeSpan.FromMinutes(15));
+		private static readonly RateLimiter ASK_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
+		private static readonly RateLimiter ASK_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(20, TimeSpan.FromMinutes(15));
 		public static async Task AskHelpAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
@@ -221,7 +221,7 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		private static readonly RateLimiter TRANSLATE_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(2));
+		private static readonly RateLimiter TRANSLATE_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(2));
 		public static async Task TranslateAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string languagePair, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
