@@ -12,7 +12,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> AskSomethingAsync(string name, string question, CancellationToken cancellationToken) {
-			string prompt = $"I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with "Unknown".\n\n"
+			string prompt = $"I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with \"Unknown\".\n\n"
 				+ "Q: What is human life expectancy in the United States?\n"
 				+ "A: Human life expectancy in the United States is 78 years.\n\n"
 				+ "Q: Who was president of the United States in 1955?\n"
