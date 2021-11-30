@@ -12,19 +12,31 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> AskSomethingAsync(string name, string question, CancellationToken cancellationToken) {
-			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
-				+ $"{name}: Halo, apa kabar?\n"
-				+ "AI: Saya adalah AI yang diciptakan oleh TEKNUM. Apakah ada yang bisa saya bantu?\n\n"
-				+ $"{name}: {question}\n"
-				+ "AI: ";
+			string prompt = $"I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with "Unknown".\n\n"
+				+ "Q: What is human life expectancy in the United States?\n"
+				+ "A: Human life expectancy in the United States is 78 years.\n\n"
+				+ "Q: Who was president of the United States in 1955?\n"
+				+ "A: Dwight D. Eisenhower was president of the United States in 1955.\n\n"
+				+ "Q: Which party did he belong to?\n"
+				+ "A: He belonged to the Republican Party.\n\n"
+				+ "Q: What is the square root of banana?\n"
+				+ "A: Unknown\n\n"
+				+ "Q: How does a telescope work?\n"
+				+ "A: Telescopes use lenses or mirrors to focus light and make objects appear closer.\n\n"
+				+ "Q: Where were the 1992 Olympics held?\n"
+				+ "A: The 1992 Olympics were held in Barcelona, Spain.\n\n"
+				+ "Q: How many squigs are in a bonk?\n"
+				+ "A: Unknown\n\n"
+				+ $"Q: {question}\n"
+				+ "A: ";
 			return _openAIClient.AutocompleteAsync(
-				engine: "davinci-codex",
+				engine: "davinci",
 				prompt: prompt,
-				stop: new[] { $"{name}:" },
-				maxTokens: 128,
+				stop: new[] { "\n" },
+				maxTokens: 100,
 				frequencyPenalty: 0.0,
 				presencePenalty: 0.0,
-				temperature: 0.2,
+				temperature: 0.0,
 				cancellationToken: cancellationToken
 			);
 		}
