@@ -28,7 +28,7 @@ namespace BotNet.Services.OpenAI {
 				+ "Q: How many squigs are in a bonk?\n"
 				+ "A: Unknown\n\n"
 				+ $"Q: {question}\n"
-				+ "A: ";
+				+ "A:";
 			return _openAIClient.AutocompleteAsync(
 				engine: "davinci",
 				prompt: prompt,
