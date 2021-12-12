@@ -8,6 +8,7 @@ namespace BotNet.Services.RateLimit {
 	public abstract class RateLimiter {
 		protected RateLimiter() { }
 
+		public static RateLimiter PerChat(int actionCount, TimeSpan window) => new PerChatRateLimiter(actionCount, window);
 		public static RateLimiter PerUser(int actionCount, TimeSpan window) => new PerUserRateLimiter(actionCount, window);
 		public static RateLimiter PerUserPerChat(int actionCount, TimeSpan window) => new PerUserPerChatRateLimiter(actionCount, window);
 		public static RateLimiter PerUserPerDay(int actionCount) => new PerUserPerDayRateLimiter(actionCount, TimeSpan.FromHours(7));
