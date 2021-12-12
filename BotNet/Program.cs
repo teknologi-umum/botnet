@@ -8,6 +8,7 @@ using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenAI;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
+using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.Tenor;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
@@ -46,6 +47,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddV8Evaluator();
 		services.AddPistonClient();
 		services.AddOpenAIClient();
+		services.AddProgrammerHumorScraper();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));

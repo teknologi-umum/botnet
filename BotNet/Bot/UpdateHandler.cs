@@ -127,6 +127,9 @@ namespace BotNet.Bot {
 								case "/genjs":
 									await OpenAI.GenerateJavaScriptCodeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/joke":
+									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
