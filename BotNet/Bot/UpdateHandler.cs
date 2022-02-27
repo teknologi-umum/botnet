@@ -130,6 +130,9 @@ namespace BotNet.Bot {
 								case "/joke":
 									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/clean":
+									await Clean.SanitizeLinkAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;

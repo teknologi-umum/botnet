@@ -10,6 +10,7 @@ using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.Tenor;
+using BotNet.Services.Tiktok;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +49,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddPistonClient();
 		services.AddOpenAIClient();
 		services.AddProgrammerHumorScraper();
+		services.AddTiktokServices();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
