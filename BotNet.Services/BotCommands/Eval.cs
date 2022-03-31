@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.ClearScript;
+using BotNet.Services.DynamicExpresso;
 using Microsoft.ClearScript;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
@@ -13,6 +14,8 @@ using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.BotCommands {
 	public static class Eval {
+		private static readonly JsonSerializerOptions JSON_OPTIONS = new() { WriteIndented = true };
+
 		public static async Task EvalJSAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
@@ -104,6 +107,78 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: "Untuk mengevaluasi javascript, silahkan ketik /evaljs diikuti ekspresi javascript.",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				}
+			}
+		}
+
+		public static async Task EvalCSAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
+			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
+				&& message.Text![commandLength..].Trim() is string commandArgument) {
+				if (commandArgument.Length > 0) {
+					try {
+						object result = serviceProvider.GetRequiredService<CSharpEvaluator>().Evaluate(commandArgument);
+						string prettifiedResult = JsonSerializer.Serialize(result, JSON_OPTIONS);
+						if (prettifiedResult.Length > 1000) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Result is too long.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: prettifiedResult.Length >= 2 && prettifiedResult[0] == '"' && prettifiedResult[^1] == '"'
+									? $"Expression:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nString Result:\n<code>{WebUtility.HtmlEncode(prettifiedResult[1..^1].Replace("\\n", "\n"))}</code>"
+									: $"Expression:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(prettifiedResult)}</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						}
+					} catch (Exception exc) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: "<code>" + WebUtility.HtmlEncode(exc.Message) + "</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					}
+				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
+					try {
+						object result = serviceProvider.GetRequiredService<CSharpEvaluator>().Evaluate(repliedToMessage);
+						string prettifiedResult = JsonSerializer.Serialize(result, JSON_OPTIONS);
+						if (prettifiedResult.Length > 1000) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Result is too long.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: prettifiedResult.Length >= 2 && prettifiedResult[0] == '"' && prettifiedResult[^1] == '"'
+									? $"Expression:\n<code>{WebUtility.HtmlEncode(repliedToMessage)}</code>\n\nString Result:\n<code>{WebUtility.HtmlEncode(prettifiedResult[1..^1].Replace("\\n", "\n"))}</code>"
+									: $"Expression:\n<code>{WebUtility.HtmlEncode(repliedToMessage)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(prettifiedResult)}</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.ReplyToMessage.MessageId,
+								cancellationToken: cancellationToken);
+						}
+					} catch (Exception exc) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: "<code>" + WebUtility.HtmlEncode(exc.Message) + "</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.ReplyToMessage.MessageId,
+							cancellationToken: cancellationToken);
+					}
+				} else {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: "Untuk mengevaluasi C#, silahkan ketik /evalcs diikuti ekspresi C#.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);

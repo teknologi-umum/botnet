@@ -3,6 +3,7 @@ using BotNet.Bot;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
+using BotNet.Services.DynamicExpresso;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenAI;
@@ -50,6 +51,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddOpenAIClient();
 		services.AddProgrammerHumorScraper();
 		services.AddTiktokServices();
+		services.AddCSharpEvaluator();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
