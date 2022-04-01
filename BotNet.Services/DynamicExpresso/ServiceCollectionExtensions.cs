@@ -15,6 +15,8 @@ namespace BotNet.Services.DynamicExpresso {
 						typeof(System.Convert),
 						typeof(System.Converter<,>),
 						typeof(System.DateOnly),
+						typeof(System.DateTimeKind),
+						typeof(System.DayOfWeek),
 						typeof(System.DateTimeOffset),
 						typeof(System.Exception),
 						typeof(System.Half),
@@ -55,6 +57,24 @@ namespace BotNet.Services.DynamicExpresso {
 						typeof(System.ValueTuple<>),
 						typeof(System.ValueType),
 						typeof(System.Version),
+						typeof(System.Collections.Generic.Dictionary<,>),
+						typeof(System.Collections.Generic.HashSet<>),
+						typeof(System.Collections.Generic.List<>),
+						typeof(System.Collections.Generic.PriorityQueue<,>),
+						typeof(System.Collections.Generic.Queue<>),
+						typeof(System.Collections.Generic.SortedDictionary<,>),
+						typeof(System.Collections.Generic.SortedList<,>),
+						typeof(System.Collections.Generic.SortedSet<>),
+						typeof(System.Collections.Generic.Stack<>)
+						typeof(System.Text.Encodings.Web.HtmlEncoder),
+						typeof(System.Text.Encodings.Web.JavaScriptEncoder),
+						typeof(System.Text.Encodings.Web.TextEncoder),
+						typeof(System.Text.Encodings.Web.TextEncoderSettings),
+						typeof(System.Text.Encodings.Web.UrlEncoder),
+						typeof(System.Text.Json.JsonSerializer),
+						typeof(System.Text.Json.JsonSerializerOptions),
+						typeof(System.Text.RegularExpressions.Regex),
+						typeof(System.Text.RegularExpressions.RegexOptions),
 					}
 					select new ReferenceType(type)
 				)
