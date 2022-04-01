@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BotNet.Services.DynamicExpresso {
 	public static class ServiceCollectionExtensions {
 		public static IServiceCollection AddCSharpEvaluator(this IServiceCollection services) {
-			services.AddSingleton(() => new Interpreter(options: InterpreterOptions.Default | InterpreterOptions.LambdaExpressions)
+			services.AddSingleton(new Interpreter(options: InterpreterOptions.Default | InterpreterOptions.LambdaExpressions)
 				.Reference(
 					from type in new[] {
 						typeof(System.Array),
