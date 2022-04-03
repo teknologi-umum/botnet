@@ -18,7 +18,7 @@ namespace BotNet.Services.BotCommands {
 				if (commandArgument.Length > 0) {
 					try {
 						ExecuteResult result = await serviceProvider.GetRequiredService<PistonClient>().ExecuteAsync(language, commandArgument, cancellationToken);
-						if (result.Compile.Code != 0) {
+						if (result.Compile is { Code: not 0 }) {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
 								text: $"<code>{WebUtility.HtmlEncode(result.Compile.Stderr)}</code>",
@@ -67,7 +67,7 @@ namespace BotNet.Services.BotCommands {
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
 						ExecuteResult result = await serviceProvider.GetRequiredService<PistonClient>().ExecuteAsync(language, repliedToMessage, cancellationToken);
-						if (result.Compile.Code != 0) {
+						if (result.Compile is { Code: not 0 }) {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
 								text: $"<code>{WebUtility.HtmlEncode(result.Compile.Stderr)}</code>",
