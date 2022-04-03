@@ -18,7 +18,21 @@ namespace BotNet.Services.BotCommands {
 				if (commandArgument.Length > 0) {
 					try {
 						ExecuteResult result = await serviceProvider.GetRequiredService<PistonClient>().ExecuteAsync(language, commandArgument, cancellationToken);
-						if (result.Run.Output.Length > 1000) {
+						if (result.Compile.Code != 0) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>{WebUtility.HtmlEncode(result.Compile.Stderr)}</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else if (result.Run.Code != 0) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>{WebUtility.HtmlEncode(result.Run.Stderr)}</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else if (result.Run.Output.Length > 1000) {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
 								text: "<code>Output is too long.</code>",
@@ -53,7 +67,21 @@ namespace BotNet.Services.BotCommands {
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
 					try {
 						ExecuteResult result = await serviceProvider.GetRequiredService<PistonClient>().ExecuteAsync(language, repliedToMessage, cancellationToken);
-						if (result.Run.Output.Length > 1000) {
+						if (result.Compile.Code != 0) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>{WebUtility.HtmlEncode(result.Compile.Stderr)}</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else if (result.Run.Code != 0) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"<code>{WebUtility.HtmlEncode(result.Run.Stderr)}</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} else if (result.Run.Output.Length > 1000) {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
 								text: "<code>Output is too long.</code>",

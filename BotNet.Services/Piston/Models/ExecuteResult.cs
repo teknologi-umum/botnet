@@ -2,6 +2,7 @@
 	public record ExecuteResult(
 		string Language,
 		string Version,
-		RunResult Run
+		ConsoleOutput Compile,
+		ConsoleOutput Run
 	);
 }

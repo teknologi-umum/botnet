@@ -19,7 +19,8 @@ namespace BotNet.Services.Piston {
 
 		private readonly HttpClient _httpClient;
 		private readonly PistonOptions _pistonOptions;
-		private readonly string _baseUrl;
+		private readonly string _runtimesUrl;
+		private readonly string _executeUrl;
 		private readonly JsonSerializerOptions _jsonSerializerOptions;
 
 		public PistonClient(
@@ -27,7 +28,8 @@ namespace BotNet.Services.Piston {
 			IOptions<PistonOptions> pistonOptionsAccessor
 		) {
 			_pistonOptions = pistonOptionsAccessor.Value;
-			_baseUrl = _pistonOptions.BaseUrl ?? throw new InvalidOperationException("Piston BaseUrl not configured. Please add a .NET secret with key 'PistonOptions:BaseUrl' or a Docker secret with key 'PistonOptions__BaseUrl'");
+			_runtimesUrl = _pistonOptions.RuntimesUrl;
+			_executeUrl = _pistonOptions.ExecuteUrl;
 			_semaphore ??= new SemaphoreSlim(_pistonOptions.MaxConcurrentExecutions, _pistonOptions.MaxConcurrentExecutions);
 			_httpClient = httpClient;
 			_jsonSerializerOptions = new JsonSerializerOptions {
@@ -37,7 +39,7 @@ namespace BotNet.Services.Piston {
 
 		private async Task<RuntimeResult?> GetRuntimeAsync(string language, CancellationToken cancellationToken) {
 			if (_runtimes is null) {
-				_runtimes = await _httpClient.GetFromJsonAsync<ImmutableList<RuntimeResult>>($"{_baseUrl}api/v2/runtimes", cancellationToken);
+				_runtimes = await _httpClient.GetFromJsonAsync<ImmutableList<RuntimeResult>>(_runtimesUrl, cancellationToken);
 			}
 			return _runtimes!
 				.Where(runtime => runtime.Language == language)
@@ -50,7 +52,7 @@ namespace BotNet.Services.Piston {
 			try {
 				RuntimeResult runtime = await GetRuntimeAsync(language, cancellationToken) ?? throw new KeyNotFoundException($"Runtime for {language} not found.");
 				using HttpResponseMessage response = await _httpClient.PostAsJsonAsync(
-					requestUri: $"{_baseUrl}api/v2/execute",
+					requestUri: _executeUrl,
 					value: new ExecutePayload(
 						Language: language,
 						Version: runtime.Version,

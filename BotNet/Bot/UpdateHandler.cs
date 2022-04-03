@@ -98,11 +98,20 @@ namespace BotNet.Bot {
 								case "/cpp":
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "c++", cancellationToken);
 									break;
+								case "/cs":
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "csharp.net", cancellationToken);
+									break;
+								case "/fs":
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "fsharp.net", cancellationToken);
+									break;
 								case "/js":
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "javascript", cancellationToken);
 									break;
 								case "/ts":
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "typescript", cancellationToken);
+									break;
+								case "/vb":
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "basic.net", cancellationToken);
 									break;
 								case "/pop":
 									await botClient.SendTextMessageAsync(

@@ -62,7 +62,7 @@ namespace BotNet.Services.OpenAI {
 				engine: "davinci-codex",
 				prompt: prompt,
 				stop: new[] { "\n" },
-				maxTokens: 64,
+				maxTokens: 128,
 				frequencyPenalty: 0.0,
 				presencePenalty: 0.0,
 				temperature: 0.0,
