@@ -65,7 +65,7 @@ namespace BotNet.Services.DynamicExpresso {
 						typeof(System.Collections.Generic.SortedDictionary<,>),
 						typeof(System.Collections.Generic.SortedList<,>),
 						typeof(System.Collections.Generic.SortedSet<>),
-						typeof(System.Collections.Generic.Stack<>)
+						typeof(System.Collections.Generic.Stack<>),
 						typeof(System.Text.Encodings.Web.HtmlEncoder),
 						typeof(System.Text.Encodings.Web.JavaScriptEncoder),
 						typeof(System.Text.Encodings.Web.TextEncoder),
