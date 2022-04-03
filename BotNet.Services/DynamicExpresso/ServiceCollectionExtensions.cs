@@ -75,6 +75,7 @@ namespace BotNet.Services.DynamicExpresso {
 						typeof(System.Text.Json.JsonSerializerOptions),
 						typeof(System.Text.RegularExpressions.Regex),
 						typeof(System.Text.RegularExpressions.RegexOptions),
+						typeof(Pehape.PHP)
 					}
 					select new ReferenceType(type)
 				)

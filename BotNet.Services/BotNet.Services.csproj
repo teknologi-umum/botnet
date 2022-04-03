@@ -66,4 +66,8 @@
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-ThinItalic.ttf" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\pehape\csharp\Pehape\Pehape.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotNet.Tests", "BotNet.Tests\BotNet.Tests.csproj", "{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pehape", "pehape\csharp\Pehape\Pehape.csproj", "{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43E0D8BA-9CE8-412E-849E-F3584E1B42F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
