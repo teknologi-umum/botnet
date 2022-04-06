@@ -27,7 +27,7 @@ namespace BotNet.Services.ThisXDoesNotExist {
 			IDocument document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
 			IHtmlHeadingElement titleElement = document.QuerySelector<IHtmlHeadingElement>("h2");
 
-			return titleElement.InnerHtml;
+			return titleElement.InnerHtml.Trim();
 		}
 	}
 }
