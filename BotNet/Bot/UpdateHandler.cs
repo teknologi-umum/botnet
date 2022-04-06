@@ -145,6 +145,9 @@ namespace BotNet.Bot {
 								case "/clean":
 									await Clean.SanitizeLinkAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/waifu":
+									await Waifu.GetRandomWaifuAsync(botClient, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
