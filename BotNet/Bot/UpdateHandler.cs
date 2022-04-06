@@ -151,6 +151,9 @@ namespace BotNet.Bot {
 								case "/cat":
 									await Cat.GetRandomCatAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/idea":
+									await Idea.GetRandomIdeaAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
