@@ -148,6 +148,9 @@ namespace BotNet.Bot {
 								case "/waifu":
 									await Waifu.GetRandomWaifuAsync(botClient, update.Message, cancellationToken);
 									break;
+								case "/cat":
+									await Cat.GetRandomCatAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
