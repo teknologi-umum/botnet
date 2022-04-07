@@ -28,9 +28,11 @@ namespace BotNet.Services.ProgrammerHumor {
 			IHtmlHeadingElement titleElement = document.QuerySelector<IHtmlHeadingElement>("article header.entry-header h1.entry-title");
 			IHtmlImageElement imageElement = document.QuerySelector<IHtmlImageElement>("article div[itemprop=\"image\"] img");
 
+			string src = imageElement.Dataset["src"] ?? imageElement.Source;
+
 			return (
 				Title: titleElement.InnerHtml,
-				Image: await _httpClient.GetByteArrayAsync(imageElement.Source, cancellationToken)
+				Image: await _httpClient.GetByteArrayAsync(src, cancellationToken)
 			);
 		}
 	}
