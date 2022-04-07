@@ -154,6 +154,9 @@ namespace BotNet.Bot {
 								case "/idea":
 									await Idea.GetRandomIdeaAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/art":
+									await Art.GetRandomArtAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;

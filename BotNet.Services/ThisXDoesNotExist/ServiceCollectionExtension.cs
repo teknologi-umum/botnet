@@ -5,6 +5,7 @@ namespace BotNet.Services.ThisXDoesNotExist {
 		public static IServiceCollection AddThisXDoesNotExist(this IServiceCollection services) {
 			services.AddTransient<ThisCatDoesNotExist>();
 			services.AddTransient<ThisIdeaDoesNotExist>();
+			services.AddTransient<ThisArtworkDoesNotExist>();
 			return services;
 		}
 	}
