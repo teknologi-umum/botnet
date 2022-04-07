@@ -26,7 +26,7 @@ namespace BotNet.Services.ProgrammerHumor {
 			IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default);
 			IDocument document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
 			IHtmlHeadingElement titleElement = document.QuerySelector<IHtmlHeadingElement>("article header.entry-header h1.entry-title");
-			IHtmlImageElement imageElement = document.QuerySelector<IHtmlImageElement>("article div[itemprop=\"image\"] picture img");
+			IHtmlImageElement imageElement = document.QuerySelector<IHtmlImageElement>("article div[itemprop=\"image\"] img");
 
 			return (
 				Title: titleElement.InnerHtml,
