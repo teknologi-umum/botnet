@@ -14,7 +14,7 @@ namespace BotNet.Services.OpenAI {
 		public async Task<string> ExplainCodeInEnglishAsync(string code, CancellationToken cancellationToken) {
 			string prompt = code + "\n\n\"\"\"\nHere's what the above code is doing:\n1.";
 			string explanation = await _openAIClient.AutocompleteAsync(
-				engine: "davinci-codex",
+				engine: "code-davinci-002",
 				prompt: prompt,
 				stop: new[] { "\"\"\"" },
 				maxTokens: 128,
@@ -29,7 +29,7 @@ namespace BotNet.Services.OpenAI {
 		public async Task<string> ExplainCodeInIndonesianAsync(string code, CancellationToken cancellationToken) {
 			string prompt = code + "\n\n\"\"\"\nYang dilakukan kode di atas adalah sebagai berikut:\n1.";
 			string explanation = await _openAIClient.AutocompleteAsync(
-				engine: "davinci-codex",
+				engine: "code-davinci-002",
 				prompt: prompt,
 				stop: new[] { "\"\"\"" },
 				maxTokens: 128,

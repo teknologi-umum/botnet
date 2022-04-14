@@ -47,7 +47,10 @@ namespace BotNet.Bot {
 				switch (update.Type) {
 					case UpdateType.Message:
 						_logger.LogInformation("Received message from [{firstName} {lastName}]: '{message}' in chat {chatName}.", update.Message!.From!.FirstName, update.Message.From.LastName, update.Message.Text, update.Message.Chat.Title ?? update.Message.Chat.Id.ToString());
-						if (update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
+						if (update.Message.Text?.StartsWith("AI,") == true) {
+							string message = update.Message.Text!.Substring(3).TrimStart();
+							await OpenAI.ChatAsync(botClient, _serviceProvider, update.Message, "AI,", cancellationToken);
+						} else if (update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
 							string command = update.Message.Text!.Substring(commandEntity.Offset, commandEntity.Length);
 
 							// Check if command is in /command@botname format

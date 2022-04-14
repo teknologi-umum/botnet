@@ -24,7 +24,7 @@ namespace BotNet.Services.OpenAI {
 				+ "}\n\n"
 				+ string.Join('\n', instructions.Split('\n').Select(instruction => $"/* {instruction} */")) + "\n";
 			string code = await _openAIClient.AutocompleteAsync(
-				engine: "davinci-codex",
+				engine: "code-davinci-002",
 				prompt: prompt,
 				stop: new[] { "/* Command:" },
 				maxTokens: 1000,

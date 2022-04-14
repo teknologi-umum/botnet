@@ -30,7 +30,7 @@ namespace BotNet.Services.OpenAI {
 				+ $"Q: {question}\n"
 				+ "A:";
 			return _openAIClient.AutocompleteAsync(
-				engine: "davinci",
+				engine: "text-davinci-002",
 				prompt: prompt,
 				stop: new[] { "\n" },
 				maxTokens: 100,

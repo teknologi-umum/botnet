@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BotNet.Services.OpenAI;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.DependencyInjection;
+using RG.Ninja;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -358,6 +359,57 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: $"Untuk generate kode JavaScript, silahkan ketik /genjs diikuti instruksi.",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				}
+			}
+		}
+
+		private static readonly RateLimiter CHAT_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
+		private static readonly RateLimiter CHAT_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(20, TimeSpan.FromMinutes(15));
+		public static async Task ChatAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
+			if (message.Text!.StartsWith(callSign, out string? s)
+				&& s.TrimStart() is string { Length: > 0 } chatMessage) {
+				try {
+					(message.Chat.Type == ChatType.Private
+						? CHAT_PRIVATE_RATE_LIMITER
+						: CHAT_GROUP_RATE_LIMITER
+					).ValidateActionRate(message.Chat.Id, message.From!.Id);
+					string result = await serviceProvider.GetRequiredService<ConversationBot>().ChatAsync(
+						name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
+						question: chatMessage,
+						cancellationToken: cancellationToken
+					);
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+					if (message.Chat.Type == ChatType.Private) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} else {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							replyMarkup: new InlineKeyboardMarkup(
+								InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+							),
+							cancellationToken: cancellationToken);
+					}
+				} catch (OperationCanceledException) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: "<code>Timeout exceeded.</code>",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
