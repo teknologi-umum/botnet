@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,10 +48,65 @@ namespace BotNet.Bot {
 				switch (update.Type) {
 					case UpdateType.Message:
 						_logger.LogInformation("Received message from [{firstName} {lastName}]: '{message}' in chat {chatName}.", update.Message!.From!.FirstName, update.Message.From.LastName, update.Message.Text, update.Message.Chat.Title ?? update.Message.Chat.Id.ToString());
+
+						// Retrieve bot identity
+						_me ??= await GetMeAsync(botClient, cancellationToken);
+
+						// Handle call sign
 						if (update.Message.Text?.StartsWith("AI,") == true) {
-							string message = update.Message.Text!.Substring(3).TrimStart();
-							await OpenAI.ChatAsync(botClient, _serviceProvider, update.Message, "AI,", cancellationToken);
-						} else if (update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
+							// Respond to call sign
+							Message? sentMessage = await OpenAI.ChatAsync(botClient, _serviceProvider, update.Message, "AI,", cancellationToken);
+
+							if (sentMessage is not null) {
+								// Track sent message
+								await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+									sender: "AI",
+									text: sentMessage.Text!,
+									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+								);
+							}
+							break;
+						}
+
+						// Handle reply
+						if (update.Message is {
+							MessageId: int messageId,
+							From: { FirstName: string firstName, LastName: var lastName },
+							Text: { Length: > 0 } text
+						}
+							&& update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is null
+							&& update.Message.ReplyToMessage is {
+								MessageId: int replyToMessageId,
+								From: { Id: long replyToUserId }
+							}
+							&& replyToUserId == _me?.Id) {
+
+							// Track message
+							await _clusterClient.GetGrain<ITrackedMessageGrain>(update.Message.MessageId).TrackMessageAsync(
+								sender: $"{firstName}{lastName?.Let(lastName => " " + lastName)}",
+								text: text,
+								replyToMessageId: replyToMessageId
+							);
+
+							// Get thread
+							ImmutableList<(string Sender, string Text)> thread = await _clusterClient.GetGrain<ITrackedMessageGrain>(replyToMessageId).GetThreadAsync(maxLines: 20);
+
+							// Respond to thread
+							Message? sentMessage = await OpenAI.RespondToThreadAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
+
+							if (sentMessage is not null) {
+								// Track sent message
+								await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+									sender: "AI",
+									text: sentMessage.Text!,
+									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+								);
+							}
+							break;
+						}
+
+						// Handle commands
+						if (update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
 							string command = update.Message.Text!.Substring(commandEntity.Offset, commandEntity.Length);
 
 							// Check if command is in /command@botname format

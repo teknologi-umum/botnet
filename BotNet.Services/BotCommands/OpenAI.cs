@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -368,7 +369,7 @@ namespace BotNet.Services.BotCommands {
 
 		private static readonly RateLimiter CHAT_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
 		private static readonly RateLimiter CHAT_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(20, TimeSpan.FromMinutes(15));
-		public static async Task ChatAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
+		public static async Task<Message?> ChatAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
 			if (message.Text!.StartsWith(callSign, out string? s)
 				&& s.TrimStart() is string { Length: > 0 } chatMessage) {
 				try {
@@ -381,7 +382,7 @@ namespace BotNet.Services.BotCommands {
 						question: chatMessage,
 						cancellationToken: cancellationToken
 					);
-					await botClient.SendTextMessageAsync(
+					return await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: WebUtility.HtmlEncode(result),
 						parseMode: ParseMode.Html,
@@ -415,6 +416,55 @@ namespace BotNet.Services.BotCommands {
 						cancellationToken: cancellationToken);
 				}
 			}
+			return null;
+		}
+
+		public static async Task<Message?> RespondToThreadAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+			try {
+				(message.Chat.Type == ChatType.Private
+					? CHAT_PRIVATE_RATE_LIMITER
+					: CHAT_GROUP_RATE_LIMITER
+				).ValidateActionRate(message.Chat.Id, message.From!.Id);
+				string result = await serviceProvider.GetRequiredService<ConversationBot>().RespondToThreadAsync(
+					name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
+					question: message.Text!,
+					thread: thread,
+					cancellationToken: cancellationToken
+				);
+				return await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: WebUtility.HtmlEncode(result),
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+				if (message.Chat.Type == ChatType.Private) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						replyMarkup: new InlineKeyboardMarkup(
+							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+						),
+						cancellationToken: cancellationToken);
+				}
+			} catch (OperationCanceledException) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "<code>Timeout exceeded.</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			}
+			return null;
 		}
 	}
 }
