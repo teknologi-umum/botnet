@@ -7,11 +7,12 @@ namespace BotNet.Grains {
 	public class BubbleWrapGrain : Grain, IBubbleWrapGrain {
 		private bool[,]? _sheet;
 
-		public Task<bool[,]?> GetSheetStateAsync() {
-			return Task.FromResult(_sheet);
+		public async Task<bool[,]?> GetSheetStateAsync() {
+			DelayDeactivation(TimeSpan.FromMinutes(1));
+			return _sheet;
 		}
 
-		public Task PopAsync(bool[,] expectedSheet) {
+		public async Task PopAsync(bool[,] expectedSheet) {
 			if (_sheet is null) {
 				_sheet = expectedSheet;
 			} else {
@@ -21,8 +22,7 @@ namespace BotNet.Grains {
 					}
 				}
 			}
-			DelayDeactivation(TimeSpan.FromSeconds(5));
-			return Task.CompletedTask;
+			DelayDeactivation(TimeSpan.FromMinutes(1));
 		}
 	}
 }
