@@ -91,18 +91,22 @@ namespace BotNet.Bot {
 							// Get thread
 							ImmutableList<(string Sender, string Text)> thread = await _clusterClient.GetGrain<ITrackedMessageGrain>(replyToMessageId).GetThreadAsync(maxLines: 20);
 
-							// Respond to thread
-							Message? sentMessage = await OpenAI.RespondToThreadAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
+							// Don't respond if thread is empty
+							if (thread.Count > 0) {
 
-							if (sentMessage is not null) {
-								// Track sent message
-								await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
-									sender: "AI",
-									text: sentMessage.Text!,
-									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
-								);
+								// Respond to thread
+								Message? sentMessage = await OpenAI.RespondToThreadAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
+
+								if (sentMessage is not null) {
+									// Track sent message
+									await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+										sender: "AI",
+										text: sentMessage.Text!,
+										replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+									);
+								}
+								break;
 							}
-							break;
 						}
 
 						// Handle commands
