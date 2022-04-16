@@ -23,7 +23,7 @@ namespace BotNet.Services.OpenAI {
 				+ $"{name}: What is the meaning of life?\n"
 				+ $"{callSign}: I’m not sure. I’ll ask my friend Google.\n\n"
 				+ $"{name}: {question}\n"
-				+ "AI: ";
+				+ $"{callSign}: ";
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
@@ -53,7 +53,7 @@ namespace BotNet.Services.OpenAI {
 			}
 			prompt +=
 				$"{name}: {question}\n"
-				+ "AI: ";
+				+ $"{callSign}: ";
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
