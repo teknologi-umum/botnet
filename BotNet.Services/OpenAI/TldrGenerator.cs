@@ -12,7 +12,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> GenerateTldrAsync(string text, CancellationToken cancellationToken) {
-			string prompt = $"{text}\n\nTl;dr";
+			string prompt = $"{text}\n\nTl;dr:\n";
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
