@@ -16,7 +16,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
-				stop: new string[] { },
+				stop: null,
 				maxTokens: 60,
 				frequencyPenalty: 0.0,
 				presencePenalty: 0.0,
