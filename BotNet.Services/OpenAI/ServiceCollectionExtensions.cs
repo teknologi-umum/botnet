@@ -11,6 +11,7 @@ namespace BotNet.Services.OpenAI {
 			services.AddTransient<FriendlyBot>();
 			services.AddTransient<SarcasticBot>();
 			services.AddTransient<AttachmentGenerator>();
+			services.AddTransient<TldrGenerator>();
 			return services;
 		}
 	}

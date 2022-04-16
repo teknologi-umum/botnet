@@ -233,6 +233,9 @@ namespace BotNet.Bot {
 								case "/art":
 									await Art.GetRandomArtAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/tldr":
+									await OpenAI.GenerateTldrAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
