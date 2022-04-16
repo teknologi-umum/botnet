@@ -21,6 +21,7 @@ namespace BotNet.Services.OpenAI {
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.0,
 				temperature: 0.0,
+				topP: 1.0,
 				cancellationToken: cancellationToken
 			);
 			return "1." + explanation;
@@ -36,6 +37,7 @@ namespace BotNet.Services.OpenAI {
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.0,
 				temperature: 0.0,
+				topP: 1.0,
 				cancellationToken: cancellationToken
 			);
 			return "1." + explanation;

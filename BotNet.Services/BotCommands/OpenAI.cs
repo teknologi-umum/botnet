@@ -11,6 +11,7 @@ using RG.Ninja;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Services.BotCommands {
@@ -369,37 +370,62 @@ namespace BotNet.Services.BotCommands {
 
 		private static readonly RateLimiter CHAT_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
 		private static readonly RateLimiter CHAT_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(20, TimeSpan.FromMinutes(15));
-		public static async Task<Message?> ChatAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
+		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
 			if (message.Text!.StartsWith(callSign, out string? s)
-				&& s.TrimStart() is string { Length: > 0 } chatMessage) {
+				&& s[1..].TrimStart() is string { Length: > 0 } chatMessage) {
 				try {
 					(message.Chat.Type == ChatType.Private
 						? CHAT_PRIVATE_RATE_LIMITER
 						: CHAT_GROUP_RATE_LIMITER
 					).ValidateActionRate(message.Chat.Id, message.From!.Id);
-					string result = await serviceProvider.GetRequiredService<ConversationBot>().ChatAsync(
+					string result = await serviceProvider.GetRequiredService<FriendlyBot>().ChatAsync(
+						callSign: callSign,
 						name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
 						question: chatMessage,
 						cancellationToken: cancellationToken
 					);
-					return await botClient.SendTextMessageAsync(
-						chatId: message.Chat.Id,
-						text: WebUtility.HtmlEncode(result),
-						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
-						cancellationToken: cancellationToken);
+					ImmutableList<Uri> attachments = serviceProvider.GetRequiredService<AttachmentGenerator>().GenerateAttachments(result);
+					if (attachments.Count == 0) {
+						return await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} else if (attachments.Count == 1) {
+						return await botClient.SendPhotoAsync(
+							chatId: message.Chat.Id,
+							photo: new InputOnlineFile(attachments[0]),
+							caption: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} else {
+						Message sentMessage = await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+						await botClient.SendMediaGroupAsync(
+							chatId: message.Chat.Id,
+							media: from attachment in attachments
+								   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+							cancellationToken: cancellationToken);
+						return sentMessage;
+					}
 				} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 					if (message.Chat.Type == ChatType.Private) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
+							text: $"<code>Anda terlalu banyak memanggil {callSign}. Coba lagi {cooldown}.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+							text: $"<code>Anda terlalu banyak memanggil {callSign} di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							replyMarkup: new InlineKeyboardMarkup(
@@ -419,24 +445,49 @@ namespace BotNet.Services.BotCommands {
 			return null;
 		}
 
-		public static async Task<Message?> RespondToThreadAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, string callSign, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
 					: CHAT_GROUP_RATE_LIMITER
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
-				string result = await serviceProvider.GetRequiredService<ConversationBot>().RespondToThreadAsync(
+				string result = await serviceProvider.GetRequiredService<FriendlyBot>().RespondToThreadAsync(
+					callSign: callSign,
 					name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
 					question: message.Text!,
 					thread: thread,
 					cancellationToken: cancellationToken
 				);
-				return await botClient.SendTextMessageAsync(
-					chatId: message.Chat.Id,
-					text: WebUtility.HtmlEncode(result),
-					parseMode: ParseMode.Html,
-					replyToMessageId: message.MessageId,
-					cancellationToken: cancellationToken);
+				ImmutableList<Uri> attachments = serviceProvider.GetRequiredService<AttachmentGenerator>().GenerateAttachments(result);
+				if (attachments.Count == 0) {
+					return await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else if (attachments.Count == 1) {
+					return await botClient.SendPhotoAsync(
+						chatId: message.Chat.Id,
+						photo: new InputOnlineFile(attachments[0]),
+						caption: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else {
+					Message sentMessage = await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+					await botClient.SendMediaGroupAsync(
+						chatId: message.Chat.Id,
+						media: from attachment in attachments
+							   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+						cancellationToken: cancellationToken);
+					return sentMessage;
+				}
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 				if (message.Chat.Type == ChatType.Private) {
 					await botClient.SendTextMessageAsync(
@@ -449,6 +500,154 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						replyMarkup: new InlineKeyboardMarkup(
+							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+						),
+						cancellationToken: cancellationToken);
+				}
+			} catch (OperationCanceledException) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "<code>Timeout exceeded.</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			}
+			return null;
+		}
+
+		public static async Task<Message?> ChatWithSarcasticBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
+			if (message.Text!.StartsWith(callSign, out string? s)
+				&& s.TrimStart() is string { Length: > 0 } chatMessage) {
+				try {
+					(message.Chat.Type == ChatType.Private
+						? CHAT_PRIVATE_RATE_LIMITER
+						: CHAT_GROUP_RATE_LIMITER
+					).ValidateActionRate(message.Chat.Id, message.From!.Id);
+					string result = await serviceProvider.GetRequiredService<SarcasticBot>().ChatAsync(
+						callSign: callSign,
+						name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
+						question: chatMessage,
+						cancellationToken: cancellationToken
+					);
+					ImmutableList<Uri> attachments = serviceProvider.GetRequiredService<AttachmentGenerator>().GenerateAttachments(result);
+					if (attachments.Count == 0) {
+						return await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} else if (attachments.Count == 1) {
+						return await botClient.SendPhotoAsync(
+							chatId: message.Chat.Id,
+							photo: new InputOnlineFile(attachments[0]),
+							caption: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} else {
+						Message sentMessage = await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: WebUtility.HtmlEncode(result),
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+						await botClient.SendMediaGroupAsync(
+							chatId: message.Chat.Id,
+							media: from attachment in attachments
+								   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+							cancellationToken: cancellationToken);
+						return sentMessage;
+					}
+				} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+					if (message.Chat.Type == ChatType.Private) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak memanggil Pakde. Coba lagi {cooldown}.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+					} else {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>Anda terlalu banyak memanggil Pakde di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							replyMarkup: new InlineKeyboardMarkup(
+								InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+							),
+							cancellationToken: cancellationToken);
+					}
+				} catch (OperationCanceledException) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: "<code>Timeout exceeded.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				}
+			}
+			return null;
+		}
+
+		public static async Task<Message?> ChatWithSarcasticBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, string callSign, CancellationToken cancellationToken) {
+			try {
+				(message.Chat.Type == ChatType.Private
+					? CHAT_PRIVATE_RATE_LIMITER
+					: CHAT_GROUP_RATE_LIMITER
+				).ValidateActionRate(message.Chat.Id, message.From!.Id);
+				string result = await serviceProvider.GetRequiredService<SarcasticBot>().RespondToThreadAsync(
+					callSign: callSign,
+					name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
+					question: message.Text!,
+					thread: thread,
+					cancellationToken: cancellationToken
+				);
+				ImmutableList<Uri> attachments = serviceProvider.GetRequiredService<AttachmentGenerator>().GenerateAttachments(result);
+				if (attachments.Count == 0) {
+					return await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else if (attachments.Count == 1) {
+					return await botClient.SendPhotoAsync(
+						chatId: message.Chat.Id,
+						photo: new InputOnlineFile(attachments[0]),
+						caption: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else {
+					Message sentMessage = await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: WebUtility.HtmlEncode(result),
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+					await botClient.SendMediaGroupAsync(
+						chatId: message.Chat.Id,
+						media: from attachment in attachments
+							   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+						cancellationToken: cancellationToken);
+					return sentMessage;
+				}
+			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+				if (message.Chat.Type == ChatType.Private) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil Pakde. Coba lagi {cooldown}.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil Pakde di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						replyMarkup: new InlineKeyboardMarkup(

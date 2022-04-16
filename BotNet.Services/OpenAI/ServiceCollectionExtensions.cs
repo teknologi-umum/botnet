@@ -8,7 +8,9 @@ namespace BotNet.Services.OpenAI {
 			services.AddTransient<AssistantBot>();
 			services.AddTransient<Translator>();
 			services.AddTransient<CodeGenerator>();
-			services.AddTransient<ConversationBot>();
+			services.AddTransient<FriendlyBot>();
+			services.AddTransient<SarcasticBot>();
+			services.AddTransient<AttachmentGenerator>();
 			return services;
 		}
 	}

@@ -27,7 +27,7 @@ namespace BotNet.Services.OpenAI {
 			_apiKey = openAIOptionsAccessor.Value.ApiKey!;
 		}
 
-		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, CancellationToken cancellationToken) {
+		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, double topP, CancellationToken cancellationToken) {
 			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(URL_TEMPLATE, engine)) {
 				Headers = {
 					{ "Authorization", $"Bearer {_apiKey}" },
@@ -39,7 +39,7 @@ namespace BotNet.Services.OpenAI {
 						Temperature = temperature,
 						MaxTokens = maxTokens,
 						Stream = true,
-						TopP = 1.0,
+						TopP = topP,
 						FrequencyPenalty = frequencyPenalty,
 						PresencePenalty = presencePenalty,
 						Stop = stop

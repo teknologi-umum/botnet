@@ -53,14 +53,21 @@ namespace BotNet.Bot {
 						_me ??= await GetMeAsync(botClient, cancellationToken);
 
 						// Handle call sign
-						if (update.Message.Text?.StartsWith("AI,") == true) {
+						if (update.Message.Text is { } messageText && (messageText.StartsWith("AI,") || messageText.StartsWith("Pakde,"))) {
+							// Get call sign
+							string callSign = messageText.Split(',')[0];
+
 							// Respond to call sign
-							Message? sentMessage = await OpenAI.ChatAsync(botClient, _serviceProvider, update.Message, "AI,", cancellationToken);
+							Message? sentMessage = callSign switch {
+								"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
+								"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
+								_ => throw new NotImplementedException($"Call sign {callSign} not handled")
+							};
 
 							if (sentMessage is not null) {
 								// Track sent message
 								await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
-									sender: "AI",
+									sender: callSign,
 									text: sentMessage.Text!,
 									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
 								);
@@ -93,14 +100,20 @@ namespace BotNet.Bot {
 
 							// Don't respond if thread is empty
 							if (thread.Count > 0) {
+								// Identify last AI in thread
+								string callSign = thread.Last().Sender;
 
 								// Respond to thread
-								Message? sentMessage = await OpenAI.RespondToThreadAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
+								Message? sentMessage = callSign switch {
+									"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
+									"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
+									_ => throw new NotImplementedException($"Call sign {callSign} not handled")
+								};
 
 								if (sentMessage is not null) {
 									// Track sent message
 									await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
-										sender: "AI",
+										sender: callSign,
 										text: sentMessage.Text!,
 										replyToMessageId: sentMessage.ReplyToMessage!.MessageId
 									);
