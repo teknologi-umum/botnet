@@ -24,8 +24,8 @@ namespace BotNet.Services.OpenAI {
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
 				frequencyPenalty: 0.0,
-				presencePenalty: 0.0,
-				temperature: 0.0,
+				presencePenalty: 0.6,
+				temperature: 0.9,
 				topP: 1.0,
 				cancellationToken: cancellationToken
 			);
@@ -48,8 +48,8 @@ namespace BotNet.Services.OpenAI {
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
 				frequencyPenalty: 0.0,
-				presencePenalty: 0.0,
-				temperature: 0.0,
+				presencePenalty: 0.6,
+				temperature: 0.9,
 				topP: 1.0,
 				cancellationToken: cancellationToken
 			);
