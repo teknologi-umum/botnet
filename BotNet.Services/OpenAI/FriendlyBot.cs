@@ -47,8 +47,8 @@ namespace BotNet.Services.OpenAI {
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
-				frequencyPenalty: 0.5,
-				presencePenalty: 1.0,
+				frequencyPenalty: 0.0,
+				presencePenalty: 0.0,
 				temperature: 0.0,
 				topP: 1.0,
 				cancellationToken: cancellationToken
