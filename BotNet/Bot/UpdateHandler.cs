@@ -55,7 +55,7 @@ namespace BotNet.Bot {
 						// Handle call sign
 						if (update.Message.Text is { } messageText && (
 							messageText.StartsWith("AI,")
-							// || messageText.StartsWith("Pakde,")
+						// || messageText.StartsWith("Pakde,")
 						)) {
 							// Get call sign
 							string callSign = messageText.Split(',')[0];
