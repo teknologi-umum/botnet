@@ -218,7 +218,7 @@ namespace BotNet.Bot {
 								case "/genjs":
 									await OpenAI.GenerateJavaScriptCodeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
-								case "/joke":
+								case "/humor":
 									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
 								case "/clean":
@@ -264,6 +264,8 @@ namespace BotNet.Bot {
 							messageId: update.CallbackQuery.Message.MessageId,
 							replyMarkup: Pop.GenerateBubbleWrap(data!)
 						);
+						break;
+					default:
 						break;
 				}
 			} catch (OperationCanceledException) {
