@@ -10,7 +10,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.BotCommands {
 	public static class Idea {
-		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(3, TimeSpan.FromMinutes(1));
+		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(3, TimeSpan.FromMinutes(5));
 		public static async Task GetRandomIdeaAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			try {
 				RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
