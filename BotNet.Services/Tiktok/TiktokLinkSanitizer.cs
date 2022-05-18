@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -27,8 +28,10 @@ namespace BotNet.Services.Tiktok {
 			return new Uri(sanitizedUri);
 		}
 
-		public static bool IsShortenedTiktokLink(Uri link) {
-			return Regex.IsMatch(link.OriginalString, "^https://vt.tiktok.com/[0-9a-zA-Z]{8,12}/$");
+		public static Uri? FindShortenedTiktokLink(string message) {
+			return Regex.Matches(message, "https://vt.tiktok.com/[0-9a-zA-Z]{8,12}/")
+				.Select(match => new Uri(match.Value))
+				.FirstOrDefault();
 		}
 
 		protected virtual void Dispose(bool disposing) {

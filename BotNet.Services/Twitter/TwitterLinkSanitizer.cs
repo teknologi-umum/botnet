@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace BotNet.Services.Twitter {
@@ -8,12 +9,10 @@ namespace BotNet.Services.Twitter {
 			return new Uri(sanitizedUri);
 		}
 
-		public static bool IsTwitterLink(Uri link) {
-			return Regex.IsMatch(link.OriginalString, "^https://twitter.com/[0-9a-zA-Z_]+/status/[0-9]{18,20}");
-		}
-
-		public static bool IsTrackedTwitterLink(Uri link) {
-			return Regex.IsMatch(link.OriginalString, "^https://twitter.com/[0-9a-zA-Z_]+/status/[0-9]{18,20}\\?");
+		public static Uri? FindTrackedTwitterLink(string message) {
+			return Regex.Matches(message, "^https://twitter.com/[0-9a-zA-Z_]+/status/[0-9]{18,20}\\?")
+				.Select(match => new Uri(match.Value))
+				.FirstOrDefault();
 		}
 	}
 }

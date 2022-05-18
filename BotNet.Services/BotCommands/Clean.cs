@@ -15,101 +15,65 @@ namespace BotNet.Services.BotCommands {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
-					if (Uri.TryCreate(commandArgument, UriKind.Absolute, out Uri? linkUri)) {
-						if (TiktokLinkSanitizer.IsShortenedTiktokLink(linkUri)) {
-							try {
-								Uri sanitizedLinkUri = await serviceProvider.GetRequiredService<TiktokLinkSanitizer>().SanitizeAsync(linkUri, cancellationToken);
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							} catch {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: "<code>Link gagal dibersihkan.</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							}
-						} else if (TwitterLinkSanitizer.IsTwitterLink(linkUri)) {
-							if (!TwitterLinkSanitizer.IsTrackedTwitterLink(linkUri)) {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: "<code>Link sudah bersih.</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							} else {
-								Uri sanitizedLinkUri = TwitterLinkSanitizer.Sanitize(linkUri);
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							}
-						} else {
+					if (TiktokLinkSanitizer.FindShortenedTiktokLink(commandArgument) is Uri shortenedTiktokUri) {
+						try {
+							Uri sanitizedLinkUri = await serviceProvider.GetRequiredService<TiktokLinkSanitizer>().SanitizeAsync(shortenedTiktokUri, cancellationToken);
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: "<code>Link tidak dikenali.</code>",
+								text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} catch {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Link gagal dibersihkan.</code>",
 								parseMode: ParseMode.Html,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						}
+					} else if (TwitterLinkSanitizer.FindTrackedTwitterLink(commandArgument) is Uri trackedTwitterUri) {
+						Uri sanitizedLinkUri = TwitterLinkSanitizer.Sanitize(trackedTwitterUri);
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: "<code>Link tidak dikenali.</code>",
+							text: "<code>Tidak ada link kotor yang dikenali.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
-					if (Uri.TryCreate(repliedToMessage, UriKind.Absolute, out Uri? linkUri)) {
-						if (TiktokLinkSanitizer.IsShortenedTiktokLink(linkUri)) {
-							try {
-								Uri sanitizedLinkUri = await serviceProvider.GetRequiredService<TiktokLinkSanitizer>().SanitizeAsync(linkUri, cancellationToken);
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
-									replyToMessageId: message.ReplyToMessage.MessageId,
-									cancellationToken: cancellationToken);
-							} catch {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: "<code>Link gagal dibersihkan.</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							}
-						} else if (TwitterLinkSanitizer.IsTwitterLink(linkUri)) {
-							if (!TwitterLinkSanitizer.IsTrackedTwitterLink(linkUri)) {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: "<code>Link sudah bersih.</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							} else {
-								Uri sanitizedLinkUri = TwitterLinkSanitizer.Sanitize(linkUri);
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
-									replyToMessageId: message.ReplyToMessage.MessageId,
-									cancellationToken: cancellationToken);
-							}
-						} else {
+					if (TiktokLinkSanitizer.FindShortenedTiktokLink(repliedToMessage) is Uri shortenedTiktokUri) {
+						try {
+							Uri sanitizedLinkUri = await serviceProvider.GetRequiredService<TiktokLinkSanitizer>().SanitizeAsync(shortenedTiktokUri, cancellationToken);
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: "<code>Link tidak dikenali.</code>",
+								text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+								replyToMessageId: message.ReplyToMessage.MessageId,
+								cancellationToken: cancellationToken);
+						} catch {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Link gagal dibersihkan.</code>",
 								parseMode: ParseMode.Html,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						}
+					} else if (TwitterLinkSanitizer.FindTrackedTwitterLink(commandArgument) is Uri trackedTwitterUri) {
+						Uri sanitizedLinkUri = TwitterLinkSanitizer.Sanitize(trackedTwitterUri);
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+							replyToMessageId: message.ReplyToMessage.MessageId,
+							cancellationToken: cancellationToken);
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: "<code>Link tidak dikenali.</code>",
+							text: "<code>Tidak ada link kotor yang dikenali.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
