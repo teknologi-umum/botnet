@@ -47,13 +47,13 @@ namespace BotNet.Bot {
 			try {
 				switch (update.Type) {
 					case UpdateType.Message:
-						_logger.LogInformation("Received message from [{firstName} {lastName}]: '{message}' in chat {chatName}.", update.Message!.From!.FirstName, update.Message.From.LastName, update.Message.Text, update.Message.Chat.Title ?? update.Message.Chat.Id.ToString());
+						// _logger.LogInformation("Received message from [{firstName} {lastName}]: '{message}' in chat {chatName}.", update.Message!.From!.FirstName, update.Message.From.LastName, update.Message.Text, update.Message.Chat.Title ?? update.Message.Chat.Id.ToString());
 
 						// Retrieve bot identity
 						_me ??= await GetMeAsync(botClient, cancellationToken);
 
 						// Handle call sign
-						if (update.Message.Text is { } messageText && (
+						if (update.Message?.Text is { } messageText && (
 							messageText.StartsWith("AI,")
 						// || messageText.StartsWith("Pakde,")
 						)) {
@@ -243,8 +243,8 @@ namespace BotNet.Bot {
 						}
 						break;
 					case UpdateType.InlineQuery:
-						_logger.LogInformation("Received inline query from [{firstName} {lastName}]: '{query}'.", update.InlineQuery!.From.FirstName, update.InlineQuery.From.LastName, update.InlineQuery.Query);
-						if (update.InlineQuery.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
+						// _logger.LogInformation("Received inline query from [{firstName} {lastName}]: '{query}'.", update.InlineQuery!.From.FirstName, update.InlineQuery.From.LastName, update.InlineQuery.Query);
+						if (update.InlineQuery?.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
 							IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>($"{query}|{update.InlineQuery.From.Id}");
 							using GrainCancellationTokenSource grainCancellationTokenSource = new();
 							using CancellationTokenRegistration tokenRegistration = cancellationToken.Register(() => grainCancellationTokenSource.Cancel());
