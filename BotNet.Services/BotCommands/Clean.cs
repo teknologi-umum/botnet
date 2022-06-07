@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BotNet.Services.Instagram;
 using BotNet.Services.Tiktok;
 using BotNet.Services.Twitter;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,13 @@ namespace BotNet.Services.BotCommands {
 							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
+					} else if (InstagramLinkSanitizer.FindTrackedInstagramLink(commandArgument) is Uri trackedInstagramUri) {
+						Uri sanitizedLinkUri = InstagramLinkSanitizer.Sanitize(trackedInstagramUri);
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -65,6 +73,13 @@ namespace BotNet.Services.BotCommands {
 						}
 					} else if (TwitterLinkSanitizer.FindTrackedTwitterLink(commandArgument) is Uri trackedTwitterUri) {
 						Uri sanitizedLinkUri = TwitterLinkSanitizer.Sanitize(trackedTwitterUri);
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+							replyToMessageId: message.ReplyToMessage.MessageId,
+							cancellationToken: cancellationToken);
+					} else if (InstagramLinkSanitizer.FindTrackedInstagramLink(commandArgument) is Uri trackedInstagramUri) {
+						Uri sanitizedLinkUri = InstagramLinkSanitizer.Sanitize(trackedInstagramUri);
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
