@@ -239,6 +239,9 @@ namespace BotNet.Bot {
 								case "/tldr":
 									await OpenAI.GenerateTldrAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/webp":
+									await Webp.ConvertToImageAsync(botClient, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
