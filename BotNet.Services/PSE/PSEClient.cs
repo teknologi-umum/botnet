@@ -1,24 +1,40 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.PSE.Models;
+using Microsoft.Extensions.Logging;
 
 namespace BotNet.Services.PSE {
 	public class PSEClient {
 		private const string BASE_URL = "https://pse.kominfo.go.id/static/json-static";
 		private readonly HttpClient _httpClient;
+		private readonly ILogger<PSEClient> _logger;
 
 		public PSEClient(
-			HttpClient httpClient
+			HttpClient httpClient,
+			ILogger<PSEClient> logger
 		) {
 			_httpClient = httpClient;
+			_logger = logger;
 		}
 
 		public async Task<DateTime> GetLastGeneratedAsync(CancellationToken cancellationToken) {
-			TimestampsResponse? response = await _httpClient.GetFromJsonAsync<TimestampsResponse>($"{BASE_URL}/generationInfo.json", cancellationToken);
+			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(10));
+			using CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutSource.Token, cancellationToken);
+			cancellationToken = linkedSource.Token;
+
+			string url = $"{BASE_URL}/generationInfo.json";
+			_logger.LogInformation("GET {0}", url);
+			using HttpResponseMessage httpResponse = await _httpClient.GetAsync(
+				requestUri: url,
+				cancellationToken: cancellationToken
+			);
+			httpResponse.EnsureSuccessStatusCode();
+			string json = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+			TimestampsResponse? response = JsonSerializer.Deserialize<TimestampsResponse>(json);
 
 			if (response is null) {
 				throw new HttpRequestException();
@@ -36,10 +52,28 @@ namespace BotNet.Services.PSE {
 			int page,
 			CancellationToken cancellationToken
 		) {
-			DigitalServicesResponse? response = await _httpClient.GetFromJsonAsync<DigitalServicesResponse>(
-				requestUri: $"{BASE_URL}/{domicile.ToPSEDomicile()}_{status.ToPSEStatus()}/{page + 1}.json",
+			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(5));
+			using CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutSource.Token, cancellationToken);
+			cancellationToken = linkedSource.Token;
+
+			string url = $"{BASE_URL}/{domicile.ToPSEDomicile()}_{status.ToPSEStatus()}/{page - 1}.json";
+			_logger.LogInformation("GET {0}", url);
+
+			using HttpResponseMessage httpResponse = await _httpClient.GetAsync(
+				requestUri: url,
 				cancellationToken: cancellationToken
 			);
+			httpResponse.EnsureSuccessStatusCode();
+			string json = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
+			if (json.StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase)) {
+				return (
+					DigitalServices: ImmutableList<DigitalService>.Empty,
+					PaginationMetadata: new PaginationMetadata(1, 1, 0, 0, 10, 0)
+				);
+			}
+
+			DigitalServicesResponse? response = JsonSerializer.Deserialize<DigitalServicesResponse>(json);
 
 			if (response is null) {
 				throw new HttpRequestException();

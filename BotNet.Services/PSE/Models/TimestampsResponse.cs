@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace BotNet.Services.PSE.Models {
 	public record TimestampsResponse(
-		[property: JsonProperty("data")] Timestamps Timestamps
+		[property: JsonPropertyName("data")] Timestamps Timestamps
 	);
 }

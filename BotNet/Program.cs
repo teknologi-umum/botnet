@@ -11,6 +11,7 @@ using BotNet.Services.OpenAI;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
 using BotNet.Services.ProgrammerHumor;
+using BotNet.Services.PSE;
 using BotNet.Services.Tenor;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
@@ -55,6 +56,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddTiktokServices();
 		services.AddCSharpEvaluator();
 		services.AddThisXDoesNotExist();
+		services.AddPSEClient();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
