@@ -46,7 +46,6 @@ namespace BotNet.Services.PSE {
 						lock (_uncrawledPages) {
 							_uncrawledPages.Clear();
 						}
-						_digitalServiceByIdByDomicile.Clear();
 					}
 				} catch (Exception exc) {
 					_logger.LogError(exc, "Couldn't fetch LastGenerated. Skipping for now.");
