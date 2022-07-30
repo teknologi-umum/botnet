@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BotNet.Services.PSE.Models {
+namespace BotNet.Services.PSE.JsonModels {
 	// While the request uses 0-based index for page, currentPage here is 1-based index
 	// from, to, lastPage are also 1-based index
 	public record PaginationMetadata(

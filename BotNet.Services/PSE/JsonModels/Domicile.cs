@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BotNet.Services.PSE.Models {
+namespace BotNet.Services.PSE.JsonModels {
 	public enum Domicile {
 		Domestic,
 		Foreign
@@ -17,6 +17,12 @@ namespace BotNet.Services.PSE.Models {
 			"LOKAL" => Domicile.Domestic,
 			"ASING" => Domicile.Foreign,
 			_ => throw new ArgumentOutOfRangeException(nameof(pseDomicile))
+		};
+
+		public static string ToFriendlyDomicile(this Domicile domicile) => domicile switch {
+			Domicile.Domestic => "Perusahaan Domestik",
+			Domicile.Foreign => "Perusahaan Asing",
+			_ => throw new ArgumentOutOfRangeException(nameof(domicile))
 		};
 	}
 }

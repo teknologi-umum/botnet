@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.PSE.Models;
+using BotNet.Services.PSE.JsonModels;
 using Microsoft.Extensions.Logging;
 
 namespace BotNet.Services.PSE {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 
-namespace BotNet.Services.PSE.Models {
+namespace BotNet.Services.PSE.JsonModels {
 	public record DigitalServiceAttributes(
 		[property: JsonPropertyName("sistem_elektronik_id")] int ServiceId,
 		[property: JsonPropertyName("nomor_pb_umku")] string PBUMKUNumber,
@@ -15,6 +15,6 @@ namespace BotNet.Services.PSE.Models {
 		[property: JsonPropertyName("status_id")] string PSEStatus
 	) {
 		[JsonIgnore]
-		public Status Status => PSEStatus.ToStatusEnum();
+		public Status Status { get; } = PSEStatus.ToStatusEnum();
 	}
 }
