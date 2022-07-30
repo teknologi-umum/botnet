@@ -1,5 +1,6 @@
 ﻿using BotNet;
 using BotNet.Bot;
+using BotNet.PSE;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
@@ -10,6 +11,7 @@ using BotNet.Services.OpenAI;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
 using BotNet.Services.ProgrammerHumor;
+using BotNet.Services.PSE;
 using BotNet.Services.Tenor;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
@@ -54,11 +56,14 @@ Host.CreateDefaultBuilder(args)
 		services.AddTiktokServices();
 		services.AddCSharpEvaluator();
 		services.AddThisXDoesNotExist();
+		services.AddPSEClient();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
+		services.AddSingleton<PSEService>();
 		services.AddHostedService<BotService>();
+		services.AddHostedService<PSEService>();
 
 		// Telegram Bot
 		services.AddTelegramBot(botToken: configuration["BotOptions:AccessToken"]);

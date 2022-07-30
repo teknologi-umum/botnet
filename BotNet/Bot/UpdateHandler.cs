@@ -242,6 +242,9 @@ namespace BotNet.Bot {
 								case "/webp":
 									await Webp.ConvertToImageAsync(botClient, update.Message, cancellationToken);
 									break;
+								case "/pse":
+									await Services.BotCommands.PSE.SearchAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;
