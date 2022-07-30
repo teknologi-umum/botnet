@@ -58,7 +58,9 @@ Host.CreateDefaultBuilder(args)
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
+		services.AddSingleton<PSEService>();
 		services.AddHostedService<BotService>();
+		services.AddHostedService<PSEService>();
 
 		// Telegram Bot
 		services.AddTelegramBot(botToken: configuration["BotOptions:AccessToken"]);
