@@ -1,5 +1,6 @@
 ﻿using BotNet;
 using BotNet.Bot;
+using BotNet.PSE;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
