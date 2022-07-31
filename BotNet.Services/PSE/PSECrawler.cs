@@ -172,7 +172,7 @@ namespace BotNet.Services.PSE {
 							where p.Domicile == domicile && p.Status == status
 							orderby p.Page
 							select p.Page
-						).Take(1).ToList() is { Count: 0 } pages) {
+						).Take(1).ToList() is { Count: 1 } pages) {
 							return (pages[0] - 1, totalPages);
 						} else {
 							return (totalPages, totalPages);
@@ -194,13 +194,15 @@ namespace BotNet.Services.PSE {
 		}
 
 		public ImmutableList<(Domicile Domicile, DigitalService DigitalService)> Search(string keyword, int take) {
+			HashSet<int> addedServiceIds = new();
 			ImmutableList<(Domicile Domicile, DigitalService DigitalService)>.Builder builder = ImmutableList.CreateBuilder<(Domicile Domicile, DigitalService DigitalService)>();
 
 			// Populate by URL
 			foreach (Domicile domicile in Enum.GetValues<Domicile>()) {
 				if (_digitalServiceByIdByDomicile.TryGetValue(domicile, out ConcurrentDictionary<int, DigitalService>? digitalServiceById)) {
 					foreach (DigitalService digitalService in digitalServiceById.Values) {
-						if (digitalService.Attributes.Website.Contains(keyword, StringComparison.OrdinalIgnoreCase)) {
+						if (digitalService.Attributes.Website.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+							&& addedServiceIds.Add(digitalService.Id)) {
 							builder.Add((domicile, digitalService));
 							if (builder.Count >= take) {
 								return builder.ToImmutable();
@@ -214,7 +216,8 @@ namespace BotNet.Services.PSE {
 			foreach (Domicile domicile in Enum.GetValues<Domicile>()) {
 				if (_digitalServiceByIdByDomicile.TryGetValue(domicile, out ConcurrentDictionary<int, DigitalService>? digitalServiceById)) {
 					foreach (DigitalService digitalService in digitalServiceById.Values) {
-						if (digitalService.Attributes.CompanyName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) {
+						if (digitalService.Attributes.CompanyName.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+							&& addedServiceIds.Add(digitalService.Id)) {
 							builder.Add((domicile, digitalService));
 							if (builder.Count >= take) {
 								return builder.ToImmutable();
@@ -228,7 +231,8 @@ namespace BotNet.Services.PSE {
 			foreach (Domicile domicile in Enum.GetValues<Domicile>()) {
 				if (_digitalServiceByIdByDomicile.TryGetValue(domicile, out ConcurrentDictionary<int, DigitalService>? digitalServiceById)) {
 					foreach (DigitalService digitalService in digitalServiceById.Values) {
-						if (digitalService.Attributes.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase)) {
+						if (digitalService.Attributes.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+							&& addedServiceIds.Add(digitalService.Id)) {
 							builder.Add((domicile, digitalService));
 							if (builder.Count >= take) {
 								return builder.ToImmutable();
