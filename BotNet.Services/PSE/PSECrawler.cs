@@ -196,6 +196,20 @@ namespace BotNet.Services.PSE {
 		public ImmutableList<(Domicile Domicile, DigitalService DigitalService)> Search(string keyword, int take) {
 			ImmutableList<(Domicile Domicile, DigitalService DigitalService)>.Builder builder = ImmutableList.CreateBuilder<(Domicile Domicile, DigitalService DigitalService)>();
 
+			// Populate by URL
+			foreach (Domicile domicile in Enum.GetValues<Domicile>()) {
+				if (_digitalServiceByIdByDomicile.TryGetValue(domicile, out ConcurrentDictionary<int, DigitalService>? digitalServiceById)) {
+					foreach (DigitalService digitalService in digitalServiceById.Values) {
+						if (digitalService.Attributes.Website.Contains(keyword, StringComparison.OrdinalIgnoreCase)) {
+							builder.Add((domicile, digitalService));
+							if (builder.Count >= take) {
+								return builder.ToImmutable();
+							}
+						}
+					}
+				}
+			}
+
 			// Populate by company name
 			foreach (Domicile domicile in Enum.GetValues<Domicile>()) {
 				if (_digitalServiceByIdByDomicile.TryGetValue(domicile, out ConcurrentDictionary<int, DigitalService>? digitalServiceById)) {

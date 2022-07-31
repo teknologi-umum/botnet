@@ -33,8 +33,13 @@ namespace BotNet.Services.BotCommands {
 					let domicile = r.Domicile
 					let digitalService = r.DigitalService
 					select $"<b>{digitalService.Attributes.Name} ({digitalService.Attributes.CompanyName})</b>\n"
+					+ $"🔗 {digitalService.Attributes.Website}\n"
 					+ $"{digitalService.Attributes.Status.ToStatusEmoji()} {domicile.ToFriendlyDomicile()}, {digitalService.Attributes.Status.ToFriendlyStatus()}\n"
 				);
+
+				if (result.Count == 5) {
+					text += "\nBot ini hanya menampilkan maksimal 5 sistem elektronik.";
+				}
 
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
