@@ -15,6 +15,7 @@ using BotNet.Services.PSE;
 using BotNet.Services.Tenor;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
+using BotNet.Services.TrustPositif;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -57,6 +58,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddCSharpEvaluator();
 		services.AddThisXDoesNotExist();
 		services.AddPSEClient();
+		services.AddTrustPositifLookup();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
