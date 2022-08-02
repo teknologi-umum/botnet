@@ -18,7 +18,8 @@ namespace BotNet.Services.PSE.JsonModels {
 		public static Status ToStatusEnum(this string pseStatus) => pseStatus switch {
 			"TERDAFTAR" => Status.Registered,
 			"DIHENTIKAN_SEMENTARA" or
-			"SUSPENDED_BY_TAKEL" => Status.Suspended,
+			"SUSPENDED_BY_TAKEL" or
+			"SUSPENDED_BY_PAI" => Status.Suspended,
 			"DICABUT" => Status.Revoked,
 			_ => throw new ArgumentOutOfRangeException(nameof(pseStatus), $"Unknown status {pseStatus}")
 		};

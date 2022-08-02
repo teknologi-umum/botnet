@@ -3,17 +3,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.PSE;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace BotNet.PSE {
 	public class PSEService : IHostedService, IDisposable {
 		private readonly PSECrawler _crawler;
+		private readonly ILogger<PSEService> _logger;
 		private Timer? _timer;
 		private CancellationTokenSource? _cancellationTokenSource;
 
 		public PSEService(
-			PSECrawler crawler
+			PSECrawler crawler,
+			ILogger<PSEService> logger
 		) {
 			_crawler = crawler;
+			_logger = logger;
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken) {
@@ -28,7 +32,13 @@ namespace BotNet.PSE {
 		}
 
 		public async void CrawlAsync(object? state) {
-			await _crawler.CrawlAsync(_cancellationTokenSource!.Token);
+			try {
+				await _crawler.CrawlAsync(_cancellationTokenSource!.Token);
+			} catch (OperationCanceledException) {
+				return;
+			} catch (Exception exc) {
+				_logger.LogError(exc, "Error while crawling PSE");
+			}
 		}
 
 		public void Dispose() {
