@@ -116,7 +116,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: $"Untuk mengeksekusi program, silahkan ketik {message.Text![..commandLength].Trim()} diikuti code.",
+						text: $"Untuk mengeksekusi program, silakan ketik {message.Text![..commandLength].Trim()} diikuti code.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);

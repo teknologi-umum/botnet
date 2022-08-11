@@ -106,7 +106,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk mengevaluasi javascript, silahkan ketik /evaljs diikuti ekspresi javascript.",
+						text: "Untuk mengevaluasi javascript, silakan ketik /evaljs diikuti ekspresi javascript.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -178,7 +178,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk mengevaluasi C#, silahkan ketik /evalcs diikuti ekspresi C#.",
+						text: "Untuk mengevaluasi C#, silakan ketik /evalcs diikuti ekspresi C#.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
