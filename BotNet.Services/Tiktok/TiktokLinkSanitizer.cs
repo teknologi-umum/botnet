@@ -29,7 +29,7 @@ namespace BotNet.Services.Tiktok {
 		}
 
 		public static Uri? FindShortenedTiktokLink(string message) {
-			return Regex.Matches(message, "https://vt.tiktok.com/[0-9a-zA-Z]{8,12}(/)?")
+			return Regex.Matches(message, "https://v[tm].tiktok.com/[0-9a-zA-Z]{8,12}(/)?")
 				.Select(match => new Uri(match.Value))
 				.FirstOrDefault();
 		}
