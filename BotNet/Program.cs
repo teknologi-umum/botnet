@@ -4,6 +4,7 @@ using BotNet.PSE;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
+using BotNet.Services.Craiyon;
 using BotNet.Services.DynamicExpresso;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
@@ -57,6 +58,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddCSharpEvaluator();
 		services.AddThisXDoesNotExist();
 		services.AddPSEClient();
+		services.AddCraiyonClient();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
