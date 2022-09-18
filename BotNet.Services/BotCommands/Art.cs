@@ -16,10 +16,13 @@ using Telegram.Bot.Types.InputFiles;
 namespace BotNet.Services.BotCommands {
 	public static class Art {
 		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
+		private static readonly HashSet<int> HANDLED_MESSAGE_IDS = new();
 		public static async Task GetRandomArtAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
+					if (HANDLED_MESSAGE_IDS.Contains(message.MessageId)) return;
+					HANDLED_MESSAGE_IDS.Add(message.MessageId);
 					try {
 						RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
