@@ -38,8 +38,8 @@ namespace BotNet.Services.BotCommands {
 
 						_ = Task.Run(async () => {
 							try {
-								for (int i = 60; i > 0; i--) {
-									await Task.Delay(1000, cancellationTokenSource.Token);
+								for (int i = 60; i > 0; i -= 10) {
+									await Task.Delay(10000, cancellationTokenSource.Token);
 									_ = Task.Run(async () => {
 										try {
 											await botClient.EditMessageTextAsync(
