@@ -15,14 +15,13 @@ using Telegram.Bot.Types.InputFiles;
 
 namespace BotNet.Services.BotCommands {
 	public static class Art {
-		private static readonly RateLimiter RANDOM_ART_RATE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
-		private static readonly RateLimiter GENERATED_ART_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(5));
+		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
 		public static async Task GetRandomArtAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
 					try {
-						GENERATED_ART_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
+						RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
 						DateTime started = DateTime.Now;
 						Message responseMessage = await botClient.SendTextMessageAsync(
@@ -60,7 +59,7 @@ namespace BotNet.Services.BotCommands {
 									imageStream.Dispose();
 								}
 							}
-						} catch (Exception exc) {
+						} catch {
 							await botClient.EditMessageTextAsync(
 								chatId: message.Chat.Id,
 								messageId: responseMessage.MessageId,
@@ -71,7 +70,7 @@ namespace BotNet.Services.BotCommands {
 					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: $"Kamu belum dapat giliran. Coba lagi {cooldown}.",
+							text: $"Saya belum selesai melukis. Coba lagi {cooldown}.",
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
@@ -79,7 +78,7 @@ namespace BotNet.Services.BotCommands {
 				}
 			} else {
 				try {
-					RANDOM_ART_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
+					RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
 					byte[] image = await serviceProvider.GetRequiredService<ThisArtworkDoesNotExist>().GetRandomArtworkAsync(cancellationToken);
 					using MemoryStream imageStream = new(image);
