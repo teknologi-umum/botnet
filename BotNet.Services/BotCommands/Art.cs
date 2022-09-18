@@ -32,7 +32,33 @@ namespace BotNet.Services.BotCommands {
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId);
 
-						Task.Run(async () => {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+						CancellationTokenSource cancellationTokenSource = new();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+						_ = Task.Run(async () => {
+							try {
+								for (int i = 60; i > 0; i--) {
+									await Task.Delay(1000, cancellationTokenSource.Token);
+									_ = Task.Run(async () => {
+										try {
+											await botClient.EditMessageTextAsync(
+												chatId: message.Chat.Id,
+												messageId: responseMessage.MessageId,
+												text: $"Generating art... Please wait for approximately {i} seconds.",
+												cancellationToken: cancellationTokenSource.Token);
+										} catch { }
+									}, cancellationTokenSource.Token);
+								}
+								await botClient.EditMessageTextAsync(
+									chatId: message.Chat.Id,
+									messageId: responseMessage.MessageId,
+									text: "Generating art... Should be completed anytime soon.",
+									cancellationToken: cancellationTokenSource.Token);
+							} catch { }
+						});
+
+						_ = Task.Run(async () => {
 							try {
 								List<byte[]> images = await serviceProvider.GetRequiredService<CraiyonClient>().GenerateImagesAsync(commandArgument, CancellationToken.None);
 								DateTime finished = DateTime.Now;
@@ -46,6 +72,8 @@ namespace BotNet.Services.BotCommands {
 								}
 								try {
 									try {
+										cancellationTokenSource.Cancel();
+										cancellationTokenSource.Dispose();
 										await botClient.DeleteMessageAsync(
 											chatId: message.Chat.Id,
 											messageId: responseMessage.MessageId);
