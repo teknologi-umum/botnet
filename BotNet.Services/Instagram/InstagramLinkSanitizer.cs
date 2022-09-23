@@ -12,7 +12,10 @@ namespace BotNet.Services.Instagram {
 		public static Uri? FindTrackedInstagramLink(string message) {
 			return Regex.Matches(message, "https://www.instagram.com/p/[0-9a-zA-Z-_]{8,16}/\\?")
 				.Select(match => new Uri(match.Value))
-				.FirstOrDefault();
+				.FirstOrDefault()
+				?? Regex.Matches(message, "https://www.instagram.com/reel/[0-9a-zA-Z-_]{8,16}/\\?")
+					.Select(match => new Uri(match.Value))
+					.FirstOrDefault();
 		}
 	}
 }
