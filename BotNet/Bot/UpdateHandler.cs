@@ -201,10 +201,10 @@ namespace BotNet.Bot {
 									);
 									break;
 								case "/explain":
-									//await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en", cancellationToken);
+									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en", cancellationToken);
 									break;
 								case "/jelaskan":
-									//await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "id", cancellationToken);
+									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "id", cancellationToken);
 									break;
 								case "/ask":
 									await OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message, cancellationToken);
