@@ -50,7 +50,7 @@ namespace BotNet.Services.BotCommands {
 			} else {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
-					text: "Untuk mencari sistem elektronik, silahkan ketik /pse diikuti keyword.",
+					text: "Untuk mencari sistem elektronik, silakan ketik /pse diikuti keyword.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);

@@ -71,7 +71,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk menjalankan program brainfuck, silahkan ketik /fuck diikuti kode program.",
+						text: "Untuk menjalankan program brainfuck, silakan ketik /fuck diikuti kode program.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);

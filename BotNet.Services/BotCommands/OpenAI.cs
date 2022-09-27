@@ -112,7 +112,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk explain code, silahkan ketik /explain diikuti code.",
+						text: "Untuk explain code, silakan ketik /explain diikuti code.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -216,7 +216,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk bertanya, silahkan ketik /ask diikuti pertanyaan.",
+						text: "Untuk bertanya, silakan ketik /ask diikuti pertanyaan.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -289,7 +289,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: $"Untuk menerjemahkan, silahkan ketik /{languagePair} diikuti kalimat.",
+						text: $"Untuk menerjemahkan, silakan ketik /{languagePair} diikuti kalimat.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -360,7 +360,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: $"Untuk generate kode JavaScript, silahkan ketik /genjs diikuti instruksi.",
+						text: $"Untuk generate kode JavaScript, silakan ketik /genjs diikuti instruksi.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -754,7 +754,7 @@ namespace BotNet.Services.BotCommands {
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: "Untuk generate TLDR, silahkan ketik /tldr diikuti artikel.",
+						text: "Untuk generate TLDR, silakan ketik /tldr diikuti artikel.",
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
