@@ -55,7 +55,7 @@ namespace BotNet.Bot {
 						// Handle call sign
 						if (update.Message?.Text is { } messageText && (
 							messageText.StartsWith("AI,")
-						// || messageText.StartsWith("Pakde,")
+							|| messageText.StartsWith("Pakde,")
 						)) {
 							// Get call sign
 							string callSign = messageText.Split(',')[0];
@@ -63,7 +63,7 @@ namespace BotNet.Bot {
 							// Respond to call sign
 							Message? sentMessage = callSign switch {
 								"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
-								// "Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
+								"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
 								_ => throw new NotImplementedException($"Call sign {callSign} not handled")
 							};
 
