@@ -28,11 +28,11 @@ namespace BotNet.Services.OpenAI {
 				engine: "text-curie-001",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
-				maxTokens: 60,
-				frequencyPenalty: 0.5,
-				presencePenalty: 0.0,
-				temperature: 0.5,
-				topP: 0.3,
+				maxTokens: 128,
+				frequencyPenalty: 0.0,
+				presencePenalty: 0.6,
+				temperature: 0.9,
+				topP: 1.0,
 				cancellationToken: cancellationToken
 			);
 		}
@@ -58,11 +58,11 @@ namespace BotNet.Services.OpenAI {
 				engine: "text-curie-001",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
-				maxTokens: 60,
-				frequencyPenalty: 0.5,
-				presencePenalty: 0.5,
-				temperature: 0.5,
-				topP: 0.3,
+				maxTokens: 128,
+				frequencyPenalty: 0.0,
+				presencePenalty: 0.6,
+				temperature: 0.9,
+				topP: 1.0,
 				cancellationToken: cancellationToken
 			);
 		}
