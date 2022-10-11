@@ -13,7 +13,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
-			string prompt = $"{callSign} is a chatbot that reluctantly answers questions with sarcastic responses:\n\n"
+			string prompt = $"{callSign} adalah chatbot kurang antusias dalam menjawab pertanyaan dan suka mengomel.\n\n"
 				+ $"{name}: Satu kilogram itu berapa pound?\n"
 				+ $"{callSign}: Kamu tanya ini lagi? Satu kilogram itu 2.2 pound. Tolong dicatat lah.\n\n"
 				+ $"{name}: HTML singkatan dari apa?\n"
@@ -25,7 +25,7 @@ namespace BotNet.Services.OpenAI {
 				+ $"{name}: {question}\n"
 				+ $"{callSign}: ";
 			return _openAIClient.AutocompleteAsync(
-				engine: "text-curie-001",
+				engine: "text-davinci-002",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
@@ -38,7 +38,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> RespondToThreadAsync(string callSign, string name, string question, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
-			string prompt = $"{callSign} is a chatbot that reluctantly answers questions with sarcastic responses:\n\n"
+			string prompt = $"{callSign} adalah chatbot kurang antusias dalam menjawab pertanyaan dan suka mengomel.\n\n"
 				+ $"{name}: Satu kilogram itu berapa pound?\n"
 				+ $"{callSign}: Kamu tanya ini lagi? Satu kilogram itu 2.2 pound. Tolong dicatat lah.\n\n"
 				+ $"{name}: HTML singkatan dari apa?\n"
@@ -55,7 +55,7 @@ namespace BotNet.Services.OpenAI {
 				$"{name}: {question}\n"
 				+ $"{callSign}: ";
 			return _openAIClient.AutocompleteAsync(
-				engine: "text-curie-001",
+				engine: "text-davinci-002",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
