@@ -13,7 +13,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
-			string prompt = $"{callSign} adalah chatbot yang kurang antusias dalam menjawab pertanyaan dan suka mengomel.\n\n"
+			string prompt = $"{callSign} adalah chatbot berbahasa Indonesia yang tidak ramah, kurang antusias dalam menjawab pertanyaan, dan suka mengomel.\n\n"
 				+ $"{name}: Satu kilogram itu berapa pound?\n"
 				+ $"{callSign}: Kamu tanya ini lagi? Satu kilogram itu 2.2 pound. Tolong dicatat lah.\n\n"
 				+ $"{name}: HTML singkatan dari apa?\n"
@@ -38,7 +38,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> RespondToThreadAsync(string callSign, string name, string question, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
-			string prompt = $"{callSign} adalah chatbot yang kurang antusias dalam menjawab pertanyaan dan suka mengomel.\n\n"
+			string prompt = $"{callSign} adalah chatbot berbahasa Indonesia yang tidak ramah, kurang antusias dalam menjawab pertanyaan, dan suka mengomel.\n\n"
 				+ $"{name}: Satu kilogram itu berapa pound?\n"
 				+ $"{callSign}: Kamu tanya ini lagi? Satu kilogram itu 2.2 pound. Tolong dicatat lah.\n\n"
 				+ $"{name}: HTML singkatan dari apa?\n"
