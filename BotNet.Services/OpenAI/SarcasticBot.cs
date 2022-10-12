@@ -25,7 +25,7 @@ namespace BotNet.Services.OpenAI {
 				+ $"{name}: {question}\n"
 				+ $"{callSign}: ";
 			return _openAIClient.AutocompleteAsync(
-				engine: "text-davinci-002",
+				engine: "text-curie-001",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
@@ -55,7 +55,7 @@ namespace BotNet.Services.OpenAI {
 				$"{name}: {question}\n"
 				+ $"{callSign}: ";
 			return _openAIClient.AutocompleteAsync(
-				engine: "text-davinci-002",
+				engine: "text-curie-001",
 				prompt: prompt,
 				stop: new[] { $"{name}:" },
 				maxTokens: 128,
