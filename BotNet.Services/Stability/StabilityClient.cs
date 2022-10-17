@@ -53,8 +53,7 @@ namespace BotNet.Services.Stability {
 						Seed = {
 							(uint)Random.Shared.Next()
 						}
-					},
-					Classifier = new ClassifierParameters()
+					}
 				},
 				headers: new Metadata {
 					{ "Authorization", $"Bearer {_apiKey}" }
@@ -62,16 +61,12 @@ namespace BotNet.Services.Stability {
 				cancellationToken: cancellationToken
 			);
 
-			try {
-				await foreach (Answer answer in streamingCall.ResponseStream.ReadAllAsync(cancellationToken)) {
-					foreach (Artifact artifact in answer.Artifacts) {
-						if (artifact.Type == ArtifactType.ArtifactImage) {
-							return artifact.Binary.ToByteArray();
-						}
+			await foreach (Answer answer in streamingCall.ResponseStream.ReadAllAsync(cancellationToken)) {
+				foreach (Artifact artifact in answer.Artifacts) {
+					if (artifact.Type == ArtifactType.ArtifactImage) {
+						return artifact.Binary.ToByteArray();
 					}
 				}
-			} catch (Exception e) {
-				throw;
 			}
 
 			throw new InvalidOperationException("Unable to generate image");
