@@ -25,13 +25,6 @@ namespace BotNet.Services.BotCommands {
 					try {
 						GENERATED_ART_RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
-						DateTime started = DateTime.Now;
-						Message responseMessage = await botClient.SendTextMessageAsync(
-							chatId: message.Chat.Id,
-							text: "Generating art... Please wait a few seconds",
-							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId);
-
 						try {
 							byte[] image = await serviceProvider.GetRequiredService<StabilityClient>().GenerateImageAsync(commandArgument, CancellationToken.None);
 							using MemoryStream imageStream = new(image);
@@ -39,14 +32,14 @@ namespace BotNet.Services.BotCommands {
 							await botClient.SendPhotoAsync(
 								chatId: message.Chat.Id,
 								photo: new InputOnlineFile(imageStream, "art.jpg"),
+								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						} catch {
-							await botClient.EditMessageTextAsync(
+							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								messageId: responseMessage.MessageId,
 								text: "<code>Could not generate art</code>",
-								parseMode: ParseMode.Html
-							);
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId);
 						}
 					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 						await botClient.SendTextMessageAsync(
