@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <None Remove="CopyPasta\Pasta.json" />
+    <None Remove="Stability\generation.proto" />
     <None Remove="FancyText\CharMaps\Bold.json" />
     <None Remove="FancyText\CharMaps\BoldItalic.json" />
     <None Remove="FancyText\CharMaps\Cursive.json" />
@@ -35,6 +36,7 @@
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.0.0-alpha-844" />
     <PackageReference Include="DynamicExpresso.Core" Version="2.12.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.49.0" />
     <PackageReference Include="Microsoft.ClearScript" Version="7.2.4" />
     <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.2.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
@@ -45,6 +47,12 @@
     <PackageReference Include="RG.Ninja" Version="1.0.8" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0-preview.155" />
     <PackageReference Include="Telegram.Bot" Version="17.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.21.2" />
+    <PackageReference Include="Grpc" Version="2.46.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.47.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +78,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\pehape\csharp\Pehape\Pehape.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Stability\generation.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

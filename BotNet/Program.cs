@@ -13,6 +13,7 @@ using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.PSE;
+using BotNet.Services.Stability;
 using BotNet.Services.Tenor;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
@@ -44,6 +45,7 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<V8Options>(configuration.GetSection("V8Options"));
 		services.Configure<PistonOptions>(configuration.GetSection("PistonOptions"));
 		services.Configure<OpenAIOptions>(configuration.GetSection("OpenAIOptions"));
+		services.Configure<StabilityOptions>(configuration.GetSection("StabilityOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -60,6 +62,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddThisXDoesNotExist();
 		services.AddPSEClient();
 		services.AddCraiyonClient();
+		services.AddStabilityClient();
 		services.AddTokopediaServices();
 
 		// Hosted Services
