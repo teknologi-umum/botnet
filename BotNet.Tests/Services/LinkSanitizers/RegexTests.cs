@@ -1,8 +1,12 @@
 ﻿using System;
 using BotNet.Services.Tiktok;
 using BotNet.Services.Twitter;
+using BotNet.Services.Tokopedia;
 using FluentAssertions;
 using Xunit;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace BotNet.Tests.Services.LinkSanitizers {
 	public class RegexTests {
@@ -31,6 +35,45 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 			} else {
 				trackedUrl.Should().BeNull();
 			}
+		}
+
+		[Theory]
+		[InlineData("https://tokopedia.link/S0B7SJVfLtb", "https://tokopedia.link/S0B7SJVfLtb")]
+		[InlineData("https://tokopedia.link/EJPbFhHzbub", "https://tokopedia.link/EJPbFhHzbub")]
+		[InlineData("https://tokopedia.link/HaDbM1iJStb", "https://tokopedia.link/HaDbM1iJStb")]
+		[InlineData("awijdiwjdijtokhttps://tokopedia.link/HaDbM1iJStb", "https://tokopedia.link/HaDbM1iJStb")]
+		[InlineData("https://www.tokopedia.com/tokomenulist/original-3d-wooden-puzzle-robotime-pendulum-clock-lk501", null)]
+		public void CanDetectTokopediaShortenedLink(string url, string? trackedLink) {
+			if (TokopediaLinkSanitizer.FindShortenedLink(url) is Uri shortenedLink) {
+				shortenedLink.OriginalString.Should().Be(trackedLink);
+			} else {
+				trackedLink.Should().BeNull();
+			}
+		}
+
+		[Theory]
+		[InlineData("https://tokopedia.link/S0B7SJVfLtb", "https://www.tokopedia.com/ceebstation/wrist-rest-keyboard-pinery-series-angled-tkl-by-patala")]
+		public async Task CanSanitizeTokopediaTrackedLinkAsync(string trackedLink, string? cleanedLink) {
+			using TokopediaLinkSanitizer sanitizer = new();
+			using CancellationTokenSource cancellation = new();
+
+			Uri trackedUrl = new(trackedLink);
+
+			Uri cleaned = await sanitizer.SanitizeAsync(trackedUrl, cancellation.Token);
+			cleaned.OriginalString.Should().Be(cleanedLink);
+		}
+
+		[Fact]
+		public async Task InvalidTokopediaTrackedLinkAsync() {
+			// Arange
+			using TokopediaLinkSanitizer sanitizer = new();
+			using CancellationTokenSource cancellation = new();
+
+			Uri invalidUrl = new("https://tokopedia.link/S0B7SJVfL");
+
+			// Act
+			// Assert
+			await Assert.ThrowsAsync<HttpRequestException>(async () => await sanitizer.SanitizeAsync(invalidUrl, cancellation.Token));
 		}
 	}
 }
