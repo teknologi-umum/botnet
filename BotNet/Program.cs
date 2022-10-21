@@ -6,6 +6,7 @@ using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Craiyon;
 using BotNet.Services.DynamicExpresso;
+using BotNet.Services.GoogleMap;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenAI;
@@ -45,6 +46,7 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<PistonOptions>(configuration.GetSection("PistonOptions"));
 		services.Configure<OpenAIOptions>(configuration.GetSection("OpenAIOptions"));
 		services.Configure<StabilityOptions>(configuration.GetSection("StabilityOptions"));
+		services.Configure<GoogleMapOptions>(configuration.GetSection("GoogleMapOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -59,16 +61,17 @@ Host.CreateDefaultBuilder(args)
 		services.AddTiktokServices();
 		services.AddCSharpEvaluator();
 		services.AddThisXDoesNotExist();
-		services.AddPSEClient();
+		//services.AddPSEClient();
 		services.AddCraiyonClient();
 		services.AddStabilityClient();
+		services.AddGoogleMaps();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
 		services.AddSingleton<BotService>();
-		services.AddSingleton<PSEService>();
+		//services.AddSingleton<PSEService>();
 		services.AddHostedService<BotService>();
-		services.AddHostedService<PSEService>();
+		//services.AddHostedService<PSEService>();
 
 		// Telegram Bot
 		services.AddTelegramBot(botToken: configuration["BotOptions:AccessToken"]);
