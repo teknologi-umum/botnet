@@ -9,6 +9,7 @@ Telegram Bot written in .NET
 ```json
 {
   "BotOptions:AccessToken": "yourtoken",
+  "GoogleMapOptions:ApiKey": "yourApiKey",
   "HostingOptions:UseLongPolling": true
 }
 ```
