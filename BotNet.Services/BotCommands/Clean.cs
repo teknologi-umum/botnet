@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.Instagram;
 using BotNet.Services.Tiktok;
+using BotNet.Services.Tokopedia;
 using BotNet.Services.Twitter;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
@@ -46,6 +47,22 @@ namespace BotNet.Services.BotCommands {
 							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
+					} else if (TokopediaLinkSanitizer.FindShortenedLink(commandArgument) is Uri trackerTokopediaUri) {
+						try {
+							Uri sanitizedLinkUri = await serviceProvider.GetRequiredService<TokopediaLinkSanitizer>().SanitizeAsync(trackerTokopediaUri, cancellationToken);
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} catch {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Link gagal dibersihkan.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						}
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -85,6 +102,22 @@ namespace BotNet.Services.BotCommands {
 							text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
 							replyToMessageId: message.ReplyToMessage.MessageId,
 							cancellationToken: cancellationToken);
+					} else if (TokopediaLinkSanitizer.FindShortenedLink(repliedToMessage) is Uri trackerTokopediaUri) {
+						try {
+							Uri sanitizedLinkUri = await serviceProvider.GetRequiredService<TokopediaLinkSanitizer>().SanitizeAsync(trackerTokopediaUri, cancellationToken);
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: $"Link yang sudah dibersihkan: {sanitizedLinkUri.OriginalString}",
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} catch {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Link gagal dibersihkan.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						}
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,

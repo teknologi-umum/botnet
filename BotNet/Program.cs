@@ -17,6 +17,7 @@ using BotNet.Services.Stability;
 using BotNet.Services.Tenor;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
+using BotNet.Services.Tokopedia;
 using BotNet.Services.Typography;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -62,6 +63,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddPSEClient();
 		services.AddCraiyonClient();
 		services.AddStabilityClient();
+		services.AddTokopediaServices();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
