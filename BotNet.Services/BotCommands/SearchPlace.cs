@@ -46,11 +46,18 @@ namespace BotNet.Services.BotCommands {
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					}
+				} else {
+					await telegramBotClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: "<code>Silakan masukkan lokasi di depan perintah /map</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
 				}
 			} else {
 				await telegramBotClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
-					text: "<code>Silakan masukkan lokasi di depan perinta /search_place</code>",
+					text: "<code>Silakan masukkan lokasi di depan perintah /map</code>",
 					parseMode: ParseMode.Html,
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);

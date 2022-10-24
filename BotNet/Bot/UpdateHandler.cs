@@ -245,7 +245,7 @@ namespace BotNet.Bot {
 								case "/pse":
 									await Services.BotCommands.PSE.SearchAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
-								case "/search_place":
+								case "/map":
 									await SearchPlace.SearchPlaceAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
 							}
