@@ -11,7 +11,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.BotCommands {
 	public static class SearchPlace {
-		private static readonly RateLimiter SEARCH_PLACE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
+		private static readonly RateLimiter SEARCH_PLACE_LIMITER = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(2));
 
 		public static async Task SearchPlaceAsync(ITelegramBotClient telegramBotClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
