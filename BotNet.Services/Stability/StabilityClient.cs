@@ -37,7 +37,7 @@ namespace BotNet.Services.Stability {
 					Image = new ImageParameters {
 						Width = 512,
 						Height = 512,
-						Steps = 50,
+						Steps = 10,
 						Samples = 1,
 						Transform = new TransformType {
 							Diffusion = DiffusionSampler.SamplerKLms
