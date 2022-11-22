@@ -22,7 +22,9 @@ namespace BotNet.PSE {
 
 		public Task StartAsync(CancellationToken cancellationToken) {
 			_cancellationTokenSource = new();
+#if !DEBUG // Don't run the PSE crawler in debug mode
 			_timer = new Timer(CrawlAsync, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+#endif
 			return Task.CompletedTask;
 		}
 		public Task StopAsync(CancellationToken cancellationToken) {

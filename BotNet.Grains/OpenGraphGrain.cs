@@ -19,12 +19,12 @@ namespace BotNet.Grains {
 			_serviceProvider = serviceProvider;
 		}
 
-		public override Task OnActivateAsync() {
+		public override Task OnActivateAsync(CancellationToken cancellationToken) {
 			_cancellationTokenSource = new();
 			return Task.CompletedTask;
 		}
 
-		public override Task OnDeactivateAsync() {
+		public override Task OnDeactivateAsync(DeactivationReason deactivationReason, CancellationToken cancellationToken) {
 			_cancellationTokenSource?.Cancel();
 			_cancellationTokenSource?.Dispose();
 			return Task.CompletedTask;

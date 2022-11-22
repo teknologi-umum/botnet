@@ -10,11 +10,12 @@ namespace BotNet.Grains {
 		private string? _text;
 		private long? _replyToMessageId;
 
-		public async Task TrackMessageAsync(string sender, string text, long? replyToMessageId) {
+		public Task TrackMessageAsync(string sender, string text, long? replyToMessageId) {
 			_sender = sender;
 			_text = text;
 			_replyToMessageId = replyToMessageId;
 			DelayDeactivation(TimeSpan.FromHours(1));
+			return Task.CompletedTask;
 		}
 
 		public async Task<(string? Sender, string? Text, long? ReplyToMessageId)> GetMessageAsync() {

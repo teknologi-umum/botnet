@@ -4,12 +4,12 @@ using System.Reflection;
 using Microsoft.Maui.Graphics;
 
 namespace BotNet.Services.Typography {
-	public class BotNetFontService : IFontService {
-		private static readonly IFontFamily JETBRAINS_MONO_NL = new FontFamily(
+	public class BotNetFontService {
+		private readonly FontFamily _jetbrainsMonoNL = new(
 			name: "JetBrainsMonoNL",
 			stylesSetup: EnumerateJetBrainsMonoMLStyles);
 
-		private static IEnumerable<IFontStyle> EnumerateJetBrainsMonoMLStyles(IFontFamily fontFamily) {
+		private static IEnumerable<FontStyle> EnumerateJetBrainsMonoMLStyles(FontFamily fontFamily) {
 			Assembly resourceAssembly = Assembly.GetAssembly(typeof(BotNetFontService))!;
 			string resourceNamespace = "BotNet.Services.Typography.Assets";
 
@@ -43,8 +43,8 @@ namespace BotNet.Services.Typography {
 			yield return CreateFontStyle("JetBrainsMonoNL-ExtraBoldItalic", 800, FontStyleType.Italic);
 		}
 
-		public IFontStyle GetDefaultFontStyle() => JETBRAINS_MONO_NL.GetFontStyles().Single(style => style is { Weight: 400, StyleType: FontStyleType.Normal });
-		public IFontFamily[] GetFontFamilies() => new[] { JETBRAINS_MONO_NL };
-		public IFontStyle GetFontStyleById(string id) => JETBRAINS_MONO_NL.GetFontStyles().Single(style => style.Id == id);
+		public FontStyle GetDefaultFontStyle() => _jetbrainsMonoNL.GetFontStyles().Single(style => style is { Weight: 400, StyleType: FontStyleType.Normal });
+		public FontFamily[] GetFontFamilies() => new[] { _jetbrainsMonoNL };
+		public FontStyle GetFontStyleById(string id) => _jetbrainsMonoNL.GetFontStyles().Single(style => style.Id == id);
 	}
 }

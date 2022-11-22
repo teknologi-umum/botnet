@@ -68,15 +68,15 @@ namespace BotNet.Services.OpenGraph {
 				imageUrl = $"{pageUri.Scheme}://{pageUri.Host}/favicon.ico";
 			}
 
-			return new OpenGraphMetadata(
-				Title: document.QuerySelector("meta[property='og:title']")?.GetAttribute("content"),
-				Type: document.QuerySelector("meta[property='og:type']")?.GetAttribute("content"),
-				Image: imageUrl,
-				ImageType: document.QuerySelector("meta[property='og:image:type']")?.GetAttribute("content"),
-				ImageWidth: document.QuerySelector("meta[property='og:image:width']")?.GetAttribute("content") is string imageWidthString && int.TryParse(imageWidthString, out int imageWidth) ? imageWidth : null,
-				ImageHeight: document.QuerySelector("meta[property='og:image:height']")?.GetAttribute("content") is string imageHeightString && int.TryParse(imageHeightString, out int imageHeight) ? imageHeight : null,
-				Description: document.QuerySelector("meta[property='og:description']")?.GetAttribute("content")
-			);
+			return new OpenGraphMetadata {
+				Title = document.QuerySelector("meta[property='og:title']")?.GetAttribute("content"),
+				Type = document.QuerySelector("meta[property='og:type']")?.GetAttribute("content"),
+				Image = imageUrl,
+				ImageType = document.QuerySelector("meta[property='og:image:type']")?.GetAttribute("content"),
+				ImageWidth = document.QuerySelector("meta[property='og:image:width']")?.GetAttribute("content") is string imageWidthString && int.TryParse(imageWidthString, out int imageWidth) ? imageWidth : null,
+				ImageHeight = document.QuerySelector("meta[property='og:image:height']")?.GetAttribute("content") is string imageHeightString && int.TryParse(imageHeightString, out int imageHeight) ? imageHeight : null,
+				Description = document.QuerySelector("meta[property='og:description']")?.GetAttribute("content")
+			};
 		}
 	}
 }

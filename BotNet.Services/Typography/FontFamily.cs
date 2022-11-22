@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Maui.Graphics;
 
 namespace BotNet.Services.Typography {
-	public class FontFamily : IFontFamily {
+	public class FontFamily {
 		public string Name { get; }
-		private readonly IFontStyle[] _fontStyles;
+		private readonly FontStyle[] _fontStyles;
 
-		internal FontFamily(string name, Func<FontFamily, IEnumerable<IFontStyle>> stylesSetup) {
+		internal FontFamily(string name, Func<FontFamily, IEnumerable<FontStyle>> stylesSetup) {
 			Name = name;
 			_fontStyles = stylesSetup.Invoke(this).ToArray();
 		}
 
-		public IFontStyle[] GetFontStyles() => _fontStyles;
+		public FontStyle[] GetFontStyles() => _fontStyles;
 	}
 }

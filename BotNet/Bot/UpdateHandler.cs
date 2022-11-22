@@ -21,6 +21,7 @@ namespace BotNet.Bot {
 		private readonly IClusterClient _clusterClient;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly ILogger<BotService> _logger;
+		private readonly InlineQueryHandler _inlineQueryHandler;
 		private readonly TelemetryClient _telemetryClient;
 		private User? _me;
 
@@ -28,11 +29,13 @@ namespace BotNet.Bot {
 			IClusterClient clusterClient,
 			IServiceProvider serviceProvider,
 			ILogger<BotService> logger,
+			InlineQueryHandler inlineQueryHandler,
 			TelemetryClient telemetryClient
 		) {
 			_clusterClient = clusterClient;
 			_serviceProvider = serviceProvider;
 			_logger = logger;
+			_inlineQueryHandler = inlineQueryHandler;
 			_telemetryClient = telemetryClient;
 		}
 
@@ -254,10 +257,10 @@ namespace BotNet.Bot {
 					case UpdateType.InlineQuery:
 						// _logger.LogInformation("Received inline query from [{firstName} {lastName}]: '{query}'.", update.InlineQuery!.From.FirstName, update.InlineQuery.From.LastName, update.InlineQuery.Query);
 						if (update.InlineQuery?.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
-							IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>($"{query}|{update.InlineQuery.From.Id}");
+							//IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>($"{query}|{update.InlineQuery.From.Id}");
 							using GrainCancellationTokenSource grainCancellationTokenSource = new();
 							using CancellationTokenRegistration tokenRegistration = cancellationToken.Register(() => grainCancellationTokenSource.Cancel());
-							IEnumerable<InlineQueryResult> inlineQueryResults = await inlineQueryGrain.GetResultsAsync(query, update.InlineQuery.From.Id, grainCancellationTokenSource.Token);
+							IEnumerable<InlineQueryResult> inlineQueryResults = await _inlineQueryHandler.GetResultsAsync(query, update.InlineQuery.From.Id, grainCancellationTokenSource.Token);
 							await botClient.AnswerInlineQueryAsync(
 								inlineQueryId: update.InlineQuery.Id,
 								results: inlineQueryResults,

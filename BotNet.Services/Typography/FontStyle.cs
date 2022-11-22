@@ -4,15 +4,15 @@ using System.Reflection;
 using Microsoft.Maui.Graphics;
 
 namespace BotNet.Services.Typography {
-	public class FontStyle : IFontStyle {
+	public class FontStyle {
 		public string Id { get; }
 		public string Name { get; }
 		public string FullName { get; }
 		public int Weight { get; }
 		public FontStyleType StyleType { get; }
 
-		private readonly WeakReference<IFontFamily> _fontFamilyRef;
-		public IFontFamily FontFamily => _fontFamilyRef.TryGetTarget(out IFontFamily? fontFamily) ? fontFamily : throw new NullReferenceException("Referenced FontFamily no longer exists.");
+		private readonly WeakReference<FontFamily> _fontFamilyRef;
+		public FontFamily FontFamily => _fontFamilyRef.TryGetTarget(out FontFamily? fontFamily) ? fontFamily : throw new NullReferenceException("Referenced FontFamily no longer exists.");
 
 		private readonly Assembly _resourceAssembly;
 		private readonly string _resourceName;
@@ -23,7 +23,7 @@ namespace BotNet.Services.Typography {
 			string fullName,
 			int weight,
 			FontStyleType styleType,
-			IFontFamily fontFamily,
+			FontFamily fontFamily,
 			Assembly resourceAssembly,
 			string resourceName
 		) {
@@ -32,12 +32,12 @@ namespace BotNet.Services.Typography {
 			FullName = fullName;
 			Weight = weight;
 			StyleType = styleType;
-			_fontFamilyRef = new WeakReference<IFontFamily>(fontFamily);
+			_fontFamilyRef = new WeakReference<FontFamily>(fontFamily);
 			_resourceAssembly = resourceAssembly;
 			_resourceName = resourceName;
 		}
 
-		public int CompareTo(IFontStyle? other) => Id.CompareTo(other?.Id ?? throw new ArgumentNullException(nameof(other)));
+		public int CompareTo(FontStyle? other) => Id.CompareTo(other?.Id ?? throw new ArgumentNullException(nameof(other)));
 
 		public Stream OpenStream() => _resourceAssembly.GetManifestResourceStream(_resourceName) ?? throw new InvalidOperationException("Embedded resource could not be loaded.");
 	}

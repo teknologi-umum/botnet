@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -35,21 +35,21 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.0.0-alpha-844" />
-    <PackageReference Include="DynamicExpresso.Core" Version="2.12.0" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.49.0" />
-    <PackageReference Include="Microsoft.ClearScript" Version="7.2.4" />
-    <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.2.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="6.0.101-preview.10.640" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="6.0.101-preview.10.640" />
+    <PackageReference Include="DynamicExpresso.Core" Version="2.13.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.50.0" />
+    <PackageReference Include="Microsoft.ClearScript" Version="7.3.5" />
+    <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.3.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="7.0.49" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" Version="7.0.0" />
     <PackageReference Include="RG.Ninja" Version="1.0.8" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.0-preview.155" />
-    <PackageReference Include="Telegram.Bot" Version="17.0.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.21.2" />
-    <PackageReference Include="Grpc" Version="2.46.3" />
-    <PackageReference Include="Grpc.Tools" Version="2.47.0">
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.3" />
+    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.21.9" />
+    <PackageReference Include="Grpc" Version="2.46.5" />
+    <PackageReference Include="Grpc.Tools" Version="2.50.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -15,23 +15,20 @@ using Orleans;
 using RG.Ninja;
 using Telegram.Bot.Types.InlineQueryResults;
 
-namespace BotNet.Grains {
-	public class InlineQueryGrain : Grain, IInlineQueryGrain {
+namespace BotNet.Bot {
+	public class InlineQueryHandler {
 		private readonly IServiceProvider _serviceProvider;
-		private ImmutableList<InlineQueryResult>? _results;
+		private readonly IGrainFactory _grainFactory;
 
-		public InlineQueryGrain(
-			IServiceProvider serviceProvider
+		public InlineQueryHandler(
+			IServiceProvider serviceProvider,
+			IGrainFactory grainFactory
 		) {
 			_serviceProvider = serviceProvider;
+			_grainFactory = grainFactory;
 		}
 
 		public async Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, long userId, GrainCancellationToken grainCancellationToken) {
-			if (_results != null) {
-				DelayDeactivation(TimeSpan.FromMinutes(1));
-				return _results;
-			}
-
 			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = new();
 
 			if (query.ToLowerInvariant().Trim() is string pastaKey
@@ -87,7 +84,7 @@ namespace BotNet.Grains {
 
 			if (query.Split(' ').FirstOrDefault() is "joke" or "jokes" or "dad" or "bapak" or "bapack" or "dadjoke" or "dadjokes" or "bapak2" or "bapack2") {
 				resultTasks.Add(
-					GrainFactory
+					_grainFactory
 						.GetGrain<IDadJokeGrain>(userId % 10)
 						.GetRandomJokesAsync(grainCancellationToken)
 						.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url) {
@@ -99,16 +96,14 @@ namespace BotNet.Grains {
 
 			if (query.StartsWith("gif ", StringComparison.InvariantCultureIgnoreCase, out string? gifQuery)) {
 				resultTasks.Add(
-					GrainFactory
+					_grainFactory
 						.GetGrain<ITenorGrain>(gifQuery)
 						.SearchGifsAsync(grainCancellationToken)
 						.ContinueWith(task => task.Result.Select(gif => new InlineQueryResultGif(gif.Id, gif.Url, gif.PreviewUrl)).ToImmutableList<InlineQueryResult>())
 				);
 			}
 
-			_results = (await Task.WhenAll(resultTasks)).SelectMany(results => results).ToImmutableList();
-
-			return _results;
+			return (await Task.WhenAll(resultTasks)).SelectMany(results => results).ToImmutableList();
 		}
 	}
 }

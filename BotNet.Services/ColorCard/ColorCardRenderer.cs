@@ -2,8 +2,7 @@
 using System.Globalization;
 using System.IO;
 using BotNet.Services.Typography;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Skia;
+using SkiaSharp;
 
 namespace BotNet.Services.ColorCard {
 	public class ColorCardRenderer {
@@ -30,35 +29,43 @@ namespace BotNet.Services.ColorCard {
 
 			if (!int.TryParse(normalizedName[1..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out int colorValue)) throw new ArgumentException("Color name must be 3-digit or 6-digit hexadecimal string.", nameof(colorName));
 
-			Color fillColor = Color.FromRgb(
-				red: (byte)(colorValue / 65536),
-				green: (byte)(colorValue / 256 % 256),
-				blue: (byte)(colorValue % 256)
+			SKColor fillColor = new(
+				(byte)((colorValue >> 16) & 0xFF),
+				(byte)((colorValue >> 8) & 0xFF),
+				(byte)(colorValue & 0xFF)
 			);
-			Color textColor = fillColor.GetLuminosity() < 0.5f
-				? Color.FromRgba(0xff, 0xff, 0xff, 0xdd)
-				: Color.FromRgba(0x00, 0x00, 0x00, 0xdd);
+			fillColor.ToHsl(out _, out _, out float luminosity);
+			SKColor textColor = luminosity < 0.5f
+				? new SKColor(0xff, 0xff, 0xff, 0xdd)
+				: new SKColor(0x00, 0x00, 0x00, 0xdd);
 
-			BitmapExportContext exportContext = SkiaGraphicsService.Instance.CreateBitmapExportContext(200, 200, displayScale: 4f);
+			using SKBitmap bitmap = new(800, 800);
+			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
+			using SKCanvas canvas = surface.Canvas;
 
-			ICanvas canvas = exportContext.Canvas;
+			canvas.Clear(fillColor);
 
-			canvas.SaveState();
-			canvas.FillColor = fillColor;
-			canvas.FillRectangle(0f, 0f, 200f, 200f);
-			canvas.RestoreState();
+			using Stream fontStream = _botNetFontService.GetFontStyleById("JetBrainsMonoNL-Regular").OpenStream();
+			using SKTypeface typeface = SKTypeface.FromStream(fontStream);
+			using SKPaint paint = new() {
+				TextAlign = SKTextAlign.Center,
+				Color = textColor,
+				Typeface = typeface,
+				TextSize = 96f,
+				IsAntialias = true
+			};
+			canvas.DrawText(
+				text: trimmedColorName.ToUpperInvariant(),
+				x: 400f,
+				y: 352f,
+				paint: paint
+			);
 
-			Fonts.RegisterGlobalService(_botNetFontService);
-
-			canvas.SaveState();
-			canvas.FontName = "JetBrainsMonoNL-Regular";
-			canvas.FontColor = textColor;
-			canvas.FontSize = 24f;
-			canvas.DrawString(trimmedColorName.ToUpperInvariant(), 0f, 0f, 200f, 200f, HorizontalAlignment.Center, VerticalAlignment.Center);
-			canvas.RestoreState();
+			SKImage image = surface.Snapshot();
+			SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
 
 			using MemoryStream memoryStream = new();
-			exportContext.WriteToStream(memoryStream);
+			data.SaveTo(memoryStream);
 
 			return memoryStream.ToArray();
 		}
