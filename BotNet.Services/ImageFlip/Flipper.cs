@@ -4,7 +4,7 @@ using SkiaSharp;
 namespace BotNet.Services.ImageFlip {
 	public class Flipper {
 		public static byte[] FlipImage(byte[] originalImage) {
-			SKBitmap bitmap = SKBitmap.Decode(originalImage);
+			using SKBitmap bitmap = SKBitmap.Decode(originalImage);
 			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
 			using SKCanvas canvas = surface.Canvas;
 
@@ -21,8 +21,8 @@ namespace BotNet.Services.ImageFlip {
 			canvas.Restore();
 			canvas.Flush();
 
-			SKImage image = surface.Snapshot();
-			SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+			using SKImage image = surface.Snapshot();
+			using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
 
 			using MemoryStream flippedImageStream = new();
 			data.SaveTo(flippedImageStream);
@@ -31,7 +31,7 @@ namespace BotNet.Services.ImageFlip {
 		}
 
 		public static byte[] FlopImage(byte[] originalImage) {
-			SKBitmap bitmap = SKBitmap.Decode(originalImage);
+			using SKBitmap bitmap = SKBitmap.Decode(originalImage);
 			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
 			using SKCanvas canvas = surface.Canvas;
 
@@ -48,8 +48,8 @@ namespace BotNet.Services.ImageFlip {
 			canvas.Restore();
 			canvas.Flush();
 
-			SKImage image = surface.Snapshot();
-			SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+			using SKImage image = surface.Snapshot();
+			using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
 
 			using MemoryStream flippedImageStream = new();
 			data.SaveTo(flippedImageStream);

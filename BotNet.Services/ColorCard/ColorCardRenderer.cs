@@ -35,11 +35,11 @@ namespace BotNet.Services.ColorCard {
 				(byte)(colorValue & 0xFF)
 			);
 			fillColor.ToHsl(out _, out _, out float luminosity);
-			SKColor textColor = luminosity < 0.5f
+			SKColor textColor = luminosity < 50f
 				? new SKColor(0xff, 0xff, 0xff, 0xdd)
 				: new SKColor(0x00, 0x00, 0x00, 0xdd);
 
-			using SKBitmap bitmap = new(800, 800);
+			using SKBitmap bitmap = new(400, 400);
 			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
 			using SKCanvas canvas = surface.Canvas;
 
@@ -51,18 +51,20 @@ namespace BotNet.Services.ColorCard {
 				TextAlign = SKTextAlign.Center,
 				Color = textColor,
 				Typeface = typeface,
-				TextSize = 96f,
+				TextSize = 50f,
 				IsAntialias = true
 			};
+			SKRect textBound = new();
+			paint.MeasureText(normalizedName, ref textBound);
 			canvas.DrawText(
 				text: trimmedColorName.ToUpperInvariant(),
-				x: 400f,
-				y: 352f,
+				x: 200f,
+				y: 200f - textBound.Height / 2f,
 				paint: paint
 			);
 
-			SKImage image = surface.Snapshot();
-			SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+			using SKImage image = surface.Snapshot();
+			using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
 
 			using MemoryStream memoryStream = new();
 			data.SaveTo(memoryStream);
