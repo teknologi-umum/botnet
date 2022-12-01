@@ -63,6 +63,12 @@ namespace BotNet.Bot {
 							// Get call sign
 							string callSign = messageText.Split(',')[0];
 
+							// Handle modify art command
+							if (callSign == "AI" && update.Message.ReplyToMessage is { Photo.Length: 1 }) {
+								await Art.ModifyArtAsync(botClient, _serviceProvider, update.Message, messageText[(callSign.Length + 2)..], cancellationToken);
+								break;
+							}
+
 							// Respond to call sign
 							Message? sentMessage = callSign switch {
 								"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),

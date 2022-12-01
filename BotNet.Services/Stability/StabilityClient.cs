@@ -72,6 +72,64 @@ namespace BotNet.Services.Stability {
 			throw new InvalidOperationException("Unable to generate image");
 		}
 
+		public async Task<byte[]> ModifyImageAsync(byte[] imagePrompt, string textPrompt, CancellationToken cancellationToken) {
+			if (_grpcChannel.State is ConnectivityState.Idle or ConnectivityState.Shutdown) {
+				await _grpcChannel.ConnectAsync(cancellationToken);
+			}
+
+			AsyncServerStreamingCall<Answer> streamingCall = _generationServiceClient.Generate(
+				request: new Request {
+					EngineId = "stable-diffusion-v1",
+					RequestId = Guid.NewGuid().ToString(),
+					Prompt = {
+						new Prompt {
+							Artifact = new Artifact {
+								Type = ArtifactType.ArtifactImage,
+								Binary = Google.Protobuf.ByteString.CopyFrom(imagePrompt)
+							}
+						},
+						new Prompt {
+							Text = textPrompt
+						}
+					},
+					Image = new ImageParameters {
+						Width = 512,
+						Height = 512,
+						Steps = 10,
+						Samples = 1,
+						Transform = new TransformType {
+							Diffusion = DiffusionSampler.SamplerKLms
+						},
+						Parameters = {
+							new StepParameter {
+								ScaledStep = 0,
+								Sampler = new SamplerParameters {
+									CfgScale = 7
+								}
+							}
+						},
+						Seed = {
+							(uint)Random.Shared.Next()
+						}
+					}
+				},
+				headers: new Metadata {
+					{ "Authorization", $"Bearer {_apiKey}" }
+				},
+				cancellationToken: cancellationToken
+			);
+
+			await foreach (Answer answer in streamingCall.ResponseStream.ReadAllAsync(cancellationToken)) {
+				foreach (Artifact artifact in answer.Artifacts) {
+					if (artifact.Type == ArtifactType.ArtifactImage) {
+						return artifact.Binary.ToByteArray();
+					}
+				}
+			}
+
+			throw new InvalidOperationException("Unable to generate image");
+		}
+
 		protected virtual void Dispose(bool disposing) {
 			if (!_disposedValue) {
 				if (disposing) {
