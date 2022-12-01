@@ -64,7 +64,7 @@ namespace BotNet.Bot {
 							string callSign = messageText.Split(',')[0];
 
 							// Handle modify art command
-							if (callSign == "AI" && update.Message.ReplyToMessage is { Photo.Length: 1 }) {
+							if (callSign == "AI" && (update.Message.ReplyToMessage is { Photo.Length: > 0 } || update.Message.ReplyToMessage is { Sticker: { } })) {
 								await Art.ModifyArtAsync(botClient, _serviceProvider, update.Message, messageText[(callSign.Length + 2)..], cancellationToken);
 								break;
 							}
