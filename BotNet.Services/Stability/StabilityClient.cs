@@ -1,9 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Google.Protobuf;
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Options;
+using SkiaSharp;
 
 namespace BotNet.Services.Stability {
 	public class StabilityClient : IDisposable {
@@ -77,20 +80,39 @@ namespace BotNet.Services.Stability {
 				await _grpcChannel.ConnectAsync(cancellationToken);
 			}
 
+			// Convert to png
+			using SKBitmap bitmap = SKBitmap.Decode(imagePrompt);
+			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
+			using SKCanvas canvas = surface.Canvas;
+			canvas.DrawBitmap(
+				bitmap: bitmap,
+				source: SKRect.Create(bitmap.Width, bitmap.Height),
+				dest: SKRect.Create(bitmap.Width, bitmap.Height));
+			canvas.Flush();
+			using SKImage image = surface.Snapshot();
+			using SKData data = image.Encode(SKEncodedImageFormat.Png, 80);
+			using MemoryStream convertedImageStream = new();
+			data.SaveTo(convertedImageStream);
+			imagePrompt = convertedImageStream.ToArray();
+
 			AsyncServerStreamingCall<Answer> streamingCall = _generationServiceClient.Generate(
 				request: new Request {
 					EngineId = "stable-diffusion-v1",
 					RequestId = Guid.NewGuid().ToString(),
 					Prompt = {
-						new Prompt {
-							Artifact = new Artifact {
-								Type = ArtifactType.ArtifactImage,
-								Binary = Google.Protobuf.ByteString.CopyFrom(imagePrompt)
-							}
+					new Prompt {
+						Text = textPrompt
+					},
+					new Prompt {
+						Artifact = new Artifact {
+							Type = ArtifactType.ArtifactImage,
+							Binary = ByteString.CopyFrom(imagePrompt),
+							Mime = "image/png"
 						},
-						new Prompt {
-							Text = textPrompt
+						Parameters = new PromptParameters {
+							Init = true
 						}
+					}
 					},
 					Image = new ImageParameters {
 						Width = 512,
@@ -101,20 +123,24 @@ namespace BotNet.Services.Stability {
 							Diffusion = DiffusionSampler.SamplerKLms
 						},
 						Parameters = {
-							new StepParameter {
-								ScaledStep = 0,
-								Sampler = new SamplerParameters {
-									CfgScale = 7
-								}
+						new StepParameter {
+							ScaledStep = 0,
+							Sampler = new SamplerParameters {
+								CfgScale = 7
+							},
+							Schedule = new ScheduleParameters {
+								Start = 1.0f,
+								End = 0.01f
 							}
+						}
 						},
 						Seed = {
-							(uint)Random.Shared.Next()
+						(uint)Random.Shared.Next()
 						}
 					}
 				},
 				headers: new Metadata {
-					{ "Authorization", $"Bearer {_apiKey}" }
+				{ "Authorization", $"Bearer {_apiKey}" }
 				},
 				cancellationToken: cancellationToken
 			);
