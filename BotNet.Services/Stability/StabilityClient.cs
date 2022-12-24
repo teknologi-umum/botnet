@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Grpc.Core;
-using Grpc.Core.Logging;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -124,19 +123,23 @@ namespace BotNet.Services.Stability {
 						EngineId = "stable-diffusion-v1",
 						RequestId = Guid.NewGuid().ToString(),
 						Prompt = {
-					new Prompt {
-						Text = textPrompt
-					},
-					new Prompt {
-						Artifact = new Artifact {
-							Type = ArtifactType.ArtifactImage,
-							Binary = ByteString.CopyFrom(imagePrompt),
-							Mime = "image/png"
-						},
-						Parameters = new PromptParameters {
-							Init = true
-						}
-					}
+							new Prompt {
+								Text = textPrompt,
+								Parameters = new PromptParameters {
+									Weight = 0.5f
+								}
+							},
+							new Prompt {
+								Artifact = new Artifact {
+									Type = ArtifactType.ArtifactImage,
+									Binary = ByteString.CopyFrom(imagePrompt),
+									Mime = "image/png"
+								},
+								Parameters = new PromptParameters {
+									Init = true,
+									Weight = 0.5f
+								}
+							}
 						},
 						Image = new ImageParameters {
 							Width = 512,
@@ -147,24 +150,24 @@ namespace BotNet.Services.Stability {
 								Diffusion = DiffusionSampler.SamplerKLms
 							},
 							Parameters = {
-						new StepParameter {
-							ScaledStep = 0,
-							Sampler = new SamplerParameters {
-								CfgScale = 7
-							},
-							Schedule = new ScheduleParameters {
-								Start = 1.0f,
-								End = 0.01f
-							}
-						}
+								new StepParameter {
+									ScaledStep = 0,
+									Sampler = new SamplerParameters {
+										CfgScale = 7
+									},
+									Schedule = new ScheduleParameters {
+										Start = 1.0f,
+										End = 0.01f
+									}
+								}
 							},
 							Seed = {
-						(uint)Random.Shared.Next()
+								(uint)Random.Shared.Next()
 							}
 						}
 					},
 					headers: new Metadata {
-				{ "Authorization", $"Bearer {_apiKey}" }
+						{ "Authorization", $"Bearer {_apiKey}" }
 					},
 					cancellationToken: cancellationToken
 				);

@@ -9,6 +9,7 @@ using BotNet.Services.BotCommands;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Orleans;
+using RG.Ninja;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
@@ -54,6 +55,28 @@ namespace BotNet.Bot {
 
 						// Retrieve bot identity
 						_me ??= await GetMeAsync(botClient, cancellationToken);
+
+						// Handle reddit mirroring
+						if (update.Message?.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.Url }) is { Offset: var offset, Length: var length }
+							&& update.Message.Text?.Substring(offset, length) is { } url
+							&& url.StartsWith("https://www.reddit.com/", out string? remainingUrl)) {
+							await botClient.SendTextMessageAsync(
+								chatId: update.Message.Chat.Id,
+								text: $"Mirror: https://libreddit.teknologiumum.com/{remainingUrl}",
+								replyToMessageId: update.Message.MessageId,
+								disableWebPagePreview: true,
+								cancellationToken: cancellationToken
+							);
+						} else if (update.Message?.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.TextLink }) is { Url: { } textUrl }
+							&& textUrl.StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
+							await botClient.SendTextMessageAsync(
+								chatId: update.Message.Chat.Id,
+								text: $"Mirror: https://libreddit.teknologiumum.com/{remainingTextUrl}",
+								replyToMessageId: update.Message.MessageId,
+								disableWebPagePreview: true,
+								cancellationToken: cancellationToken
+							);
+						}
 
 						// Handle call sign
 						if (update.Message?.Text is { } messageText && (
