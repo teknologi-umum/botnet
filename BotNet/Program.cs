@@ -1,5 +1,6 @@
 ﻿using BotNet;
 using BotNet.Bot;
+using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
@@ -63,6 +64,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddStabilityClient();
 		services.AddTokopediaServices();
 		services.AddGoogleMaps();
+		services.AddBMKG();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
