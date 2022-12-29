@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.GoogleMap;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Weather;
 using Microsoft.Extensions.DependencyInjection;

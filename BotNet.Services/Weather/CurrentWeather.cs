@@ -48,7 +48,7 @@ namespace BotNet.Services.Weather {
 					 + $"Local Time: {weatherResponse!.Location!.LocalTime}\n"
 					 + $"Condition: {weatherResponse!.Current!.Condition!.Text}\n"
 					 + $"Temperature: {weatherResponse!.Current!.Temp_C} Celcius\n"
-					 + $"Wind: {weatherResponse!.Current!.Wind_Kph} Kph";
+					 + $"Wind: {weatherResponse!.Current!.Wind_Kph} km/h";
 
 			string icon = weatherResponse!.Current!.Condition!.Icon!;
 
