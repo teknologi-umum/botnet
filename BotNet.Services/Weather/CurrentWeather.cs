@@ -40,8 +40,9 @@ namespace BotNet.Services.Weather {
 			Stream bodyContent = await response.Content!.ReadAsStreamAsync();
 
 			CurrentWeatherResponse? weatherResponse = await JsonSerializer.DeserializeAsync<CurrentWeatherResponse>(bodyContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-			if (bodyContent is null) {
-				throw new HttpRequestException("Failed to parse result.");
+
+			if (weatherResponse is null) {
+				throw new JsonException("Failed to parse result.");
 			}
 
 			string textResult = $"<b>Cuaca {place} saat ini</b>\n"
