@@ -19,6 +19,7 @@ using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
 using BotNet.Services.Tokopedia;
 using BotNet.Services.Typography;
+using BotNet.Services.Weather;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +47,7 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<OpenAIOptions>(configuration.GetSection("OpenAIOptions"));
 		services.Configure<StabilityOptions>(configuration.GetSection("StabilityOptions"));
 		services.Configure<GoogleMapOptions>(configuration.GetSection("GoogleMapOptions"));
+		services.Configure<WeatherOptions>(configuration.GetSection("WeatherOptions"));
 		services.AddHttpClient();
 		services.AddTenorClient();
 		services.AddFontService();
@@ -64,6 +66,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddStabilityClient();
 		services.AddTokopediaServices();
 		services.AddGoogleMaps();
+		services.AddWeatherService();
 		services.AddBMKG();
 
 		// Hosted Services

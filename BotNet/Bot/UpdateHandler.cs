@@ -277,6 +277,9 @@ namespace BotNet.Bot {
 								case "/map":
 									await SearchPlace.SearchPlaceAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/weather":
+									await Weather.GetWeatherAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 								case "/bmkg":
 									await BMKG.GetLatestEarthQuakeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
