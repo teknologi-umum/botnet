@@ -4,6 +4,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <UserSecretsId>6593242c-9324-4f32-a0b7-87048d57e708</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
