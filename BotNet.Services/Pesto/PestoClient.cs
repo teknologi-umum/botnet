@@ -22,9 +22,14 @@ public class PestoClient {
 		IOptions<PestoOptions> pestoOptionsAccessor
 	) {
 		_options = pestoOptionsAccessor.Value;
+		if (String.IsNullOrWhiteSpace(_options.Token)) throw new ArgumentNullException();
+		
 		_httpClient = httpClient;
 		_semaphore ??= new SemaphoreSlim(_options.MaxConcurrentExecutions, _options.MaxConcurrentExecutions);
 		_jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+		
+		_httpClient.DefaultRequestHeaders.Add("X-Pesto-Token", _options.Token);
+		_httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
 	}
 
 	/// <summary>
