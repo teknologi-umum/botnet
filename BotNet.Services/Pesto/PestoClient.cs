@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -113,7 +112,7 @@ public class PestoClient {
 				throw response.StatusCode switch {
 					HttpStatusCode.TooManyRequests when errorResponse?.Message == "Monthly limit exceeded" =>
 						new PestoMonthlyLimitExceededException(),
-					HttpStatusCode.TooManyRequests => new PestoServerRateLimitedException();
+					HttpStatusCode.TooManyRequests => new PestoServerRateLimitedException(),
 					HttpStatusCode.BadRequest when errorResponse?.Message == "Runtime not found" =>
 						new PestoRuntimeNotFoundException(language.ToString()),
 					_ => new PestoAPIException(errorResponse?.Message)
