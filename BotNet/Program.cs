@@ -12,6 +12,7 @@ using BotNet.Services.ImageConverter;
 using BotNet.Services.OpenAI;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
+using BotNet.Services.Pesto;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.Stability;
 using BotNet.Services.Tenor;
@@ -44,6 +45,7 @@ Host.CreateDefaultBuilder(args)
 		services.Configure<TenorOptions>(configuration.GetSection("TenorOptions"));
 		services.Configure<V8Options>(configuration.GetSection("V8Options"));
 		services.Configure<PistonOptions>(configuration.GetSection("PistonOptions"));
+		services.Configure<PestoOptions>(configuration.GetSection("PestoOptions"));
 		services.Configure<OpenAIOptions>(configuration.GetSection("OpenAIOptions"));
 		services.Configure<StabilityOptions>(configuration.GetSection("StabilityOptions"));
 		services.Configure<GoogleMapOptions>(configuration.GetSection("GoogleMapOptions"));
@@ -57,6 +59,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddBrainfuckTranspiler();
 		services.AddV8Evaluator();
 		services.AddPistonClient();
+		services.AddPestoClient();
 		services.AddOpenAIClient();
 		services.AddProgrammerHumorScraper();
 		services.AddTiktokServices();
