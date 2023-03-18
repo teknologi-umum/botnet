@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.Pesto.Exceptions;
 using BotNet.Services.Pesto.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.Pesto;
@@ -26,16 +27,19 @@ public class PestoClient {
 	private readonly int _compileTimeout;
 	private readonly int _runTimeout;
 	private readonly int _memoryLimit;
+	private readonly ILogger<PestoClient> _logger;
 
 	public PestoClient(
 		HttpClient httpClient,
-		IOptions<PestoOptions> pestoOptionsAccessor
+		IOptions<PestoOptions> pestoOptionsAccessor,
+		ILogger<PestoClient> logger
 	) {
 		PestoOptions options = pestoOptionsAccessor.Value;
 		if (string.IsNullOrWhiteSpace(options.Token)) throw new InvalidProgramException("PestoOptions:Token not configured.");
 		if (string.IsNullOrWhiteSpace(options.BaseUrl)) throw new InvalidProgramException("PestoOptions:BaseUrl not configured.");
 
 		_httpClient = httpClient;
+		_logger = logger;
 		_semaphore ??= new SemaphoreSlim(options.MaxConcurrentExecutions, options.MaxConcurrentExecutions);
 		_token = options.Token;
 		_baseUrl = new Uri(options.BaseUrl);
@@ -110,6 +114,8 @@ public class PestoClient {
 		if (string.IsNullOrWhiteSpace(code)) throw new PestoEmptyCodeException();
 
 		await _semaphore!.WaitAsync(cancellationToken);
+
+		_logger.LogInformation($"Executing code on Pesto:\n{code}");
 
 		try {
 			Uri requestUrl = new(_baseUrl, "api/execute");

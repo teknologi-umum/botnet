@@ -69,6 +69,12 @@ namespace BotNet.Services.BotCommands {
 							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
 						} catch (Exception exc) {
 							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text:"<code>Failed to execute code.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
 							return;
 						}
 					}
@@ -183,6 +189,12 @@ namespace BotNet.Services.BotCommands {
 							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
 						} catch (Exception exc) {
 							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Failed to execute code.</code>",
+								parseMode: ParseMode.Html,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
 							return;
 						}
 					}
