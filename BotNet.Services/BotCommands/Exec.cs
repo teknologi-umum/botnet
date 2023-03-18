@@ -10,6 +10,7 @@ using BotNet.Services.Pesto.Models;
 using BotNet.Services.Piston;
 using BotNet.Services.Piston.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -65,9 +66,10 @@ namespace BotNet.Services.BotCommands {
 								or PestoServerRateLimitedException
 						) {
 							// Suppress error, and retry code execution using Piston.
-						} catch {
-							// Rethrow exception, just because
-							throw;
+							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
+						} catch (Exception exc) {
+							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
+							return;
 						}
 					}
 
@@ -178,9 +180,10 @@ namespace BotNet.Services.BotCommands {
 								or PestoServerRateLimitedException
 						) {
 							// Suppress error, and retry code execution using Piston.
+							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
 						} catch (Exception) {
-							// Rethrow exception, just because
-							throw;
+							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
+							return;
 						}
 					}
 
