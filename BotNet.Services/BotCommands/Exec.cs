@@ -59,8 +59,8 @@ namespace BotNet.Services.BotCommands {
 									cancellationToken: cancellationToken);
 							}
 							return;
-						} catch (Exception exception) when (
-							exception is PestoAPIException
+						} catch (Exception exc) when (
+							exc is PestoAPIException
 								or PestoMonthlyLimitExceededException
 								or PestoRuntimeNotFoundException
 								or PestoServerRateLimitedException
@@ -173,15 +173,15 @@ namespace BotNet.Services.BotCommands {
 									break;
 							}
 							return;
-						} catch (Exception exception) when (
-							exception is PestoAPIException
+						} catch (Exception exc) when (
+							exc is PestoAPIException
 								or PestoMonthlyLimitExceededException
 								or PestoRuntimeNotFoundException
 								or PestoServerRateLimitedException
 						) {
 							// Suppress error, and retry code execution using Piston.
 							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
-						} catch (Exception) {
+						} catch (Exception exc) {
 							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
 							return;
 						}
