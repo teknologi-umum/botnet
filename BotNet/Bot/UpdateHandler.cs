@@ -204,10 +204,17 @@ namespace BotNet.Bot {
 								case "/rust":
 								case "/scala":
 								case "/swift":
+								case "/julia":
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken);
 									break;
+								case "/sqlite3":
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "SQLite3", cancellationToken);
+									break;
+								case "/commonlisp":
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "CommonLisp", cancellationToken);
+									break;
 								case "/cpp":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "c++", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "C++", cancellationToken);
 									break;
 								case "/cs":
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "csharp.net", cancellationToken);
@@ -216,10 +223,10 @@ namespace BotNet.Bot {
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "fsharp.net", cancellationToken);
 									break;
 								case "/js":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "javascript", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "JavaScript", cancellationToken);
 									break;
 								case "/ts":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "typescript", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "TypeScript", cancellationToken);
 									break;
 								case "/vb":
 									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "basic.net", cancellationToken);

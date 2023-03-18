@@ -3,9 +3,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.Pesto.Exception;
+using BotNet.Services.Pesto.Exceptions;
 using BotNet.Services.Pesto.Models;
 using Microsoft.Extensions.Options;
 
@@ -26,7 +27,9 @@ public class PestoClient {
 		
 		_httpClient = httpClient;
 		_semaphore ??= new SemaphoreSlim(_options.MaxConcurrentExecutions, _options.MaxConcurrentExecutions);
-		_jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+		_jsonSerializerOptions = new JsonSerializerOptions {
+			PropertyNamingPolicy = JsonNamingPolicy.CamelCase, Converters = { new JsonStringEnumConverter() }
+		};
 		
 		_httpClient.DefaultRequestHeaders.Add("X-Pesto-Token", _options.Token);
 		_httpClient.DefaultRequestHeaders.Add("Accept", "application/json");

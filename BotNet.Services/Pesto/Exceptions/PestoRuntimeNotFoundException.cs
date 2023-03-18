@@ -1,4 +1,4 @@
-﻿namespace BotNet.Services.Pesto.Exception; 
+﻿namespace BotNet.Services.Pesto.Exceptions; 
 
 public class PestoRuntimeNotFoundException : System.Exception {
 	public PestoRuntimeNotFoundException(string? runtime) 
