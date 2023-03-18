@@ -20,6 +20,8 @@ public class PestoClient {
 		Converters = { new JsonStringEnumConverter() }
 	};
 
+	private const int GRACE_PERIOD = 1_500;
+
 	private static SemaphoreSlim? _semaphore;
 	private readonly HttpClient _httpClient;
 	private readonly string _token;
@@ -27,6 +29,7 @@ public class PestoClient {
 	private readonly int _compileTimeout;
 	private readonly int _runTimeout;
 	private readonly int _memoryLimit;
+	private readonly TimeSpan _executeTimeout;
 	private readonly ILogger<PestoClient> _logger;
 
 	public PestoClient(
@@ -46,6 +49,7 @@ public class PestoClient {
 		_compileTimeout = options.CompileTimeout;
 		_runTimeout = options.RunTimeout;
 		_memoryLimit = options.MemoryLimit;
+		_executeTimeout = TimeSpan.FromMilliseconds(_compileTimeout + _runTimeout + GRACE_PERIOD);
 	}
 
 	/// <summary>
@@ -113,7 +117,13 @@ public class PestoClient {
 	public async Task<CodeResponse> ExecuteAsync(Language language, string code, CancellationToken cancellationToken) {
 		if (string.IsNullOrWhiteSpace(code)) throw new PestoEmptyCodeException();
 
-		await _semaphore!.WaitAsync(cancellationToken);
+		using CancellationTokenSource timeoutSource = new(_executeTimeout);
+		using CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(
+			token1: timeoutSource.Token,
+			token2: cancellationToken
+		);
+
+		await _semaphore!.WaitAsync(linkedSource.Token);
 
 		_logger.LogInformation($"Executing code on Pesto:\n{code}");
 
@@ -139,11 +149,11 @@ public class PestoClient {
 				mediaType: "application/json"
 			);
 
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+			using HttpResponseMessage response = await _httpClient.SendAsync(request, linkedSource.Token);
 
 			if (response.StatusCode != HttpStatusCode.OK) {
 				ErrorResponse? errorResponse =
-					await response.Content.ReadFromJsonAsync<ErrorResponse>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+					await response.Content.ReadFromJsonAsync<ErrorResponse>(JSON_SERIALIZER_OPTIONS, linkedSource.Token);
 
 				throw response.StatusCode switch {
 					HttpStatusCode.TooManyRequests when errorResponse?.Message == "Monthly limit exceeded" =>
@@ -157,7 +167,7 @@ public class PestoClient {
 
 			response.EnsureSuccessStatusCode();
 			CodeResponse? codeResponse =
-				await response.Content.ReadFromJsonAsync<CodeResponse>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+				await response.Content.ReadFromJsonAsync<CodeResponse>(JSON_SERIALIZER_OPTIONS, linkedSource.Token);
 
 			return codeResponse ?? throw new PestoAPIException();
 		} finally {
