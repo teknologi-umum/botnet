@@ -1,8 +1,12 @@
-﻿namespace BotNet.Services.Pesto.Models; 
+﻿using System.Text.Json.Serialization;
 
-public sealed record CodeRequest(Language Language,
-                                 string Code,
-                                 int CompileTimeout = 10_000,
-                                 int RunTimeout = 10_000,
-                                 int MemoryLimit = 200_000_000,
-                                 string Version = "latest");
+namespace BotNet.Services.Pesto.Models; 
+
+public sealed record CodeRequest(
+	[property: JsonPropertyName("language"), JsonConverter(typeof(LanguageTitleCaseConverter))] Language Language,
+	[property: JsonPropertyName("code")] string Code,
+	[property: JsonPropertyName("compileTimeout")] int CompileTimeout = 10_000,
+	[property: JsonPropertyName("runTimeout")] int RunTimeout = 10_000,
+	[property: JsonPropertyName("memoryLimit")] int MemoryLimit = 200_000_000,
+	[property: JsonPropertyName("version")] string Version = "latest"
+);

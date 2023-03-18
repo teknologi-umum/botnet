@@ -1,7 +1,10 @@
-﻿namespace BotNet.Services.Pesto.Models; 
+﻿using System.Text.Json.Serialization;
+
+namespace BotNet.Services.Pesto.Models;
 
 public record CodeResponse(
-	string Language,
-	string Version,
-	CodeOutput Compile,
-	CodeOutput Runtime);
+	[property: JsonPropertyName("language")] string Language,
+	[property: JsonPropertyName("version")] string Version,
+	[property: JsonPropertyName("compile")] CodeOutput CompileOutput,
+	[property: JsonPropertyName("runtime")] CodeOutput RuntimeOutput
+);

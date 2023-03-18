@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace BotNet.Services.Pesto.Models; 
+namespace BotNet.Services.Pesto.Models;
 
 public record Runtime(
-	string Language,
-	string Version,
-	List<string> Aliases,
-	bool Compiled
-	);
+	[property: JsonPropertyName("language")] string Language,
+	[property: JsonPropertyName("version")] string Version,
+	[property: JsonPropertyName("aliases")] List<string> Aliases,
+	[property: JsonPropertyName("compiled")] bool Compiled
+);

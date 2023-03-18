@@ -1,8 +1,10 @@
-﻿namespace BotNet.Services.Pesto.Models; 
+﻿using System.Text.Json.Serialization;
+
+namespace BotNet.Services.Pesto.Models;
 
 public record CodeOutput(
-	string Stdout,
-	string Stderr,
-	string Output,
-	int ExitCode
+	[property: JsonPropertyName("stdout")] string Stdout,
+	[property: JsonPropertyName("stderr")] string Stderr,
+	[property: JsonPropertyName("output")] string Output,
+	[property: JsonPropertyName("exitCode")] int ExitCode
 );

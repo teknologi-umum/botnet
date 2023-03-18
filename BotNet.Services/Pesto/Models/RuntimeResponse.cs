@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace BotNet.Services.Pesto.Models; 
+namespace BotNet.Services.Pesto.Models;
 
-public record RuntimeResponse(List<Runtime> Runtime);
+public record RuntimeResponse(
+	[property: JsonPropertyName("runtime")] List<Runtime> Runtimes
+);

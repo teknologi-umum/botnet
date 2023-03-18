@@ -1,3 +1,7 @@
-﻿namespace BotNet.Services.Pesto.Models; 
+﻿using System.Text.Json.Serialization;
 
-public record ErrorResponse(string Message);
+namespace BotNet.Services.Pesto.Models;
+
+public record ErrorResponse(
+	[property: JsonPropertyName("message")] string Message
+);
