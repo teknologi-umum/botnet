@@ -7,7 +7,7 @@ namespace BotNet.Services.OpenAI.Models {
 		string Id,
 		string Object,
 		[property: JsonPropertyName("created")] int CreatedUnixTime,
-		string Model,
+		string? Model,
 		List<Choice> Choices
 	) {
 		[JsonIgnore]

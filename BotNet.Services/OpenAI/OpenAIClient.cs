@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -12,7 +14,8 @@ using RG.Ninja;
 
 namespace BotNet.Services.OpenAI {
 	public class OpenAIClient {
-		private const string URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
+		private const string COMPLETION_URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
+		private const string CHAT_URL = "https://api.openai.com/v1/chat/completions";
 		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
 		};
@@ -28,7 +31,7 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, double topP, CancellationToken cancellationToken) {
-			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(URL_TEMPLATE, engine)) {
+			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(COMPLETION_URL_TEMPLATE, engine)) {
 				Headers = {
 					{ "Authorization", $"Bearer {_apiKey}" },
 					{ "Accept", "text/event-stream" }
@@ -67,6 +70,29 @@ namespace BotNet.Services.OpenAI {
 			}
 
 			return result.ToString();
+		}
+
+		public async Task<string> ChatAsync(string model, IEnumerable<ChatMessage> messages, int maxTokens, CancellationToken cancellationToken) {
+			using HttpRequestMessage request = new(HttpMethod.Post, CHAT_URL) {
+				Headers = {
+					{ "Authorization", $"Bearer {_apiKey}" },
+				},
+				Content = JsonContent.Create(
+					inputValue: new {
+						Model = model,
+						MaxTokens = maxTokens,
+						Messages = messages
+					},
+					options: JSON_SERIALIZER_OPTIONS
+				)
+			};
+			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+			response.EnsureSuccessStatusCode();
+
+			CompletionResult? completionResult = await response.Content.ReadFromJsonAsync<CompletionResult>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+			if (completionResult == null) return "";
+			if (completionResult.Choices.Count == 0) return "";
+			return completionResult.Choices[0].Message?.Content!;
 		}
 	}
 }

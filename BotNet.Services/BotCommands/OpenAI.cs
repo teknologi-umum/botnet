@@ -379,9 +379,7 @@ namespace BotNet.Services.BotCommands {
 						: CHAT_GROUP_RATE_LIMITER
 					).ValidateActionRate(message.Chat.Id, message.From!.Id);
 					string result = await serviceProvider.GetRequiredService<FriendlyBot>().ChatAsync(
-						callSign: callSign,
-						name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
-						question: chatMessage,
+						message: chatMessage,
 						cancellationToken: cancellationToken
 					);
 					ImmutableList<Uri> attachments = serviceProvider.GetRequiredService<AttachmentGenerator>().GenerateAttachments(result);
@@ -451,10 +449,8 @@ namespace BotNet.Services.BotCommands {
 					? CHAT_PRIVATE_RATE_LIMITER
 					: CHAT_GROUP_RATE_LIMITER
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
-				string result = await serviceProvider.GetRequiredService<FriendlyBot>().RespondToThreadAsync(
-					callSign: callSign,
-					name: $"{message.From!.FirstName}{message.From.LastName?.Let(lastName => " " + lastName)}",
-					question: message.Text!,
+				string result = await serviceProvider.GetRequiredService<FriendlyBot>().ChatAsync(
+					message: message.Text!,
 					thread: thread,
 					cancellationToken: cancellationToken
 				);

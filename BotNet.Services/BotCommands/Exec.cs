@@ -17,6 +17,8 @@ using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.BotCommands {
 	public static class Exec {
+		private static DateTimeOffset _skipPestoUntil = DateTimeOffset.Now;
+
 		public static async Task ExecAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string language, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
