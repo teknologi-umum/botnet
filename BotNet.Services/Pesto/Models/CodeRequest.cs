@@ -7,6 +7,5 @@ public sealed record CodeRequest(
 	[property: JsonPropertyName("code")] string Code,
 	[property: JsonPropertyName("compileTimeout")] int CompileTimeout = 10_000,
 	[property: JsonPropertyName("runTimeout")] int RunTimeout = 10_000,
-	[property: JsonPropertyName("memoryLimit")] int MemoryLimit = 200_000_000,
 	[property: JsonPropertyName("version")] string Version = "latest"
 );

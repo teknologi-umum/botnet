@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -87,9 +86,12 @@ public class PestoClient {
 	/// <exception cref="PestoAPIException"></exception>
 	public async Task<RuntimeResponse> ListRuntimesAsync(CancellationToken cancellationToken) {
 		Uri requestUrl = new(_baseUrl, "api/list-runtimes");
-		using HttpRequestMessage request = new(HttpMethod.Get, requestUrl);
-		request.Headers.Add("X-Pesto-Token", _token);
-		request.Headers.Add("Accept", "application/json");
+		using HttpRequestMessage request = new(HttpMethod.Get, requestUrl) {
+			Headers = {
+				{ "X-Pesto-Token", _token },
+				{ "Accept", "application/json" }
+			}
+		};
 
 		using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
 
@@ -129,25 +131,22 @@ public class PestoClient {
 
 		try {
 			Uri requestUrl = new(_baseUrl, "api/execute");
-			using HttpRequestMessage request = new(HttpMethod.Post, requestUrl);
-			request.Headers.Add("X-Pesto-Token", _token);
-			request.Headers.Add("Accept", "application/json");
-			string content = JsonSerializer.Serialize(
-				value: new CodeRequest(
-					Language: language,
-					Code: code,
-					Version: "latest",
-					CompileTimeout: _compileTimeout,
-					RunTimeout: _runTimeout,
-					MemoryLimit: _memoryLimit
-				),
-				options: JSON_SERIALIZER_OPTIONS
-			);
-			request.Content = new StringContent(
-				content: content,
-				encoding: Encoding.UTF8,
-				mediaType: "application/json"
-			);
+			using HttpRequestMessage request = new(HttpMethod.Post, requestUrl) {
+				Headers = {
+					{ "X-Pesto-Token", _token },
+					{ "Accept", "application/json" }
+				},
+				Content = JsonContent.Create(
+					inputValue: new CodeRequest(
+						Language: language,
+						Code: code,
+						Version: "latest",
+						CompileTimeout: _compileTimeout,
+						RunTimeout: _runTimeout
+					),
+					options: JSON_SERIALIZER_OPTIONS
+				)
+			};
 
 			using HttpResponseMessage response = await _httpClient.SendAsync(request, linkedSource.Token);
 
