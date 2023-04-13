@@ -93,20 +93,22 @@ namespace BotNet.Bot {
 							}
 
 							// Respond to call sign
-							Message? sentMessage = callSign switch {
-								"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
-								"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
-								_ => throw new NotImplementedException($"Call sign {callSign} not handled")
-							};
+							Task.Run(async () => {
+								Message? sentMessage = callSign switch {
+									"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
+									"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
+									_ => throw new NotImplementedException($"Call sign {callSign} not handled")
+								};
 
-							if (sentMessage is not null) {
-								// Track sent message
-								await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
-									sender: callSign,
-									text: sentMessage.Text!,
-									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
-								);
-							}
+								if (sentMessage is not null) {
+									// Track sent message
+									await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+										sender: callSign,
+										text: sentMessage.Text!,
+										replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+									);
+								}
+							}).Ignore();
 							break;
 						}
 
@@ -139,20 +141,22 @@ namespace BotNet.Bot {
 								string callSign = thread.Last().Sender;
 
 								// Respond to thread
-								Message? sentMessage = callSign switch {
-									"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
-									"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
-									_ => throw new NotImplementedException($"Call sign {callSign} not handled")
-								};
+								Task.Run(async () => {
+									Message? sentMessage = callSign switch {
+										"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
+										"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
+										_ => throw new NotImplementedException($"Call sign {callSign} not handled")
+									};
 
-								if (sentMessage is not null) {
-									// Track sent message
-									await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
-										sender: callSign,
-										text: sentMessage.Text!,
-										replyToMessageId: sentMessage.ReplyToMessage!.MessageId
-									);
-								}
+									if (sentMessage is not null) {
+										// Track sent message
+										await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+											sender: callSign,
+											text: sentMessage.Text!,
+											replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+										);
+									}
+								}).Ignore();
 								break;
 							}
 						}
@@ -240,22 +244,22 @@ namespace BotNet.Bot {
 									);
 									break;
 								case "/explain":
-									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en", cancellationToken);
+									OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en", cancellationToken).Ignore();
 									break;
 								case "/jelaskan":
-									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "id", cancellationToken);
+									OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "id", cancellationToken).Ignore();
 									break;
 								case "/ask":
-									await OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message, cancellationToken).Ignore();
 									break;
 								case "/enid":
 								case "/iden":
 								case "/eniden":
 								case "/idenid":
-									await OpenAI.TranslateAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken);
+									OpenAI.TranslateAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken).Ignore();
 									break;
 								case "/genjs":
-									await OpenAI.GenerateJavaScriptCodeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									OpenAI.GenerateJavaScriptCodeAsync(botClient, _serviceProvider, update.Message, cancellationToken).Ignore();
 									break;
 								case "/humor":
 									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message, cancellationToken);

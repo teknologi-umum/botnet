@@ -13,26 +13,26 @@ using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.Pesto;
 
-public class PestoClient {
+public class PestoClient : IDisposable {
 	private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		Converters = { new JsonStringEnumConverter() }
 	};
 
-	private const int GRACE_PERIOD = 1_500;
+	private const int GRACE_PERIOD = 1_500_000;
 
 	private static SemaphoreSlim? _semaphore;
+	private bool _disposedValue;
 	private readonly HttpClient _httpClient;
+	private readonly HttpClientHandler _httpClientHandler;
 	private readonly string _token;
 	private readonly Uri _baseUrl;
 	private readonly int _compileTimeout;
 	private readonly int _runTimeout;
-	private readonly int _memoryLimit;
 	private readonly TimeSpan _executeTimeout;
 	private readonly ILogger<PestoClient> _logger;
 
 	public PestoClient(
-		HttpClient httpClient,
 		IOptions<PestoOptions> pestoOptionsAccessor,
 		ILogger<PestoClient> logger
 	) {
@@ -40,14 +40,19 @@ public class PestoClient {
 		if (string.IsNullOrWhiteSpace(options.Token)) throw new InvalidProgramException("PestoOptions:Token not configured.");
 		if (string.IsNullOrWhiteSpace(options.BaseUrl)) throw new InvalidProgramException("PestoOptions:BaseUrl not configured.");
 
-		_httpClient = httpClient;
+		_httpClientHandler = new HttpClientHandler {
+			AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+		};
+		_httpClient = new(
+			handler: _httpClientHandler,
+			disposeHandler: false
+		);
 		_logger = logger;
 		_semaphore ??= new SemaphoreSlim(options.MaxConcurrentExecutions, options.MaxConcurrentExecutions);
 		_token = options.Token;
 		_baseUrl = new Uri(options.BaseUrl);
 		_compileTimeout = options.CompileTimeout;
 		_runTimeout = options.RunTimeout;
-		_memoryLimit = options.MemoryLimit;
 		_executeTimeout = TimeSpan.FromMilliseconds(_compileTimeout + _runTimeout + GRACE_PERIOD);
 	}
 
@@ -148,7 +153,7 @@ public class PestoClient {
 				)
 			};
 
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, linkedSource.Token);
+			using HttpResponseMessage response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, linkedSource.Token).ConfigureAwait(false);
 
 			if (response.StatusCode != HttpStatusCode.OK) {
 				ErrorResponse? errorResponse =
@@ -172,5 +177,23 @@ public class PestoClient {
 		} finally {
 			_semaphore.Release();
 		}
+	}
+
+	protected virtual void Dispose(bool disposing) {
+		if (!_disposedValue) {
+			if (disposing) {
+				// dispose managed state (managed objects)
+				_httpClient.Dispose();
+				_httpClientHandler.Dispose();
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose() {
+		// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 }
