@@ -18,8 +18,8 @@ public enum Language {
 	Go = 5,
 	[EnumMember(Value = "Java")]
 	Java = 6,
-	[EnumMember(Value = "JavaScript")]
-	JavaScript = 7,
+	[EnumMember(Value = "Javascript")]
+	Javascript = 7,
 	[EnumMember(Value = "Julia")]
 	Julia = 8,
 	[EnumMember(Value = "Lua")]
@@ -46,7 +46,7 @@ public static class LanguageExtensions {
 			Language.DotNet => ".NET",
 			Language.Go => "Go",
 			Language.Java => "Java",
-			Language.JavaScript => "JavaScript",
+			Language.Javascript => "JavaScript",
 			Language.Julia => "Julia",
 			Language.Lua => "Lua",
 			Language.PHP => "PHP",

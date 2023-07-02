@@ -23,64 +23,6 @@ namespace BotNet.Services.BotCommands {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
-					// See if the language is supported on Pesto
-					if (Enum.TryParse(language, ignoreCase: true, out Language pestoLanguage)) {
-						// Use Pesto
-						try {
-							CodeResponse result = await serviceProvider.GetRequiredService<PestoClient>()
-								.ExecuteAsync(pestoLanguage, commandArgument, cancellationToken);
-
-							if (result.CompileOutput is { ExitCode: not 0 }) {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: $"<code>{WebUtility.HtmlEncode(result.CompileOutput.Stderr)}</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							} else if (result.RuntimeOutput is { ExitCode: not 0 }) {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: $"<code>{WebUtility.HtmlEncode(result.RuntimeOutput.Stderr)}</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							} else if (result.RuntimeOutput.Output.Length > 1000) {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text: "<code>Output is too long.</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							} else {
-								await botClient.SendTextMessageAsync(
-									chatId: message.Chat.Id,
-									text:
-									$"Code:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nOutput:\n<code>{WebUtility.HtmlEncode(result.RuntimeOutput.Output)}</code>",
-									parseMode: ParseMode.Html,
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken);
-							}
-							return;
-						} catch (Exception exc) when (
-							exc is PestoAPIException
-								or PestoMonthlyLimitExceededException
-								or PestoRuntimeNotFoundException
-								or PestoServerRateLimitedException
-						) {
-							// Suppress error, and retry code execution using Piston.
-							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
-						} catch (Exception exc) {
-							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
-							await botClient.SendTextMessageAsync(
-								chatId: message.Chat.Id,
-								text:"<code>Failed to execute code.</code>",
-								parseMode: ParseMode.Html,
-								replyToMessageId: message.MessageId,
-								cancellationToken: cancellationToken);
-							return;
-						}
-					}
-
 					// Use Piston
 					try {
 						ExecuteResult result = await serviceProvider.GetRequiredService<PistonClient>()
@@ -133,74 +75,6 @@ namespace BotNet.Services.BotCommands {
 							cancellationToken: cancellationToken);
 					}
 				} else if (message.ReplyToMessage?.Text is string repliedToMessage) {
-					// See if the language is supported on Pesto
-					bool pestoSupportedLanguage =
-						Enum.TryParse(CultureInfo.InvariantCulture.TextInfo.ToTitleCase(language),
-							out Language pestoLanguage);
-
-					if (pestoSupportedLanguage) {
-						// Use Pesto
-						try {
-							CodeResponse result = await serviceProvider.GetRequiredService<PestoClient>()
-																	   .ExecuteAsync(pestoLanguage, commandArgument,
-																		   cancellationToken);
-
-							switch (result) {
-								case { CompileOutput: { ExitCode: not 0, Stderr: var compileStderr } }:
-									await botClient.SendTextMessageAsync(
-										chatId: message.Chat.Id,
-										text: $"<code>{WebUtility.HtmlEncode(compileStderr)}</code>",
-										parseMode: ParseMode.Html,
-										replyToMessageId: message.MessageId,
-										cancellationToken: cancellationToken);
-									break;
-								case { RuntimeOutput: { ExitCode: not 0, Stderr: var runtimeStderr } }:
-									await botClient.SendTextMessageAsync(
-										chatId: message.Chat.Id,
-										text: $"<code>{WebUtility.HtmlEncode(runtimeStderr)}</code>",
-										parseMode: ParseMode.Html,
-										replyToMessageId: message.MessageId,
-										cancellationToken: cancellationToken);
-									break;
-								case { RuntimeOutput.Output.Length: > 1000 }:
-									await botClient.SendTextMessageAsync(
-										chatId: message.Chat.Id,
-										text: "<code>Output is too long.</code>",
-										parseMode: ParseMode.Html,
-										replyToMessageId: message.MessageId,
-										cancellationToken: cancellationToken);
-									break;
-								default:
-									await botClient.SendTextMessageAsync(
-										chatId: message.Chat.Id,
-										text:
-										$"Code:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nOutput:\n<code>{WebUtility.HtmlEncode(result.RuntimeOutput.Output)}</code>",
-										parseMode: ParseMode.Html,
-										replyToMessageId: message.MessageId,
-										cancellationToken: cancellationToken);
-									break;
-							}
-							return;
-						} catch (Exception exc) when (
-							exc is PestoAPIException
-								or PestoMonthlyLimitExceededException
-								or PestoRuntimeNotFoundException
-								or PestoServerRateLimitedException
-						) {
-							// Suppress error, and retry code execution using Piston.
-							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
-						} catch (Exception exc) {
-							serviceProvider.GetRequiredService<ILogger<PestoClient>>().LogError(exc, "Error while executing code on Pesto");
-							await botClient.SendTextMessageAsync(
-								chatId: message.Chat.Id,
-								text: "<code>Failed to execute code.</code>",
-								parseMode: ParseMode.Html,
-								replyToMessageId: message.MessageId,
-								cancellationToken: cancellationToken);
-							return;
-						}
-					}
-
 					try {
 						ExecuteResult result = await serviceProvider.GetRequiredService<PistonClient>()
 							.ExecuteAsync(language.ToLowerInvariant(), repliedToMessage, cancellationToken);
