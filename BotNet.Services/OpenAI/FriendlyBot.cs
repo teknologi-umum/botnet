@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -68,7 +67,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.ChatAsync(
 				model: "gpt-3.5-turbo",
 				messages: messages,
-				maxTokens: 2048,
+				maxTokens: 256,
 				cancellationToken: cancellationToken
 			);
 		}
@@ -92,7 +91,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.ChatAsync(
 				model: "gpt-3.5-turbo",
 				messages: messages,
-				maxTokens: 2048,
+				maxTokens: 256,
 				cancellationToken: cancellationToken
 			);
 		}

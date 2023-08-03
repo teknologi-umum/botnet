@@ -27,7 +27,7 @@ namespace BotNet.Services.OpenAI {
 				engine: "code-davinci-002",
 				prompt: prompt,
 				stop: new[] { "/* Command:" },
-				maxTokens: 1000,
+				maxTokens: 256,
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.0,
 				temperature: 0.0,
