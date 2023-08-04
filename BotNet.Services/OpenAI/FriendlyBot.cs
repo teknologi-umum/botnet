@@ -67,7 +67,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.ChatAsync(
 				model: "gpt-3.5-turbo",
 				messages: messages,
-				maxTokens: 256,
+				maxTokens: 512,
 				cancellationToken: cancellationToken
 			);
 		}
@@ -91,7 +91,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.ChatAsync(
 				model: "gpt-3.5-turbo",
 				messages: messages,
-				maxTokens: 256,
+				maxTokens: 512,
 				cancellationToken: cancellationToken
 			);
 		}
