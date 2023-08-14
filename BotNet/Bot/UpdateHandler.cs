@@ -290,6 +290,9 @@ namespace BotNet.Bot {
 								case "/bmkg":
 									await BMKG.GetLatestEarthQuakeAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
+								case "/preview":
+									await Preview.GetPreviewAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									break;
 							}
 						}
 						break;

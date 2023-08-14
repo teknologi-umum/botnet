@@ -13,6 +13,7 @@ using BotNet.Services.OpenAI;
 using BotNet.Services.OpenGraph;
 using BotNet.Services.Piston;
 using BotNet.Services.Pesto;
+using BotNet.Services.Preview;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.Stability;
 using BotNet.Services.Tenor;
@@ -71,6 +72,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddGoogleMaps();
 		services.AddWeatherService();
 		services.AddBMKG();
+		services.AddPreviewServices();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));
