@@ -179,6 +179,12 @@ namespace BotNet.Bot {
 								case "/flop":
 									await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
 									break;
+								case "/flap":
+									await FlipFlop.HandleFlapAsync(botClient, update.Message, cancellationToken);
+									break;
+								case "/flep":
+									await FlipFlop.HandleFlepAsync(botClient, update.Message, cancellationToken);
+									break;
 								case "/fuck":
 									await Fuck.HandleFuckAsync(botClient, update.Message, cancellationToken);
 									break;

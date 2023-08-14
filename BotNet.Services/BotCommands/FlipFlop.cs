@@ -88,5 +88,83 @@ namespace BotNet.Services.BotCommands {
 					cancellationToken: cancellationToken);
 			}
 		}
+
+		public static async Task HandleFlapAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken) {
+			if (message.ReplyToMessage is null) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "Apa yang mau diflap? Untuk ngeflap gambar, reply `/flap` ke pesan yang ada gambarnya\\.",
+					parseMode: ParseMode.MarkdownV2,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			} else if ((message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0)
+				&& message.ReplyToMessage.Sticker is null) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "Pesan ini tidak ada gambarnya\\. Untuk ngeflap gambar, reply `/flap` ke pesan yang ada gambarnya\\.",
+					parseMode: ParseMode.MarkdownV2,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			} else {
+				using MemoryStream originalImageStream = new();
+				Telegram.Bot.Types.File fileInfo = message.ReplyToMessage.Photo?.Length > 0
+					? await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken)
+					: await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Sticker!.FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken);
+
+				byte[] flappedImage = Flipper.FlapImage(originalImageStream.ToArray());
+				using MemoryStream flappedImageStream = new(flappedImage);
+
+				await botClient.SendPhotoAsync(
+					chatId: message.Chat.Id,
+					photo: new InputOnlineFile(flappedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					replyToMessageId: message.ReplyToMessage.MessageId,
+					cancellationToken: cancellationToken);
+			}
+		}
+
+		public static async Task HandleFlepAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken) {
+			if (message.ReplyToMessage is null) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "Apa yang mau diflep? Untuk ngeflep gambar, reply `/flep` ke pesan yang ada gambarnya\\.",
+					parseMode: ParseMode.MarkdownV2,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			} else if ((message.ReplyToMessage.Photo is null || message.ReplyToMessage.Photo.Length == 0)
+				&& message.ReplyToMessage.Sticker is null) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "Pesan ini tidak ada gambarnya\\. Untuk ngeflep gambar, reply `/flep` ke pesan yang ada gambarnya\\.",
+					parseMode: ParseMode.MarkdownV2,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			} else {
+				using MemoryStream originalImageStream = new();
+				Telegram.Bot.Types.File fileInfo = message.ReplyToMessage.Photo?.Length > 0
+					? await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken)
+					: await botClient.GetInfoAndDownloadFileAsync(
+						fileId: message.ReplyToMessage.Sticker!.FileId,
+						destination: originalImageStream,
+						cancellationToken: cancellationToken);
+
+				byte[] fleppedImage = Flipper.FlepImage(originalImageStream.ToArray());
+				using MemoryStream fleppedImageStream = new(fleppedImage);
+
+				await botClient.SendPhotoAsync(
+					chatId: message.Chat.Id,
+					photo: new InputOnlineFile(fleppedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					replyToMessageId: message.ReplyToMessage.MessageId,
+					cancellationToken: cancellationToken);
+			}
+		}
 	}
 }

@@ -56,5 +56,59 @@ namespace BotNet.Services.ImageFlip {
 
 			return flippedImageStream.ToArray();
 		}
+
+		public static byte[] FlapImage(byte[] originalImage) {
+			using SKBitmap bitmap = SKBitmap.Decode(originalImage);
+			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
+			using SKCanvas canvas = surface.Canvas;
+
+			canvas.Save();
+			canvas.DrawBitmap(
+				bitmap: bitmap,
+				source: SKRect.Create(bitmap.Width, bitmap.Height / 2f),
+				dest: SKRect.Create(bitmap.Width, bitmap.Height / 2f));
+			canvas.Scale(1, -1, 0, bitmap.Height / 2f);
+			canvas.DrawBitmap(
+				bitmap: bitmap,
+				source: SKRect.Create(bitmap.Width, bitmap.Height / 2f),
+				dest: SKRect.Create(bitmap.Width, bitmap.Height / 2f));
+			canvas.Restore();
+			canvas.Flush();
+
+			using SKImage image = surface.Snapshot();
+			using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+			using MemoryStream flippedImageStream = new();
+			data.SaveTo(flippedImageStream);
+
+			return flippedImageStream.ToArray();
+		}
+
+		public static byte[] FlepImage(byte[] originalImage) {
+			using SKBitmap bitmap = SKBitmap.Decode(originalImage);
+			using SKSurface surface = SKSurface.Create(new SKImageInfo(bitmap.Width, bitmap.Height));
+			using SKCanvas canvas = surface.Canvas;
+
+			canvas.Save();
+			canvas.DrawBitmap(
+				bitmap: bitmap,
+				source: SKRect.Create(0f, bitmap.Height / 2f, bitmap.Width, bitmap.Height / 2f),
+				dest: SKRect.Create(0f, bitmap.Height / 2f, bitmap.Width, bitmap.Height / 2f));
+			canvas.Scale(1, -1, 0, bitmap.Height / 2f);
+			canvas.DrawBitmap(
+				bitmap: bitmap,
+				source: SKRect.Create(0f, bitmap.Height / 2f, bitmap.Width, bitmap.Height / 2f),
+				dest: SKRect.Create(0f, bitmap.Height / 2f, bitmap.Width, bitmap.Height / 2f));
+			canvas.Restore();
+			canvas.Flush();
+
+			using SKImage image = surface.Snapshot();
+			using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+			using MemoryStream flippedImageStream = new();
+			data.SaveTo(flippedImageStream);
+
+			return flippedImageStream.ToArray();
+		}
 	}
 }
