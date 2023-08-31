@@ -24,6 +24,19 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 		}
 
 		[Theory]
+		[InlineData("https://x.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19", "https://x.com/ShowwcaseHQ/status/1556259601829576707")]
+		[InlineData("WKWKWK alisnya Kevin https://x.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19 😂", "https://x.com/ShowwcaseHQ/status/1556259601829576707")]
+		[InlineData("https://x.com/ShowwcaseHQ/status/1556259601829576707", null)]
+		public void CanSanitizeXLinks(string url, string? cleaned) {
+			if (XLinkSanitizer.FindTrackedXLink(url) is Uri trackedUrl) {
+				Uri cleanedUrl = XLinkSanitizer.Sanitize(trackedUrl);
+				cleanedUrl.OriginalString.Should().Be(cleaned);
+			} else {
+				cleaned.Should().BeNull();
+			}
+		}
+
+		[Theory]
 		[InlineData("https://vt.tiktok.com/ZSR6XLMHh/?k=1", "https://vt.tiktok.com/ZSR6XLMHh/")]
 		[InlineData("anjayyyyhttps://vt.tiktok.com/ZSR6XLMHh/?k=1", "https://vt.tiktok.com/ZSR6XLMHh/")]
 		[InlineData("https://vt.tiktok.com/ZSR6XLMHh/", "https://vt.tiktok.com/ZSR6XLMHh/")]
