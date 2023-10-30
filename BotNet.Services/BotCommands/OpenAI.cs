@@ -386,23 +386,23 @@ namespace BotNet.Services.BotCommands {
 					if (attachments.Count == 0) {
 						return await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: WebUtility.HtmlEncode(result),
-							parseMode: ParseMode.Html,
+							text: result,
+							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} else if (attachments.Count == 1) {
 						return await botClient.SendPhotoAsync(
 							chatId: message.Chat.Id,
 							photo: new InputOnlineFile(attachments[0]),
-							caption: WebUtility.HtmlEncode(result),
-							parseMode: ParseMode.Html,
+							caption: result,
+							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} else {
 						Message sentMessage = await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: WebUtility.HtmlEncode(result),
-							parseMode: ParseMode.Html,
+							text: result,
+							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 						await botClient.SendMediaGroupAsync(
@@ -458,23 +458,23 @@ namespace BotNet.Services.BotCommands {
 				if (attachments.Count == 0) {
 					return await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: WebUtility.HtmlEncode(result),
-						parseMode: ParseMode.Html,
+						text: result,
+						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
 				} else if (attachments.Count == 1) {
 					return await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
 						photo: new InputOnlineFile(attachments[0]),
-						caption: WebUtility.HtmlEncode(result),
-						parseMode: ParseMode.Html,
+						caption: result,
+						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
 				} else {
 					Message sentMessage = await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: WebUtility.HtmlEncode(result),
-						parseMode: ParseMode.Html,
+						text: result,
+						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
 					await botClient.SendMediaGroupAsync(
