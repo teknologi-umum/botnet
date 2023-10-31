@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.DependencyInjection;
@@ -388,7 +389,7 @@ namespace BotNet.Services.BotCommands {
 					if (attachments.Count == 0) {
 						return await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: SanitizeForMarkdownV2(result),
+							text: MarkdownV2Sanitizer.Sanitize(result),
 							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
@@ -396,14 +397,14 @@ namespace BotNet.Services.BotCommands {
 						return await botClient.SendPhotoAsync(
 							chatId: message.Chat.Id,
 							photo: new InputOnlineFile(attachments[0]),
-							caption: SanitizeForMarkdownV2(result),
+							caption: MarkdownV2Sanitizer.Sanitize(result),
 							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} else {
 						Message sentMessage = await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
-							text: SanitizeForMarkdownV2(result),
+							text: MarkdownV2Sanitizer.Sanitize(result),
 							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
@@ -460,7 +461,7 @@ namespace BotNet.Services.BotCommands {
 				if (attachments.Count == 0) {
 					return await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: SanitizeForMarkdownV2(result),
+						text: MarkdownV2Sanitizer.Sanitize(result),
 						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -468,14 +469,14 @@ namespace BotNet.Services.BotCommands {
 					return await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
 						photo: new InputOnlineFile(attachments[0]),
-						caption: SanitizeForMarkdownV2(result),
+						caption: MarkdownV2Sanitizer.Sanitize(result),
 						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
 				} else {
 					Message sentMessage = await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
-						text: SanitizeForMarkdownV2(result),
+						text: MarkdownV2Sanitizer.Sanitize(result),
 						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
@@ -758,29 +759,6 @@ namespace BotNet.Services.BotCommands {
 						cancellationToken: cancellationToken);
 				}
 			}
-		}
-
-		private static readonly HashSet<char> CHARACTERS_TO_ESCAPE = new() {
-			'_', '*', '[', ']', '(', ')', '~', '>', '#',
-			'+', '-', '=', '|', '{', '}', '.', '!'
-		};
-
-		private static string SanitizeForMarkdownV2(string input) {
-			if (string.IsNullOrEmpty(input))
-				return input;
-
-			// Use StringBuilder for efficient string manipulation
-			StringBuilder sanitized = new(input.Length);
-
-			foreach (char character in input) {
-				// If the character is in our list, append a backslash before it
-				if (CHARACTERS_TO_ESCAPE.Contains(character)) {
-					sanitized.Append('\\');
-				}
-				sanitized.Append(character);
-			}
-
-			return sanitized.ToString();
 		}
 	}
 }

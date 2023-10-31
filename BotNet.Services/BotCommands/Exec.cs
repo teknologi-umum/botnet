@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.Pesto;
-using BotNet.Services.Pesto.Exceptions;
-using BotNet.Services.Pesto.Models;
+using BotNet.Services.MarkdownV2;
 using BotNet.Services.Piston;
 using BotNet.Services.Piston.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -52,8 +48,8 @@ namespace BotNet.Services.BotCommands {
 						} else {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: $"Code:\n<code>{WebUtility.HtmlEncode(commandArgument)}</code>\n\nOutput:\n<code>{WebUtility.HtmlEncode(result.Run.Output)}</code>",
-								parseMode: ParseMode.Html,
+								text: $"Code:\n```{language}\n{MarkdownV2Sanitizer.Sanitize(commandArgument)}\n```\n\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
+								parseMode: ParseMode.MarkdownV2,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						}
@@ -103,8 +99,8 @@ namespace BotNet.Services.BotCommands {
 						} else {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: $"Code:\n<code>{WebUtility.HtmlEncode(repliedToMessage)}</code>\n\nOutput:\n<code>{WebUtility.HtmlEncode(result.Run.Output)}</code>",
-								parseMode: ParseMode.Html,
+								text: $"Code:\n```{language}\n{MarkdownV2Sanitizer.Sanitize(repliedToMessage)}\n```\n\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
+								parseMode: ParseMode.MarkdownV2,
 								replyToMessageId: message.ReplyToMessage.MessageId,
 								cancellationToken: cancellationToken);
 						}
