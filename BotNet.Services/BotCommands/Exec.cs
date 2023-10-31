@@ -15,7 +15,7 @@ namespace BotNet.Services.BotCommands {
 	public static class Exec {
 		private static DateTimeOffset _skipPestoUntil = DateTimeOffset.Now;
 
-		public static async Task ExecAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string language, CancellationToken cancellationToken) {
+		public static async Task ExecAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string language, string highlightLanguage, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
 				&& message.Text![commandLength..].Trim() is string commandArgument) {
 				if (commandArgument.Length > 0) {
@@ -48,7 +48,7 @@ namespace BotNet.Services.BotCommands {
 						} else {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: $"Code:\n```{language}\n{MarkdownV2Sanitizer.Sanitize(commandArgument)}\n```\n\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
+								text: $"Code:\n```{highlightLanguage}\n{MarkdownV2Sanitizer.Sanitize(commandArgument)}\n```\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
 								parseMode: ParseMode.MarkdownV2,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
@@ -99,7 +99,7 @@ namespace BotNet.Services.BotCommands {
 						} else {
 							await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
-								text: $"Code:\n```{language}\n{MarkdownV2Sanitizer.Sanitize(repliedToMessage)}\n```\n\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
+								text: $"Code:\n```{highlightLanguage}\n{MarkdownV2Sanitizer.Sanitize(repliedToMessage)}\n```\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
 								parseMode: ParseMode.MarkdownV2,
 								replyToMessageId: message.ReplyToMessage.MessageId,
 								cancellationToken: cancellationToken);

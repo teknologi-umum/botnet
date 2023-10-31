@@ -211,31 +211,31 @@ namespace BotNet.Bot {
 								case "/scala":
 								case "/swift":
 								case "/julia":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, command.ToLowerInvariant()[1..], command.ToLowerInvariant()[1..], cancellationToken);
 									break;
 								case "/sqlite3":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "SQLite3", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "SQLite3", "sqlite3", cancellationToken);
 									break;
 								case "/commonlisp":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "CommonLisp", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "CommonLisp", "cl", cancellationToken);
 									break;
 								case "/cpp":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "C++", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "C++", "cpp", cancellationToken);
 									break;
 								case "/cs":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "csharp.net", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "csharp.net", "csharp", cancellationToken);
 									break;
 								case "/fs":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "fsharp.net", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "fsharp.net", "fsharp", cancellationToken);
 									break;
 								case "/js":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "JavaScript", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "JavaScript", "js", cancellationToken);
 									break;
 								case "/ts":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "TypeScript", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "TypeScript", "ts", cancellationToken);
 									break;
 								case "/vb":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "basic.net", cancellationToken);
+									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "basic.net", "vbnet", cancellationToken);
 									break;
 								case "/pop":
 									await botClient.SendTextMessageAsync(
