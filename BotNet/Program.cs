@@ -27,6 +27,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Orleans.Hosting;
+using BotNet.Services.Meme;
 
 Host.CreateDefaultBuilder(args)
 	.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
@@ -73,6 +74,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddWeatherService();
 		services.AddBMKG();
 		services.AddPreviewServices();
+		services.AddMemeGenerator();
 
 		// Hosted Services
 		services.Configure<BotOptions>(configuration.GetSection("BotOptions"));

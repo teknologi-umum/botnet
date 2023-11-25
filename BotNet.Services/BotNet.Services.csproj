@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <None Remove="CopyPasta\Pasta.json" />
+    <None Remove="Meme\Images\ramad.jpg" />
     <None Remove="Stability\generation.proto" />
     <None Remove="FancyText\CharMaps\Bold.json" />
     <None Remove="FancyText\CharMaps\BoldItalic.json" />
@@ -15,6 +16,15 @@
     <None Remove="FancyText\CharMaps\Medieval.json" />
     <None Remove="FancyText\CharMaps\Monospace.json" />
     <None Remove="FancyText\CharMaps\WideText.json" />
+    <None Remove="Typography\Assets\Inter-Black.ttf" />
+    <None Remove="Typography\Assets\Inter-Bold.ttf" />
+    <None Remove="Typography\Assets\Inter-ExtraBold.ttf" />
+    <None Remove="Typography\Assets\Inter-ExtraLight.ttf" />
+    <None Remove="Typography\Assets\Inter-Light.ttf" />
+    <None Remove="Typography\Assets\Inter-Medium.ttf" />
+    <None Remove="Typography\Assets\Inter-Regular.ttf" />
+    <None Remove="Typography\Assets\Inter-SemiBold.ttf" />
+    <None Remove="Typography\Assets\Inter-Thin.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <None Remove="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />
@@ -58,6 +68,16 @@
   <ItemGroup>
     <EmbeddedResource Include="FancyText\CharMaps\**\*.*" />
     <EmbeddedResource Include="CopyPasta\Pasta.json" />
+    <EmbeddedResource Include="Meme\Images\Ramad.jpg" />
+    <EmbeddedResource Include="Typography\Assets\Inter-Black.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-Bold.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-ExtraBold.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-ExtraLight.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-Light.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-Medium.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-Regular.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-SemiBold.ttf" />
+    <EmbeddedResource Include="Typography\Assets\Inter-Thin.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-Bold.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-BoldItalic.ttf" />
     <EmbeddedResource Include="Typography\Assets\JetBrainsMonoNL-ExtraBold.ttf" />
