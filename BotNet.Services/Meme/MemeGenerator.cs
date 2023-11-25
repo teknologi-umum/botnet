@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using BotNet.Services.Typography;
 using SkiaSharp;
 
@@ -16,38 +15,42 @@ namespace BotNet.Services.Meme {
 		}
 
 		public byte[] CaptionRamad(string text) {
-			using Stream templateStream = typeof(MemeGenerator).Assembly.GetManifestResourceStream(Templates.RAMAD.ImageResourceName)!;
-			using SKBitmap template = SKBitmap.Decode(templateStream);
-			using SKSurface surface = SKSurface.Create(new SKImageInfo(template.Width, template.Height));
+			return CaptionMeme(Templates.RAMAD, text);
+		}
+
+		private byte[] CaptionMeme(Template template, string text) {
+			using Stream templateStream = typeof(MemeGenerator).Assembly.GetManifestResourceStream(template.ImageResourceName)!;
+			using SKBitmap templateBitmap = SKBitmap.Decode(templateStream);
+			using SKSurface surface = SKSurface.Create(new SKImageInfo(templateBitmap.Width, templateBitmap.Height));
 			using SKCanvas canvas = surface.Canvas;
 
-			SKRect templateRect = SKRect.Create(template.Width, template.Height);
+			SKRect templateRect = SKRect.Create(templateBitmap.Width, templateBitmap.Height);
 			canvas.DrawBitmap(
-				bitmap: template,
+				bitmap: templateBitmap,
 				source: templateRect,
 				dest: templateRect
 			);
 
 			canvas.Save();
-			canvas.RotateDegrees(1.4f);
-			using Stream fontStream = _botNetFontService.GetFontStyleById("Inter-Regular").OpenStream();
+			canvas.RotateDegrees(template.Rotation);
+			using Stream fontStream = _botNetFontService.GetFontStyleById(template.FontStyleId).OpenStream();
 			using SKTypeface typeface = SKTypeface.FromStream(fontStream);
 			using SKPaint paint = new() {
-				TextAlign = SKTextAlign.Left,
-				Color = new SKColor(0x00, 0x00, 0x00, 0xcc),
+				TextAlign = template.TextAlign,
+				Color = template.TextColor,
 				Typeface = typeface,
-				TextSize = 17f,
+				TextSize = template.TextSize,
 				IsAntialias = true
 			};
 			float offset = 0f;
-			foreach (string line in WrapWords(text, 110f, paint)) {
+			foreach (string line in WrapWords(text, template.MaxWidth, paint)) {
 				canvas.DrawText(
 					text: line,
-					x: 120f,
-					y: 100f + offset,
+					x: template.X,
+					y: template.Y + offset,
 					paint: paint
 				);
-				offset += 20f; // line height
+				offset += template.LineHeight;
 			}
 			canvas.Restore();
 
