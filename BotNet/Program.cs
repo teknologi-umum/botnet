@@ -24,19 +24,11 @@ using BotNet.Services.Typography;
 using BotNet.Services.Weather;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Orleans.Hosting;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-// Configuration sources
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-					 .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-					 .AddKeyPerFile("/run/secrets", optional: true, reloadOnChange: true)
-					 .AddEnvironmentVariables("ASPNETCORE_")
-					 .AddUserSecrets<BotService>(optional: true, reloadOnChange: true);
 
 // DI Services
 builder.Services.Configure<HostingOptions>(builder.Configuration.GetSection("HostingOptions"));
@@ -102,6 +94,6 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseResponseCaching();
 app.UseResponseCompression();
-app.MapControllers();
+app.MapDefaultControllerRoute();
 
 app.Run();
