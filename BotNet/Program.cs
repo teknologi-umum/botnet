@@ -1,4 +1,5 @@
-﻿using BotNet.Bot;
+﻿using System.Threading;
+using BotNet.Bot;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.ClearScript;
@@ -22,13 +23,22 @@ using BotNet.Services.Tiktok;
 using BotNet.Services.Tokopedia;
 using BotNet.Services.Typography;
 using BotNet.Services.Weather;
+using BotNet.Views.DecimalClock;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Orleans.Hosting;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
+
+// HTTPS support
+builder.WebHost.UseKestrelHttpsConfiguration();
 
 // DI Services
 builder.Services.Configure<HostingOptions>(builder.Configuration.GetSection("HostingOptions"));
@@ -77,23 +87,54 @@ builder.Host.UseOrleans((hostBuilderContext, siloBuilder) => {
 	siloBuilder.UseLocalhostClustering();
 });
 
-// Web
-builder.Services.AddControllersWithViews().AddNewtonsoftJson();
-builder.Services.AddResponseCaching();
-builder.Services.AddResponseCompression();
-
 WebApplication app = builder.Build();
 
-if (app.Environment.IsDevelopment()) {
-	app.UseDeveloperExceptionPage();
-} else {
-	app.UseHsts();
-}
+// Healthcheck endpoint
+app.MapGet("/", () => "https://t.me/teknologi_umum_v2");
 
-app.UseHttpsRedirection();
-app.UseRouting();
-app.UseResponseCaching();
-app.UseResponseCompression();
-app.MapDefaultControllerRoute();
+// Webhook
+app.MapPost("/webhook/{secretPath}", async (
+	string secretPath,
+	[FromBody] Update update,
+	[FromServices] ITelegramBotClient telegramBotClient,
+	[FromServices] UpdateHandler updateHandler,
+	[FromServices] IOptions<BotOptions> botOptionsAccessor,
+	CancellationToken cancellationToken
+) => {
+	if (secretPath != botOptionsAccessor.Value.AccessToken!.Split(':')[1]) return Results.NotFound();
+	await updateHandler.HandleUpdateAsync(telegramBotClient, update, cancellationToken);
+	return Results.Ok();
+});
+
+// Decimal clock renderer
+app.MapGet("/decimalclock/svg", () => Results.Content(
+	content: DecimalClockSvgBuilder.GenerateSvg(),
+	contentType: "image/svg+xml"
+));
+
+// Color card renderer
+app.MapGet("/renderer/color", (
+	string name,
+	[FromServices] ColorCardRenderer colorCardRenderer
+) => {
+	try {
+		return Results.File(
+			fileContents: colorCardRenderer.RenderColorCard(name),
+			contentType: "image/png",
+			enableRangeProcessing: true
+		);
+	} catch {
+		return Results.NotFound();
+	}
+});
+
+// Meme generator test
+#if DEBUG
+app.MapGet("/meme", ([FromServices] MemeGenerator memeGenerator) => Results.File(
+	fileContents: memeGenerator.CaptionRamad("Melakukan TDD, meski situasi sulit"),
+	contentType: "image/png",
+	enableRangeProcessing: true
+));
+#endif
 
 app.Run();
