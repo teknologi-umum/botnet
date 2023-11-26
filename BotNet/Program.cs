@@ -82,7 +82,7 @@ Host.CreateDefaultBuilder(args)
 		services.AddHostedService<BotService>();
 
 		// Telegram Bot
-		services.AddTelegramBot(botToken: configuration["BotOptions:AccessToken"]);
+		services.AddTelegramBot(botToken: configuration["BotOptions:AccessToken"]!);
 	})
 	.UseOrleans((hostBuilderContext, siloBuilder) => {
 		siloBuilder

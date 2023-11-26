@@ -45,7 +45,7 @@ namespace BotNet.Services.BotCommands {
 
 					await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
-						photo: previewYoutubeStoryboard.ToString(),
+						photo: new InputFileUrl(previewYoutubeStoryboard),
 						replyToMessageId: message.MessageId,
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken);
@@ -66,7 +66,7 @@ namespace BotNet.Services.BotCommands {
 
 					await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
-						photo: previewYoutubeStoryboard.ToString(),
+						photo: new InputFileUrl(previewYoutubeStoryboard),
 						replyToMessageId: message.MessageId,
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken);

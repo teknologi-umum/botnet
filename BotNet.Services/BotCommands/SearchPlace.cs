@@ -27,7 +27,7 @@ namespace BotNet.Services.BotCommands {
 
 							await telegramBotClient.SendPhotoAsync(
 								chatId: message.Chat.Id,
-								photo: staticMapUrl,
+								photo: new InputFileUrl(staticMapUrl),
 								caption: coords,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
@@ -36,7 +36,8 @@ namespace BotNet.Services.BotCommands {
 								chatId: message.Chat.Id,
 								text: "<code>Lokasi tidak dapat ditemukan</code>",
 								parseMode: ParseMode.Html,
-								replyToMessageId: message.MessageId);
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
 						}
 					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 						await telegramBotClient.SendTextMessageAsync(

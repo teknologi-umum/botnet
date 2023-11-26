@@ -6,14 +6,8 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 
 namespace BotNet.Services.ProgrammerHumor {
-	public class ProgrammerHumorScraper {
-		private readonly HttpClient _httpClient;
-
-		public ProgrammerHumorScraper(
-			HttpClient httpClient
-		) {
-			_httpClient = httpClient;
-		}
+	public class ProgrammerHumorScraper(HttpClient httpClient) {
+		private readonly HttpClient _httpClient = httpClient;
 
 		public async Task<(string Title, byte[] Image)> GetRandomJokeAsync(CancellationToken cancellationToken) {
 			const string url = "https://programmerhumor.io/?bimber_random_post=true";
@@ -21,17 +15,17 @@ namespace BotNet.Services.ProgrammerHumor {
 			using HttpResponseMessage httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
-			string html = await httpResponse.Content.ReadAsStringAsync();
+			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
 			IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default);
 			IDocument document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
-			IHtmlHeadingElement titleElement = document.QuerySelector<IHtmlHeadingElement>("article header.entry-header h1.entry-title");
-			IHtmlImageElement imageElement = document.QuerySelector<IHtmlImageElement>("article div[itemprop=\"image\"] img");
+			IHtmlHeadingElement? titleElement = document.QuerySelector<IHtmlHeadingElement>("article header.entry-header h1.entry-title");
+			IHtmlImageElement? imageElement = document.QuerySelector<IHtmlImageElement>("article div[itemprop=\"image\"] img");
 
-			string src = imageElement.Dataset["src"] ?? imageElement.Source;
+			string? src = imageElement?.Dataset["src"] ?? imageElement?.Source;
 
 			return (
-				Title: titleElement.InnerHtml,
+				Title: titleElement?.InnerHtml ?? "Humor",
 				Image: await _httpClient.GetByteArrayAsync(src, cancellationToken)
 			);
 		}

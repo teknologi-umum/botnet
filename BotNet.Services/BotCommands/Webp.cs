@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types;
 using Telegram.Bot;
 using BotNet.Services.Webp;
@@ -38,7 +37,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(imageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					photo: new InputFileStream(imageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
 			}

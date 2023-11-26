@@ -18,13 +18,13 @@ namespace BotNet.Grains {
 			return Task.CompletedTask;
 		}
 
-		public async Task<(string? Sender, string? Text, long? ReplyToMessageId)> GetMessageAsync() {
+		public Task<(string? Sender, string? Text, long? ReplyToMessageId)> GetMessageAsync() {
 			DelayDeactivation(TimeSpan.FromHours(1));
-			return (_sender, _text, _replyToMessageId);
+			return Task.FromResult((_sender, _text, _replyToMessageId));
 		}
 
 		public async Task<ImmutableList<(string Sender, string Text)>> GetThreadAsync(int maxLines) {
-			if (_sender is null || _text is null) return ImmutableList<(string Sender, string Text)>.Empty;
+			if (_sender is null || _text is null) return [];
 
 			ImmutableList<(string Sender, string Text)>.Builder builder = ImmutableList.Create((_sender, _text)).ToBuilder();
 

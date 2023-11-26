@@ -7,7 +7,6 @@ using BotNet.Services.ImageFlip;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace BotNet.Services.BotCommands {
 	public static class FlipFlop {
@@ -44,7 +43,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(flippedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					photo: new InputFileStream(flippedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
 			}
@@ -83,7 +82,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(floppedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					photo: new InputFileStream(floppedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
 			}
@@ -122,7 +121,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(flappedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					photo: new InputFileStream(flappedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
 			}
@@ -161,7 +160,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(fleppedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+					photo: new InputFileStream(fleppedImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 					replyToMessageId: message.ReplyToMessage.MessageId,
 					cancellationToken: cancellationToken);
 			}

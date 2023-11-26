@@ -6,7 +6,6 @@ using BotNet.Services.ThisXDoesNotExist;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace BotNet.Services.BotCommands {
 	public static class Waifu {
@@ -19,7 +18,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: new InputOnlineFile(randomUrl),
+					photo: new InputFileUrl(randomUrl),
 					cancellationToken: cancellationToken);
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 				await botClient.SendTextMessageAsync(
