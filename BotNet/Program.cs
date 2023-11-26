@@ -29,10 +29,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Orleans.Hosting;
 
-WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
-
-// HTTPS
-builder.WebHost.UseKestrelHttpsConfiguration();
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Configuration sources
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
