@@ -6,7 +6,6 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
-    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>
