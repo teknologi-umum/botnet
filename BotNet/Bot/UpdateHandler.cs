@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.BotCommands;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using RG.Ninja;
@@ -18,32 +17,20 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.Bot {
-	public class UpdateHandler : IUpdateHandler {
-		private readonly IClusterClient _clusterClient;
-		private readonly IServiceProvider _serviceProvider;
-		private readonly ILogger<BotService> _logger;
-		private readonly InlineQueryHandler _inlineQueryHandler;
-		private readonly TelemetryClient _telemetryClient;
+	public class UpdateHandler(
+		IClusterClient clusterClient,
+		IServiceProvider serviceProvider,
+		ILogger<BotService> logger,
+		InlineQueryHandler inlineQueryHandler
+	) : IUpdateHandler {
+		private readonly IClusterClient _clusterClient = clusterClient;
+		private readonly IServiceProvider _serviceProvider = serviceProvider;
+		private readonly ILogger<BotService> _logger = logger;
+		private readonly InlineQueryHandler _inlineQueryHandler = inlineQueryHandler;
 		private User? _me;
 
-		public UpdateHandler(
-			IClusterClient clusterClient,
-			IServiceProvider serviceProvider,
-			ILogger<BotService> logger,
-			InlineQueryHandler inlineQueryHandler,
-			TelemetryClient telemetryClient
-		) {
-			_clusterClient = clusterClient;
-			_serviceProvider = serviceProvider;
-			_logger = logger;
-			_inlineQueryHandler = inlineQueryHandler;
-			_telemetryClient = telemetryClient;
-		}
-
 		private async Task<User> GetMeAsync(ITelegramBotClient botClient, CancellationToken cancellationToken) {
-			if (_me is null) {
-				_me = await botClient.GetMeAsync(cancellationToken);
-			}
+			_me ??= await botClient.GetMeAsync(cancellationToken);
 			return _me;
 		}
 
@@ -119,7 +106,7 @@ namespace BotNet.Bot {
 							&& update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is null
 							&& update.Message.ReplyToMessage is {
 								MessageId: int replyToMessageId,
-								From: { Id: long replyToUserId }
+								From.Id: long replyToUserId
 							}
 							&& replyToUserId == _me?.Id) {
 
@@ -140,7 +127,7 @@ namespace BotNet.Bot {
 
 								// Respond to thread
 								Message? sentMessage = callSign switch {
-									"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
+									"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken),
 									"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
 									_ => throw new NotImplementedException($"Call sign {callSign} not handled")
 								};
@@ -158,7 +145,7 @@ namespace BotNet.Bot {
 						}
 
 						// Handle commands
-						if (update.Message.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
+						if (update.Message?.Entities?.FirstOrDefault(entity => entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
 							string command = update.Message.Text!.Substring(commandEntity.Offset, commandEntity.Length);
 
 							// Check if command is in /command@botname format
@@ -242,7 +229,8 @@ namespace BotNet.Bot {
 										chatId: update.Message.Chat.Id,
 										text: "Here's a bubble wrap. Enjoy!",
 										parseMode: ParseMode.Html,
-										replyMarkup: Pop.GenerateBubbleWrap(Pop.NewSheet())
+										replyMarkup: Pop.GenerateBubbleWrap(Pop.NewSheet()),
+										cancellationToken: cancellationToken
 									);
 									break;
 								case "/explain":
@@ -325,7 +313,8 @@ namespace BotNet.Bot {
 						await botClient.EditMessageReplyMarkupAsync(
 							chatId: update.CallbackQuery!.Message!.Chat.Id,
 							messageId: update.CallbackQuery.Message.MessageId,
-							replyMarkup: Pop.GenerateBubbleWrap(data!)
+							replyMarkup: Pop.GenerateBubbleWrap(data!),
+							cancellationToken: cancellationToken
 						);
 						break;
 					default:
@@ -335,7 +324,6 @@ namespace BotNet.Bot {
 				throw;
 			} catch (Exception exc) {
 				_logger.LogError(exc, "{message}", exc.Message);
-				_telemetryClient.TrackException(exc);
 			}
 		}
 
@@ -345,7 +333,6 @@ namespace BotNet.Bot {
 				_ => exception.ToString()
 			};
 			_logger.LogError(exception, "{message}", errorMessage);
-			_telemetryClient.TrackException(exception);
 			return Task.CompletedTask;
 		}
 	}

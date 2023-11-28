@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace BotNet.Services.BotCommands {
 	public static class Meme {
@@ -20,7 +19,7 @@ namespace BotNet.Services.BotCommands {
 
 				await botClient.SendPhotoAsync(
 				chatId: message.Chat.Id,
-					photo: new InputOnlineFile(floppedImageStream, "ramad.png"),
+					photo: new InputFileStream(floppedImageStream, "ramad.png"),
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);
 			} else {

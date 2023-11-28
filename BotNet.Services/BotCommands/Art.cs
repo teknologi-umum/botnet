@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace BotNet.Services.BotCommands {
 	public static class Art {
@@ -32,7 +30,7 @@ namespace BotNet.Services.BotCommands {
 
 							await botClient.SendPhotoAsync(
 								chatId: message.Chat.Id,
-								photo: new InputOnlineFile(imageStream, "art.jpg"),
+								photo: new InputFileStream(imageStream, "art.jpg"),
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						} catch {
@@ -40,7 +38,8 @@ namespace BotNet.Services.BotCommands {
 								chatId: message.Chat.Id,
 								text: "<code>Could not generate art</code>",
 								parseMode: ParseMode.Html,
-								replyToMessageId: message.MessageId);
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
 						}
 					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 						await botClient.SendTextMessageAsync(
@@ -60,7 +59,7 @@ namespace BotNet.Services.BotCommands {
 
 					await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
-						photo: new InputOnlineFile(imageStream, "art.jpg"),
+						photo: new InputFileStream(imageStream, "art.jpg"),
 						cancellationToken: cancellationToken);
 				} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 					await botClient.SendTextMessageAsync(
@@ -95,7 +94,7 @@ namespace BotNet.Services.BotCommands {
 
 						await botClient.SendPhotoAsync(
 							chatId: message.Chat.Id,
-							photo: new InputOnlineFile(imageStream, "art.jpg"),
+							photo: new InputFileStream(imageStream, "art.jpg"),
 							replyToMessageId: message.MessageId,
 							cancellationToken: cancellationToken);
 					} catch {
@@ -103,7 +102,8 @@ namespace BotNet.Services.BotCommands {
 							chatId: message.Chat.Id,
 							text: "<code>Could not generate art</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId);
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
 					}
 				} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 					await botClient.SendTextMessageAsync(

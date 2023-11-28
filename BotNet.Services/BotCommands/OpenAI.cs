@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
@@ -14,7 +12,6 @@ using RG.Ninja;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Services.BotCommands {
@@ -396,7 +393,7 @@ namespace BotNet.Services.BotCommands {
 					} else if (attachments.Count == 1) {
 						return await botClient.SendPhotoAsync(
 							chatId: message.Chat.Id,
-							photo: new InputOnlineFile(attachments[0]),
+							photo: new InputFileUrl(attachments[0]),
 							caption: MarkdownV2Sanitizer.Sanitize(result),
 							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: message.MessageId,
@@ -411,7 +408,7 @@ namespace BotNet.Services.BotCommands {
 						await botClient.SendMediaGroupAsync(
 							chatId: message.Chat.Id,
 							media: from attachment in attachments
-								   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+								   select new InputMediaPhoto(new InputFileUrl(attachment.OriginalString)),
 							cancellationToken: cancellationToken);
 						return sentMessage;
 					}
@@ -446,7 +443,7 @@ namespace BotNet.Services.BotCommands {
 			return null;
 		}
 
-		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, string callSign, CancellationToken cancellationToken) {
+		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -468,7 +465,7 @@ namespace BotNet.Services.BotCommands {
 				} else if (attachments.Count == 1) {
 					return await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
-						photo: new InputOnlineFile(attachments[0]),
+						photo: new InputFileUrl(attachments[0]),
 						caption: MarkdownV2Sanitizer.Sanitize(result),
 						parseMode: ParseMode.MarkdownV2,
 						replyToMessageId: message.MessageId,
@@ -483,7 +480,7 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendMediaGroupAsync(
 						chatId: message.Chat.Id,
 						media: from attachment in attachments
-							   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+							   select new InputMediaPhoto(new InputFileUrl(attachment.OriginalString)),
 						cancellationToken: cancellationToken);
 					return sentMessage;
 				}
@@ -542,7 +539,7 @@ namespace BotNet.Services.BotCommands {
 					} else if (attachments.Count == 1) {
 						return await botClient.SendPhotoAsync(
 							chatId: message.Chat.Id,
-							photo: new InputOnlineFile(attachments[0]),
+							photo: new InputFileUrl(attachments[0]),
 							caption: WebUtility.HtmlEncode(result),
 							parseMode: ParseMode.Html,
 							replyToMessageId: message.MessageId,
@@ -557,7 +554,7 @@ namespace BotNet.Services.BotCommands {
 						await botClient.SendMediaGroupAsync(
 							chatId: message.Chat.Id,
 							media: from attachment in attachments
-								   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+								   select new InputMediaPhoto(new InputFileUrl(attachment.OriginalString)),
 							cancellationToken: cancellationToken);
 						return sentMessage;
 					}
@@ -616,7 +613,7 @@ namespace BotNet.Services.BotCommands {
 				} else if (attachments.Count == 1) {
 					return await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
-						photo: new InputOnlineFile(attachments[0]),
+						photo: new InputFileUrl(attachments[0]),
 						caption: WebUtility.HtmlEncode(result),
 						parseMode: ParseMode.Html,
 						replyToMessageId: message.MessageId,
@@ -631,7 +628,7 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendMediaGroupAsync(
 						chatId: message.Chat.Id,
 						media: from attachment in attachments
-							   select new InputMediaPhoto(new InputMedia(attachment.OriginalString)),
+							   select new InputMediaPhoto(new InputFileUrl(attachment.OriginalString)),
 						cancellationToken: cancellationToken);
 					return sentMessage;
 				}

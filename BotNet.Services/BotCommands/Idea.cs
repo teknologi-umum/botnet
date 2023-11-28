@@ -15,7 +15,17 @@ namespace BotNet.Services.BotCommands {
 			try {
 				RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
-				string idea = await serviceProvider.GetRequiredService<ThisIdeaDoesNotExist>().GetRandomIdeaAsync(cancellationToken);
+				string? idea = await serviceProvider.GetRequiredService<ThisIdeaDoesNotExist>().GetRandomIdeaAsync(cancellationToken);
+
+				if (idea is null) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"Bentar ya saya mikir dulu idenya. Coba lagi nanti.",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+					return;
+				}
 
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,

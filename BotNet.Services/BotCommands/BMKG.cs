@@ -15,12 +15,12 @@ namespace BotNet.Services.BotCommands {
 			try {
 				RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
-				(string Text, string ShakemapUrl) = await serviceProvider.GetRequiredService<LatestEarthQuake>().GetLatestAsync();
+				(string text, string shakemapUrl) = await serviceProvider.GetRequiredService<LatestEarthQuake>().GetLatestAsync();
 
 				await botClient.SendPhotoAsync(
 					chatId: message.Chat.Id,
-					photo: ShakemapUrl,
-					caption: Text,
+					photo: new InputFileUrl(shakemapUrl),
+					caption: text,
 					replyToMessageId: message.MessageId,
 					parseMode: ParseMode.Html,
 					cancellationToken: cancellationToken);
