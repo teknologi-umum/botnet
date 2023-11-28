@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using BotNet.Bot;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
@@ -36,6 +37,12 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
+
+if (Environment.GetEnvironmentVariable("SENTRY_DSN") is string sentryDsn) {
+	builder.WebHost.UseSentry(
+		dsn: sentryDsn
+	);
+}
 
 // DI Services
 builder.Services.Configure<HostingOptions>(builder.Configuration.GetSection("HostingOptions"));
