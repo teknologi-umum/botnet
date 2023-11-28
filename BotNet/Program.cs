@@ -37,9 +37,6 @@ using Telegram.Bot.Types;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
-// HTTPS support
-builder.WebHost.UseKestrelHttpsConfiguration();
-
 // DI Services
 builder.Services.Configure<HostingOptions>(builder.Configuration.GetSection("HostingOptions"));
 builder.Services.Configure<TenorOptions>(builder.Configuration.GetSection("TenorOptions"));
