@@ -10,7 +10,7 @@ namespace BotNet.Services.GoogleMap {
 	public class StaticMap {
 		private readonly string? _apiKey;
 		protected string mapPosition = "center";
-		protected int zoom = (int)ZoomLevel.Streets;
+		protected int zoom = 13;
 		protected string size = "600x300";
 		protected string marker = "color:red";
 		private string _uriTemplate = "https://maps.googleapis.com/maps/api/staticmap";

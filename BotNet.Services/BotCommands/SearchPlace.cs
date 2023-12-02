@@ -22,13 +22,14 @@ namespace BotNet.Services.BotCommands {
 						SEARCH_PLACE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
 						try {
-							string coords = await serviceProvider.GetRequiredService<GeoCode>().SearchPlaceAsync(commandArgument);
+							(double lat, double lng) = await serviceProvider.GetRequiredService<GeoCode>().SearchPlaceAsync(commandArgument);
 							string staticMapUrl = serviceProvider.GetRequiredService<StaticMap>().SearchPlace(commandArgument);
 
 							await telegramBotClient.SendPhotoAsync(
 								chatId: message.Chat.Id,
 								photo: new InputFileUrl(staticMapUrl),
-								caption: coords,
+								caption: $"<a href=\"https://www.google.com/maps/search/{lat},{lng}\">View in 🗺️ Google Maps</a>",
+								parseMode: ParseMode.Html,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						} catch {
