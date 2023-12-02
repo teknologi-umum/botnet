@@ -12,9 +12,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Orleans.Client" Version="7.2.3" />
-    <PackageReference Include="Microsoft.Orleans.Sdk" Version="7.2.3" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="7.2.3" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.41.2" />
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
@@ -22,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BotNet.Grains\BotNet.Grains.csproj" />
+    <ProjectReference Include="..\BotNet.Services\BotNet.Services.csproj" />
   </ItemGroup>
 
 </Project>

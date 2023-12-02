@@ -4,10 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.GrainInterfaces;
 using BotNet.Services.BotCommands;
+using BotNet.Services.BubbleWrap;
+using BotNet.Services.OpenAI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Orleans;
 using RG.Ninja;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
@@ -15,15 +16,14 @@ using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Bot {
 	public class UpdateHandler(
-		IClusterClient clusterClient,
 		IServiceProvider serviceProvider,
 		ILogger<BotService> logger,
 		InlineQueryHandler inlineQueryHandler
 	) : IUpdateHandler {
-		private readonly IClusterClient _clusterClient = clusterClient;
 		private readonly IServiceProvider _serviceProvider = serviceProvider;
 		private readonly ILogger<BotService> _logger = logger;
 		private readonly InlineQueryHandler _inlineQueryHandler = inlineQueryHandler;
@@ -88,7 +88,8 @@ namespace BotNet.Bot {
 
 							if (sentMessage is not null) {
 								// Track sent message
-								await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+								_serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
+									messageId: sentMessage.MessageId,
 									sender: callSign,
 									text: sentMessage.Text!,
 									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
@@ -110,15 +111,21 @@ namespace BotNet.Bot {
 							}
 							&& replyToUserId == _me?.Id) {
 
+							ThreadTracker threadTracker = _serviceProvider.GetRequiredService<ThreadTracker>();
+
 							// Track message
-							await _clusterClient.GetGrain<ITrackedMessageGrain>(update.Message.MessageId).TrackMessageAsync(
+							threadTracker.TrackMessage(
+								messageId: update.Message.MessageId,
 								sender: $"{firstName}{lastName?.Let(lastName => " " + lastName)}",
 								text: text,
 								replyToMessageId: replyToMessageId
 							);
 
 							// Get thread
-							ImmutableList<(string Sender, string Text)> thread = await _clusterClient.GetGrain<ITrackedMessageGrain>(replyToMessageId).GetThreadAsync(maxLines: 20);
+							ImmutableList<(string Sender, string Text)> thread = threadTracker.GetThread(
+								messageId: replyToMessageId,
+								maxLines: 20
+							).ToImmutableList();
 
 							// Don't respond if thread is empty
 							if (thread.Count > 0) {
@@ -134,7 +141,8 @@ namespace BotNet.Bot {
 
 								if (sentMessage is not null) {
 									// Track sent message
-									await _clusterClient.GetGrain<ITrackedMessageGrain>(sentMessage.MessageId).TrackMessageAsync(
+									threadTracker.TrackMessage(
+										messageId: sentMessage.MessageId,
 										sender: callSign,
 										text: sentMessage.Text!,
 										replyToMessageId: sentMessage.ReplyToMessage!.MessageId
@@ -229,7 +237,7 @@ namespace BotNet.Bot {
 										chatId: update.Message.Chat.Id,
 										text: "Here's a bubble wrap. Enjoy!",
 										parseMode: ParseMode.Html,
-										replyMarkup: Pop.GenerateBubbleWrap(Pop.NewSheet()),
+										replyMarkup: BubbleWrapKeyboardGenerator.EMPTY_KEYBOARD,
 										cancellationToken: cancellationToken
 									);
 									break;
@@ -294,12 +302,8 @@ namespace BotNet.Bot {
 						}
 						break;
 					case UpdateType.InlineQuery:
-						// _logger.LogInformation("Received inline query from [{firstName} {lastName}]: '{query}'.", update.InlineQuery!.From.FirstName, update.InlineQuery.From.LastName, update.InlineQuery.Query);
 						if (update.InlineQuery?.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
-							//IInlineQueryGrain inlineQueryGrain = _clusterClient.GetGrain<IInlineQueryGrain>($"{query}|{update.InlineQuery.From.Id}");
-							using GrainCancellationTokenSource grainCancellationTokenSource = new();
-							using CancellationTokenRegistration tokenRegistration = cancellationToken.Register(() => grainCancellationTokenSource.Cancel());
-							IEnumerable<InlineQueryResult> inlineQueryResults = await _inlineQueryHandler.GetResultsAsync(query, update.InlineQuery.From.Id, grainCancellationTokenSource.Token);
+							IEnumerable<InlineQueryResult> inlineQueryResults = await _inlineQueryHandler.GetResultsAsync(query, cancellationToken);
 							await botClient.AnswerInlineQueryAsync(
 								inlineQueryId: update.InlineQuery.Id,
 								results: inlineQueryResults,
@@ -307,13 +311,16 @@ namespace BotNet.Bot {
 						}
 						break;
 					case UpdateType.CallbackQuery:
-						IBubbleWrapGrain bubbleWrapGrain = _clusterClient.GetGrain<IBubbleWrapGrain>($"{update.CallbackQuery!.Message!.Chat.Id}_{update.CallbackQuery.Message.MessageId}");
-						await bubbleWrapGrain.PopAsync(Pop.ParseCallbackData(update.CallbackQuery.Data!));
-						bool[,]? data = await bubbleWrapGrain.GetSheetStateAsync();
+						BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator = _serviceProvider.GetRequiredService<BubbleWrapKeyboardGenerator>();
+						InlineKeyboardMarkup poppedKeyboardMarkup = bubbleWrapKeyboardGenerator.HandleCallback(
+							chatId: update.CallbackQuery!.Message!.Chat.Id,
+							messageId: update.CallbackQuery.Message.MessageId,
+							callbackData: update.CallbackQuery.Data!
+						);
 						await botClient.EditMessageReplyMarkupAsync(
 							chatId: update.CallbackQuery!.Message!.Chat.Id,
 							messageId: update.CallbackQuery.Message.MessageId,
-							replyMarkup: Pop.GenerateBubbleWrap(data!),
+							replyMarkup: poppedKeyboardMarkup,
 							cancellationToken: cancellationToken
 						);
 						break;
