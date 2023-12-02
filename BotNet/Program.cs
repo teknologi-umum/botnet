@@ -29,9 +29,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Orleans.Hosting;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -85,11 +83,6 @@ builder.Services.AddTelegramBot(botToken: builder.Configuration["BotOptions:Acce
 
 // Memory Cache
 builder.Services.AddMemoryCache();
-
-// Localhost Orleans
-builder.Host.UseOrleans((hostBuilderContext, siloBuilder) => {
-	siloBuilder.UseLocalhostClustering();
-});
 
 WebApplication app = builder.Build();
 

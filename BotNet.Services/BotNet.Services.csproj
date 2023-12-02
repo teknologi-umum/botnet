@@ -54,7 +54,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="8.0.3" />
-    <PackageReference Include="Microsoft.Orleans.Sdk" Version="7.2.3" />
     <PackageReference Include="RG.Ninja" Version="1.0.8" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />

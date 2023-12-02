@@ -9,8 +9,8 @@ namespace BotNet.Services.BubbleWrap {
 		public static readonly InlineKeyboardMarkup EMPTY_KEYBOARD = BubbleWrapSheet.EmptySheet.ToKeyboardMarkup();
 		private readonly IMemoryCache _memoryCache = memoryCache;
 
-		public InlineKeyboardMarkup HandleCallback(int messageId, string callbackData) {
-			BubbleWrapId id = new(messageId);
+		public InlineKeyboardMarkup HandleCallback(long chatId, int messageId, string callbackData) {
+			BubbleWrapId id = new(chatId, messageId);
 			BubbleWrapSheet expectedSheet = BubbleWrapSheet.ParseCallbackData(callbackData);
 			if (_memoryCache.TryGetValue(id, out BubbleWrapSheet? cachedSheet)) {
 				cachedSheet = cachedSheet!.CombineWith(expectedSheet);
@@ -30,6 +30,9 @@ namespace BotNet.Services.BubbleWrap {
 			}
 		}
 
-		private readonly record struct BubbleWrapId(int MessageId);
+		private readonly record struct BubbleWrapId(
+			long ChatId,
+			int MessageId
+		);
 	}
 }
