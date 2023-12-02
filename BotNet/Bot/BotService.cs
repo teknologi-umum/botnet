@@ -8,26 +8,18 @@ using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Bot;
 
-public class BotService : IHostedService {
-	private readonly ITelegramBotClient _telegramBotClient;
-	private readonly UpdateHandler _updateHandler;
-	private readonly string _botToken;
-	private readonly string _hostName;
-	private readonly bool _useLongPolling;
+public class BotService(
+	ITelegramBotClient telegramBotClient,
+	IOptions<BotOptions> botOptionsAccessor,
+	IOptions<HostingOptions> hostingOptionsAccessor,
+	UpdateHandler updateHandler
+) : IHostedService {
+	private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
+	private readonly UpdateHandler _updateHandler = updateHandler;
+	private readonly string _botToken = botOptionsAccessor.Value.AccessToken!;
+	private readonly string _hostName = hostingOptionsAccessor.Value.HostName!;
+	private readonly bool _useLongPolling = hostingOptionsAccessor.Value.UseLongPolling;
 	private CancellationTokenSource? _cancellationTokenSource;
-
-	public BotService(
-		ITelegramBotClient telegramBotClient,
-		IOptions<BotOptions> botOptionsAccessor,
-		IOptions<HostingOptions> hostingOptionsAccessor,
-		UpdateHandler updateHandler
-	) {
-		_telegramBotClient = telegramBotClient;
-		_botToken = botOptionsAccessor.Value.AccessToken!;
-		_hostName = hostingOptionsAccessor.Value.HostName!;
-		_useLongPolling = hostingOptionsAccessor.Value.UseLongPolling;
-		_updateHandler = updateHandler;
-	}
 
 	public Task StartAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource = new();

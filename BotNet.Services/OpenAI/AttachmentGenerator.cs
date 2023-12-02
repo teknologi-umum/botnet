@@ -6,15 +6,11 @@ using BotNet.Services.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.OpenAI {
-	public class AttachmentGenerator {
-		private static readonly Regex HEX_COLOR_CODE_PATTERN = new Regex("#[a-fA-F0-9]{6}\\b");
-		private readonly HostingOptions _hostingOptions;
-
-		public AttachmentGenerator(
-			IOptions<HostingOptions> hostingOptionsAccessor
-		) {
-			_hostingOptions = hostingOptionsAccessor.Value;
-		}
+	public partial class AttachmentGenerator(
+		IOptions<HostingOptions> hostingOptionsAccessor
+	) {
+		private static readonly Regex HEX_COLOR_CODE_PATTERN = HexColorCodeRegex();
+		private readonly HostingOptions _hostingOptions = hostingOptionsAccessor.Value;
 
 		public ImmutableList<Uri> GenerateAttachments(string message) {
 			ImmutableList<Uri>.Builder builder = ImmutableList<Uri>.Empty.ToBuilder();
@@ -27,5 +23,8 @@ namespace BotNet.Services.OpenAI {
 
 			return builder.ToImmutable();
 		}
+
+		[GeneratedRegex("#[a-fA-F0-9]{6}\\b")]
+		private static partial Regex HexColorCodeRegex();
 	}
 }

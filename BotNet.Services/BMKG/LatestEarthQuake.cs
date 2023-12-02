@@ -4,8 +4,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BotNet.Services.BMKG {
-	public class LatestEarthQuake : BMKG {
-		public LatestEarthQuake(HttpClient client) : base(client) {}
+	public class LatestEarthQuake(HttpClient client) : BMKG(client) {
+		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() { PropertyNameCaseInsensitive = true };
 
 		public async Task<(string Text, string ShakemapUrl)> GetLatestAsync() {
 			string url = string.Format(uriTemplate, "autogempa");
@@ -19,7 +19,7 @@ namespace BotNet.Services.BMKG {
 
 			Stream bodyContent = await response.Content.ReadAsStreamAsync();
 
-			EarthQuake? bodyResponse = await JsonSerializer.DeserializeAsync<EarthQuake>(bodyContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			EarthQuake? bodyResponse = await JsonSerializer.DeserializeAsync<EarthQuake>(bodyContent, JSON_SERIALIZER_OPTIONS);
 
 			if (bodyResponse is null) {
 				throw new JsonException("Failed to parse body");

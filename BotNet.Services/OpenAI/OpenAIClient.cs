@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -13,22 +12,17 @@ using Microsoft.Extensions.Options;
 using RG.Ninja;
 
 namespace BotNet.Services.OpenAI {
-	public class OpenAIClient {
+	public class OpenAIClient(
+		HttpClient httpClient,
+		IOptions<OpenAIOptions> openAIOptionsAccessor
+	) {
 		private const string COMPLETION_URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
 		private const string CHAT_URL = "https://api.openai.com/v1/chat/completions";
 		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
 		};
-		private readonly HttpClient _httpClient;
-		private readonly string _apiKey;
-
-		public OpenAIClient(
-			HttpClient httpClient,
-			IOptions<OpenAIOptions> openAIOptionsAccessor
-		) {
-			_httpClient = httpClient;
-			_apiKey = openAIOptionsAccessor.Value.ApiKey!;
-		}
+		private readonly HttpClient _httpClient = httpClient;
+		private readonly string _apiKey = openAIOptionsAccessor.Value.ApiKey!;
 
 		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, double topP, CancellationToken cancellationToken) {
 			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(COMPLETION_URL_TEMPLATE, engine)) {
@@ -57,7 +51,7 @@ namespace BotNet.Services.OpenAI {
 			using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 			using StreamReader streamReader = new(stream);
 			while (!streamReader.EndOfStream) {
-				string? line = await streamReader.ReadLineAsync();
+				string? line = await streamReader.ReadLineAsync(cancellationToken);
 				if (line == null) break;
 				if (line == "") continue;
 				if (!line.StartsWith("data: ", out string? json)) break;

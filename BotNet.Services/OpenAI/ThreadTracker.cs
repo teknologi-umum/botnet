@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace BotNet.Services.OpenAI {
-	public sealed class ThreadTracker {
-		private readonly IMemoryCache _memoryCache;
-
-		public ThreadTracker(
-			IMemoryCache memoryCache
-		) {
-			_memoryCache = memoryCache;
-		}
+	public sealed class ThreadTracker(
+		IMemoryCache memoryCache
+	) {
+		private readonly IMemoryCache _memoryCache = memoryCache;
 
 		public void TrackMessage(
 			long messageId,

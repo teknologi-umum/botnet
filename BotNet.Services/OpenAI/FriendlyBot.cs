@@ -6,14 +6,10 @@ using System.Threading.Tasks;
 using BotNet.Services.OpenAI.Models;
 
 namespace BotNet.Services.OpenAI {
-	public class FriendlyBot {
-		private readonly OpenAIClient _openAIClient;
-
-		public FriendlyBot(
-			OpenAIClient openAIClient
-		) {
-			_openAIClient = openAIClient;
-		}
+	public class FriendlyBot(
+		OpenAIClient openAIClient
+	) {
+		private readonly OpenAIClient _openAIClient = openAIClient;
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
 			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
@@ -24,7 +20,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-003",
 				prompt: prompt,
-				stop: new[] { $"{name}:" },
+				stop: [$"{name}:"],
 				maxTokens: 128,
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.6,
@@ -48,7 +44,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-003",
 				prompt: prompt,
-				stop: new[] { $"{name}:" },
+				stop: [$"{name}:"],
 				maxTokens: 128,
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.6,
@@ -59,13 +55,13 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public Task<string> ChatAsync(string message, CancellationToken cancellationToken) {
-			List<ChatMessage> messages = new() {
+			List<ChatMessage> messages = [
 				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 				new("user", message)
-			};
+			];
 
 			return _openAIClient.ChatAsync(
-				model: "gpt-3.5-turbo",
+				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
 				cancellationToken: cancellationToken
@@ -89,7 +85,7 @@ namespace BotNet.Services.OpenAI {
 			};
 
 			return _openAIClient.ChatAsync(
-				model: "gpt-3.5-turbo",
+				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
 				cancellationToken: cancellationToken
