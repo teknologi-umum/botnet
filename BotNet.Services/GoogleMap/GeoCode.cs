@@ -37,13 +37,13 @@ namespace BotNet.Services.GoogleMap {
 		/// <param name="place">Place or address that you want to search</param>
 		/// <returns>strings of coordinates</returns>
 		/// <exception cref="HttpRequestException"></exception>
-		public async Task<string> SearchPlaceAsync(string? place) {
+		public async Task<(double Lat, double Lng)> SearchPlaceAsync(string? place) {
 			if (string.IsNullOrEmpty(place)) {
-				return "Invalid place";
+				throw new HttpRequestException("Invalid place");
 			}
 
 			if (string.IsNullOrEmpty(_apiKey)) {
-				return "Api key is needed";
+				throw new HttpRequestException("Api key is needed");
 			}
 
 			Uri uri = new(_uriTemplate + $"?address={place}&key={_apiKey}");
@@ -75,11 +75,10 @@ namespace BotNet.Services.GoogleMap {
 
 			Result? result = body.Results[0];
 
-			string lat = result.Geometry!.Location!.Lat.ToString();
-			string longitude = result.Geometry!.Location!.Lng.ToString();
-			string coordinates = $"lat: {lat}, long: {longitude}";
+			double lat = result.Geometry!.Location!.Lat;
+			double lng = result.Geometry!.Location!.Lng;
 
-			return coordinates;
+			return (lat, lng);
 		}
 	}
 }
