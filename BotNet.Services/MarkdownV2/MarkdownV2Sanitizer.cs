@@ -4,7 +4,7 @@ using System.Text;
 namespace BotNet.Services.MarkdownV2 {
 	public static class MarkdownV2Sanitizer {
 		private static readonly HashSet<char> CHARACTERS_TO_ESCAPE = new() {
-			'_', '[', ']', '(', ')', '~', '>', '#',
+			'_', '*', '[', ']', '(', ')', '~', '>', '#',
 			'+', '-', '=', '|', '{', '}', '.', '!'
 		};
 
