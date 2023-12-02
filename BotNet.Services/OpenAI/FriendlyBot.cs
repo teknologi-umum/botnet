@@ -7,9 +7,11 @@ using BotNet.Services.OpenAI.Models;
 
 namespace BotNet.Services.OpenAI {
 	public class FriendlyBot(
-		OpenAIClient openAIClient
+		OpenAIClient openAIClient,
+		StreamingResponseController streamingResponseController
 	) {
 		private readonly OpenAIClient _openAIClient = openAIClient;
+		private readonly StreamingResponseController _streamingResponseController = streamingResponseController;
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
 			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
@@ -68,6 +70,21 @@ namespace BotNet.Services.OpenAI {
 			);
 		}
 
+		public async Task StreamChatAsync(string message, long chatId, int replyToMessageId) {
+			List<ChatMessage> messages = [
+				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				new("user", message)
+			];
+
+			await _streamingResponseController.StreamChatAsync(
+				model: "gpt-4-1106-preview",
+				messages: messages,
+				maxTokens: 512,
+				chatId: chatId,
+				replyToMessageId: replyToMessageId
+			);
+		}
+
 		public Task<string> ChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
 			List<ChatMessage> messages = new() {
 				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
@@ -89,6 +106,31 @@ namespace BotNet.Services.OpenAI {
 				messages: messages,
 				maxTokens: 512,
 				cancellationToken: cancellationToken
+			);
+		}
+
+		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, long chatId, int replyToMessageId) {
+			List<ChatMessage> messages = new() {
+				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+
+				from tuple in thread
+				select new ChatMessage(
+					Role: tuple.Sender switch {
+						"AI" => "assistant",
+						_ => "user"
+					},
+					Content: tuple.Text
+				),
+
+				new("user", message)
+			};
+
+			await _streamingResponseController.StreamChatAsync(
+				model: "gpt-4-1106-preview",
+				messages: messages,
+				maxTokens: 512,
+				chatId: chatId,
+				replyToMessageId: replyToMessageId
 			);
 		}
 	}

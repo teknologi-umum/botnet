@@ -370,6 +370,7 @@ namespace BotNet.Services.BotCommands {
 
 		private static readonly RateLimiter CHAT_GROUP_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
 		private static readonly RateLimiter CHAT_PRIVATE_RATE_LIMITER = RateLimiter.PerUser(20, TimeSpan.FromMinutes(15));
+		[Obsolete("Use StreamChatWithFriendlyBotAsync instead.", error: true)]
 		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
 			if (message.Text!.StartsWith(callSign, out string? s)
 				&& s[1..].TrimStart() is string { Length: > 0 } chatMessage) {
@@ -443,6 +444,7 @@ namespace BotNet.Services.BotCommands {
 			return null;
 		}
 
+		[Obsolete("Use StreamChatWithFriendlyBotAsync instead.", error: true)]
 		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
@@ -755,6 +757,87 @@ namespace BotNet.Services.BotCommands {
 						replyToMessageId: message.MessageId,
 						cancellationToken: cancellationToken);
 				}
+			}
+		}
+
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
+			try {
+				(message.Chat.Type == ChatType.Private
+					? CHAT_PRIVATE_RATE_LIMITER
+					: CHAT_GROUP_RATE_LIMITER
+				).ValidateActionRate(message.Chat.Id, message.From!.Id);
+				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
+					message: message.Text!,
+					chatId: message.Chat.Id,
+					replyToMessageId: message.MessageId
+				);
+			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+				if (message.Chat.Type == ChatType.Private) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						replyMarkup: new InlineKeyboardMarkup(
+							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+						),
+						cancellationToken: cancellationToken);
+				}
+			} catch (OperationCanceledException) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "<code>Timeout exceeded.</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			}
+		}
+
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+			try {
+				(message.Chat.Type == ChatType.Private
+					? CHAT_PRIVATE_RATE_LIMITER
+					: CHAT_GROUP_RATE_LIMITER
+				).ValidateActionRate(message.Chat.Id, message.From!.Id);
+				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
+					message: message.Text!,
+					thread: thread,
+					chatId: message.Chat.Id,
+					replyToMessageId: message.MessageId
+				);
+			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
+				if (message.Chat.Type == ChatType.Private) {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						cancellationToken: cancellationToken);
+				} else {
+					await botClient.SendTextMessageAsync(
+						chatId: message.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: message.MessageId,
+						replyMarkup: new InlineKeyboardMarkup(
+							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+						),
+						cancellationToken: cancellationToken);
+				}
+			} catch (OperationCanceledException) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "<code>Timeout exceeded.</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
 			}
 		}
 	}

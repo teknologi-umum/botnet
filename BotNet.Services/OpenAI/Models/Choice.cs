@@ -3,6 +3,7 @@
 		string? Text,
 		int? Index,
 		ChatMessage? Message,
+		ChatMessage? Delta,
 		Logprobs? Logprobs,
 		string? FinishReason
 	);

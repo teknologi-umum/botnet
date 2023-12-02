@@ -80,20 +80,24 @@ namespace BotNet.Bot {
 							}
 
 							// Respond to call sign
-							Message? sentMessage = callSign switch {
-								"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
-								"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken),
-								_ => throw new NotImplementedException($"Call sign {callSign} not handled")
-							};
-
-							if (sentMessage is not null) {
-								// Track sent message
-								_serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
-									messageId: sentMessage.MessageId,
-									sender: callSign,
-									text: sentMessage.Text!,
-									replyToMessageId: sentMessage.ReplyToMessage!.MessageId
-								);
+							switch (callSign) {
+								case "AI":
+									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken);
+									break;
+								case "Pakde":
+									Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken);
+									if (sentMessage is not null) {
+										// Track sent message
+										_serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
+											messageId: sentMessage.MessageId,
+											sender: callSign,
+											text: sentMessage.Text!,
+											replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+										);
+									}
+									break;
+								default:
+									throw new NotImplementedException($"Call sign {callSign} not handled");
 							}
 							break;
 						}
@@ -133,20 +137,24 @@ namespace BotNet.Bot {
 								string callSign = thread.Last().Sender;
 
 								// Respond to thread
-								Message? sentMessage = callSign switch {
-									"AI" => await OpenAI.ChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken),
-									"Pakde" => await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken),
-									_ => throw new NotImplementedException($"Call sign {callSign} not handled")
-								};
-
-								if (sentMessage is not null) {
-									// Track sent message
-									threadTracker.TrackMessage(
-										messageId: sentMessage.MessageId,
-										sender: callSign,
-										text: sentMessage.Text!,
-										replyToMessageId: sentMessage.ReplyToMessage!.MessageId
-									);
+								switch (callSign) {
+									case "AI":
+										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
+										break;
+									case "Pakde":
+										Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken);
+										if (sentMessage is not null) {
+											// Track sent message
+											threadTracker.TrackMessage(
+												messageId: sentMessage.MessageId,
+												sender: callSign,
+												text: sentMessage.Text!,
+												replyToMessageId: sentMessage.ReplyToMessage!.MessageId
+											);
+										}
+										break;
+									default:
+										throw new NotImplementedException($"Call sign {callSign} not handled");
 								}
 								break;
 							}

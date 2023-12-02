@@ -13,6 +13,7 @@ namespace BotNet.Services.OpenAI {
 			services.AddTransient<SarcasticBot>();
 			services.AddTransient<AttachmentGenerator>();
 			services.AddTransient<TldrGenerator>();
+			services.AddTransient<StreamingResponseController>();
 			return services;
 		}
 	}
