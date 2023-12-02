@@ -82,18 +82,6 @@ namespace BotNet.Bot {
 				)));
 			}
 
-			if (query.Split(' ').FirstOrDefault() is "joke" or "jokes" or "dad" or "bapak" or "bapack" or "dadjoke" or "dadjokes" or "bapak2" or "bapack2") {
-				resultTasks.Add(
-					_grainFactory
-						.GetGrain<IDadJokeGrain>(userId % 10)
-						.GetRandomJokesAsync(grainCancellationToken)
-						.ContinueWith(task => task.Result.Select(dadJoke => new InlineQueryResultPhoto(dadJoke.Id, dadJoke.Url, dadJoke.Url) {
-							Title = "Random dad joke",
-							Description = "Jokes bapack-bapack yang dipilih khusus buat kamu"
-						}).ToImmutableList<InlineQueryResult>())
-				);
-			}
-
 			if (query.StartsWith("gif ", StringComparison.InvariantCultureIgnoreCase, out string? gifQuery)) {
 				resultTasks.Add(
 					_grainFactory
