@@ -3,15 +3,11 @@ using Microsoft.Extensions.Caching.Memory;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Services.BubbleWrap {
-	public sealed class BubbleWrapKeyboardGenerator {
+	public sealed class BubbleWrapKeyboardGenerator(
+		IMemoryCache memoryCache
+	) {
 		public static readonly InlineKeyboardMarkup EMPTY_KEYBOARD = BubbleWrapSheet.EmptySheet.ToKeyboardMarkup();
-		private readonly IMemoryCache _memoryCache;
-
-		public BubbleWrapKeyboardGenerator(
-			IMemoryCache memoryCache
-		) {
-			_memoryCache = memoryCache;
-		}
+		private readonly IMemoryCache _memoryCache = memoryCache;
 
 		public InlineKeyboardMarkup HandleCallback(int messageId, string callbackData) {
 			BubbleWrapId id = new(messageId);

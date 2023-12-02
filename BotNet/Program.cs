@@ -13,13 +13,11 @@ using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.Meme;
 using BotNet.Services.OpenAI;
-using BotNet.Services.OpenGraph;
 using BotNet.Services.Pesto;
 using BotNet.Services.Piston;
 using BotNet.Services.Preview;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.Stability;
-using BotNet.Services.Tenor;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
 using BotNet.Services.Tokopedia;
@@ -47,7 +45,6 @@ if (Environment.GetEnvironmentVariable("SENTRY_DSN") is string sentryDsn) {
 
 // DI Services
 builder.Services.Configure<HostingOptions>(builder.Configuration.GetSection("HostingOptions"));
-builder.Services.Configure<TenorOptions>(builder.Configuration.GetSection("TenorOptions"));
 builder.Services.Configure<V8Options>(builder.Configuration.GetSection("V8Options"));
 builder.Services.Configure<PistonOptions>(builder.Configuration.GetSection("PistonOptions"));
 builder.Services.Configure<PestoOptions>(builder.Configuration.GetSection("PestoOptions"));
@@ -56,10 +53,8 @@ builder.Services.Configure<StabilityOptions>(builder.Configuration.GetSection("S
 builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("GoogleMapOptions"));
 builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
 builder.Services.AddHttpClient();
-builder.Services.AddTenorClient();
 builder.Services.AddFontService();
 builder.Services.AddColorCardRenderer();
-builder.Services.AddOpenGraph();
 builder.Services.AddImageConverter();
 builder.Services.AddBrainfuckTranspiler();
 builder.Services.AddV8Evaluator();

@@ -3,33 +3,24 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using BotNet.GrainInterfaces;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.CopyPasta;
 using BotNet.Services.FancyText;
 using BotNet.Services.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Orleans;
-using RG.Ninja;
 using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.Bot {
-	public class InlineQueryHandler {
-		private readonly IServiceProvider _serviceProvider;
-		private readonly IGrainFactory _grainFactory;
+	public class InlineQueryHandler(
+		IServiceProvider serviceProvider
+	) {
+		private readonly IServiceProvider _serviceProvider = serviceProvider;
 
-		public InlineQueryHandler(
-			IServiceProvider serviceProvider,
-			IGrainFactory grainFactory
-		) {
-			_serviceProvider = serviceProvider;
-			_grainFactory = grainFactory;
-		}
-
-		public async Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, long userId, GrainCancellationToken grainCancellationToken) {
-			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = new();
+		public async Task<ImmutableList<InlineQueryResult>> GetResultsAsync(string query, CancellationToken cancellationToken) {
+			List<Task<ImmutableList<InlineQueryResult>>> resultTasks = [];
 
 			if (query.ToLowerInvariant().Trim() is string pastaKey
 				&& CopyPastaLookup.TryGetAutoText(pastaKey, out ImmutableList<string>? pastas)) {
@@ -43,7 +34,7 @@ namespace BotNet.Bot {
 			if (query.Length > 0) {
 				string[] fancyTexts = await Task.WhenAll(
 					Enum.GetValues<FancyTextStyle>()
-						.Select(style => FancyTextGenerator.GenerateAsync(query, style, grainCancellationToken.CancellationToken))
+						.Select(style => FancyTextGenerator.GenerateAsync(query, style, cancellationToken))
 				);
 				resultTasks.Add(Task.FromResult(fancyTexts.Select(fancyText => new InlineQueryResultArticle(
 					id: Guid.NewGuid().ToString("N"),
@@ -80,15 +71,6 @@ namespace BotNet.Bot {
 						PhotoHeight = 200
 					}
 				)));
-			}
-
-			if (query.StartsWith("gif ", StringComparison.InvariantCultureIgnoreCase, out string? gifQuery)) {
-				resultTasks.Add(
-					_grainFactory
-						.GetGrain<ITenorGrain>(gifQuery)
-						.SearchGifsAsync(grainCancellationToken)
-						.ContinueWith(task => task.Result.Select(gif => new InlineQueryResultGif(gif.Id, gif.Url, gif.PreviewUrl)).ToImmutableList<InlineQueryResult>())
-				);
 			}
 
 			return (await Task.WhenAll(resultTasks)).SelectMany(results => results).ToImmutableList();
