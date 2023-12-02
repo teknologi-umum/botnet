@@ -3,6 +3,7 @@ using System.Threading;
 using BotNet.Bot;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
+using BotNet.Services.BubbleWrap;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Craiyon;
@@ -77,6 +78,7 @@ builder.Services.AddWeatherService();
 builder.Services.AddBMKG();
 builder.Services.AddPreviewServices();
 builder.Services.AddMemeGenerator();
+builder.Services.AddBubbleWrapKeyboardGenerator();
 
 // Hosted Services
 builder.Services.Configure<BotOptions>(builder.Configuration.GetSection("BotOptions"));
@@ -85,6 +87,9 @@ builder.Services.AddHostedService<BotService>();
 
 // Telegram Bot
 builder.Services.AddTelegramBot(botToken: builder.Configuration["BotOptions:AccessToken"]!);
+
+// Memory Cache
+builder.Services.AddMemoryCache();
 
 // Localhost Orleans
 builder.Host.UseOrleans((hostBuilderContext, siloBuilder) => {

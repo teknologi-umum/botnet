@@ -49,6 +49,7 @@
     <PackageReference Include="Grpc.Net.Client" Version="2.59.0" />
     <PackageReference Include="Microsoft.ClearScript" Version="7.4.4" />
     <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.4.4" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />

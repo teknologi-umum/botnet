@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.GrainInterfaces;
 using BotNet.Services.BotCommands;
+using BotNet.Services.BubbleWrap;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using RG.Ninja;
@@ -15,6 +17,7 @@ using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Bot {
 	public class UpdateHandler(
@@ -229,7 +232,7 @@ namespace BotNet.Bot {
 										chatId: update.Message.Chat.Id,
 										text: "Here's a bubble wrap. Enjoy!",
 										parseMode: ParseMode.Html,
-										replyMarkup: Pop.GenerateBubbleWrap(Pop.NewSheet()),
+										replyMarkup: BubbleWrapKeyboardGenerator.EMPTY_KEYBOARD,
 										cancellationToken: cancellationToken
 									);
 									break;
@@ -307,13 +310,15 @@ namespace BotNet.Bot {
 						}
 						break;
 					case UpdateType.CallbackQuery:
-						IBubbleWrapGrain bubbleWrapGrain = _clusterClient.GetGrain<IBubbleWrapGrain>($"{update.CallbackQuery!.Message!.Chat.Id}_{update.CallbackQuery.Message.MessageId}");
-						await bubbleWrapGrain.PopAsync(Pop.ParseCallbackData(update.CallbackQuery.Data!));
-						bool[,]? data = await bubbleWrapGrain.GetSheetStateAsync();
+						BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator = _serviceProvider.GetRequiredService<BubbleWrapKeyboardGenerator>();
+						InlineKeyboardMarkup poppedKeyboardMarkup = bubbleWrapKeyboardGenerator.HandleCallback(
+							messageId: update.CallbackQuery!.Message!.MessageId,
+							callbackData: update.CallbackQuery.Data!
+						);
 						await botClient.EditMessageReplyMarkupAsync(
 							chatId: update.CallbackQuery!.Message!.Chat.Id,
 							messageId: update.CallbackQuery.Message.MessageId,
-							replyMarkup: Pop.GenerateBubbleWrap(data!),
+							replyMarkup: poppedKeyboardMarkup,
 							cancellationToken: cancellationToken
 						);
 						break;
