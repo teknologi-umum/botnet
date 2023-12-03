@@ -767,7 +767,8 @@ namespace BotNet.Services.BotCommands {
 		}
 
 		private static readonly RateLimiter IMAGE_GENERATION_PER_USER_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(10));
-		private static readonly RateLimiter IMAGE_GENERATION_PER_CHAT_RATE_LIMITER = RateLimiter.PerUser(2, TimeSpan.FromMinutes(3));
+		private static readonly RateLimiter IMAGE_GENERATION_PER_CHAT_RATE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(5));
+		private static readonly RateLimiter IMAGE_GENERATION_GLOBAL_RATE_LIMITER = RateLimiter.PerChat(1, TimeSpan.FromMinutes(1));
 		public static async Task StreamChatWithFriendlyBotAsync(
 			ITelegramBotClient botClient,
 			IServiceProvider serviceProvider,
@@ -838,6 +839,10 @@ namespace BotNet.Services.BotCommands {
 							IMAGE_GENERATION_PER_CHAT_RATE_LIMITER.ValidateActionRate(
 								chatId: message.Chat.Id,
 								userId: message.From.Id
+							);
+							IMAGE_GENERATION_GLOBAL_RATE_LIMITER.ValidateActionRate(
+								chatId: 0,
+								userId: 0
 							);
 							Message busyMessage = await botClient.SendTextMessageAsync(
 								chatId: message.Chat.Id,
