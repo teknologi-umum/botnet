@@ -43,12 +43,16 @@ namespace BotNet.Services.OpenAI {
 
 			// Task for continuously consuming the stream
 			Task downstreamTask = Task.Run(async () => {
-				await foreach ((string result, bool stop) in enumerable) {
-					lastResult = result;
+				try {
+					await foreach ((string result, bool stop) in enumerable) {
+						lastResult = result;
 
-					if (stop) {
-						break;
+						if (stop) {
+							break;
+						}
 					}
+				} catch (Exception exc) {
+					_logger.LogError(exc, null);
 				}
 			});
 
@@ -59,10 +63,12 @@ namespace BotNet.Services.OpenAI {
 			);
 
 			// If downstream task is completed, send the last result
-			if (downstreamTask.IsCompleted) {
+			if (downstreamTask.IsCompletedSuccessfully) {
+				if (lastResult is null) return;
+
 				Message completeMessage = await telegramBotClient.SendTextMessageAsync(
 					chatId: chatId,
-					text: MarkdownV2Sanitizer.Sanitize(lastResult!),
+					text: MarkdownV2Sanitizer.Sanitize(lastResult),
 					parseMode: ParseMode.MarkdownV2,
 					replyToMessageId: replyToMessageId
 				);
@@ -72,7 +78,8 @@ namespace BotNet.Services.OpenAI {
 				threadTracker.TrackMessage(
 					messageId: completeMessage.MessageId,
 					sender: callSign,
-					text: lastResult!,
+					text: lastResult,
+					imageBase64: null,
 					replyToMessageId: replyToMessageId
 				);
 
@@ -81,10 +88,10 @@ namespace BotNet.Services.OpenAI {
 			}
 
 			// Otherwise, send incomplete result and continue streaming
-			string lastSent = lastResult!;
+			string lastSent = lastResult ?? "";
 			Message incompleteMessage = await telegramBotClient.SendTextMessageAsync(
 				chatId: chatId,
-				text: MarkdownV2Sanitizer.Sanitize(lastResult!) + "… ⏳", // ellipsis, nbsp, hourglass emoji
+				text: MarkdownV2Sanitizer.Sanitize(lastResult ?? "") + "… ⏳", // ellipsis, nbsp, hourglass emoji
 				parseMode: ParseMode.MarkdownV2,
 				replyToMessageId: replyToMessageId
 			);
@@ -104,7 +111,7 @@ namespace BotNet.Services.OpenAI {
 									await telegramBotClient.EditMessageTextAsync(
 										chatId: chatId,
 										messageId: incompleteMessage.MessageId,
-										text: MarkdownV2Sanitizer.Sanitize(lastResult!) + "… ⏳", // ellipsis, nbsp, hourglass emoji
+										text: MarkdownV2Sanitizer.Sanitize(lastResult ?? "") + "… ⏳", // ellipsis, nbsp, hourglass emoji
 										parseMode: ParseMode.MarkdownV2,
 										cancellationToken: cts.Token
 									);
@@ -128,7 +135,7 @@ namespace BotNet.Services.OpenAI {
 						await telegramBotClient.EditMessageTextAsync(
 							chatId: chatId,
 							messageId: incompleteMessage.MessageId,
-							text: MarkdownV2Sanitizer.Sanitize(lastResult!),
+							text: MarkdownV2Sanitizer.Sanitize(lastResult ?? ""),
 							parseMode: ParseMode.MarkdownV2,
 							cancellationToken: cts.Token
 						);
@@ -143,6 +150,7 @@ namespace BotNet.Services.OpenAI {
 						messageId: incompleteMessage.MessageId,
 						sender: callSign,
 						text: lastResult!,
+						imageBase64: null,
 						replyToMessageId: replyToMessageId
 					);
 				} catch {

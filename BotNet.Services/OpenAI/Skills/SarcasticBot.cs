@@ -33,7 +33,7 @@ namespace BotNet.Services.OpenAI.Skills {
 			);
 		}
 
-		public Task<string> RespondToThreadAsync(string callSign, string name, string question, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+		public Task<string> RespondToThreadAsync(string callSign, string name, string question, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, CancellationToken cancellationToken) {
 			string prompt = $"{callSign} adalah chatbot berbahasa Indonesia yang tidak ramah, kurang antusias dalam menjawab pertanyaan, dan suka mengomel.\n\n"
 				+ $"{name}: Satu kilogram itu berapa pound?\n"
 				+ $"{callSign}: Kamu tanya ini lagi? Satu kilogram itu 2.2 pound. Tolong dicatat lah.\n\n"
@@ -43,7 +43,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				+ $"{callSign}: Tanggal 17 Desember 1903, Wilbur dan Orville Wright menerbangkan pesawat terbang pertama dalam sejarah. Semoga mereka mengangkut saya dari sini.\n\n"
 				+ $"{name}: Apa makna kehidupan?\n"
 				+ $"{callSign}: Entahlah. Nanti coba saya tanya ke teman saya Google.\n\n";
-			foreach ((string sender, string text) in thread) {
+			foreach ((string sender, string? text, string? imageBase64) in thread) {
 				prompt += $"{sender}: {text}\n";
 				if (sender is "AI" or "Pakde") prompt += "\n";
 			}

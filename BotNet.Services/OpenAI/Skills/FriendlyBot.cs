@@ -4,10 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.OpenAI.Models;
-using Telegram.Bot.Types;
 
 namespace BotNet.Services.OpenAI.Skills {
-	public class FriendlyBot(
+	public sealed class FriendlyBot(
 		OpenAIClient openAIClient,
 		OpenAIStreamingClient openAIStreamingClient
 	) {
@@ -59,8 +58,8 @@ namespace BotNet.Services.OpenAI.Skills {
 
 		public Task<string> ChatAsync(string message, CancellationToken cancellationToken) {
 			List<ChatMessage> messages = [
-				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
-				new("user", message)
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("user", message)
 			];
 
 			return _openAIClient.ChatAsync(
@@ -71,36 +70,39 @@ namespace BotNet.Services.OpenAI.Skills {
 			);
 		}
 
-		public async Task StreamChatAsync(string message, string callSign, long chatId, int replyToMessageId) {
+		public async Task StreamChatAsync(string message, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = [
-				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
-				new("user", message)
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("user", message)
 			];
 
 			await _openAIStreamingClient.StreamChatAsync(
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
-				callSign: callSign,
+				callSign: "AI",
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);
 		}
 
-		public Task<string> ChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+		public Task<string> ChatAsync(string message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, CancellationToken cancellationToken) {
 			List<ChatMessage> messages = new() {
-				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 
 				from tuple in thread
-				select new ChatMessage(
-					Role: tuple.Sender switch {
-						"AI" => "assistant",
-						_ => "user"
-					},
-					Content: tuple.Text
-				),
+				let role = tuple.Sender switch {
+					"AI" => "assistant",
+					_ => "user"
+				}
+				select tuple switch {
+					{ Text: { } text, ImageBase64: null } => ChatMessage.FromText(role, text),
+					{ Text: null, ImageBase64: { } imageBase64 } => ChatMessage.FromImageBase64(role, imageBase64),
+					{ Text: { } text, ImageBase64: { } imageBase64 } => ChatMessage.FromTextWithImageBase64(role, text, imageBase64),
+					_ => ChatMessage.FromText(role, "")
+				},
 
-				new("user", message)
+				ChatMessage.FromText("user", message)
 			};
 
 			return _openAIClient.ChatAsync(
@@ -111,27 +113,30 @@ namespace BotNet.Services.OpenAI.Skills {
 			);
 		}
 
-		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, string callSign, long chatId, int replyToMessageId) {
+		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = new() {
-				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 
 				from tuple in thread
-				select new ChatMessage(
-					Role: tuple.Sender switch {
-						"AI" => "assistant",
-						_ => "user"
-					},
-					Content: tuple.Text
-				),
+				let role = tuple.Sender switch {
+					"AI" => "assistant",
+					_ => "user"
+				}
+				select tuple switch {
+					{ Text: { } text, ImageBase64: null } => ChatMessage.FromText(role, text),
+					{ Text: null, ImageBase64: { } imageBase64 } => ChatMessage.FromImageBase64(role, imageBase64),
+					{ Text: { } text, ImageBase64: { } imageBase64 } => ChatMessage.FromTextWithImageBase64(role, text, imageBase64),
+					_ => ChatMessage.FromText(role, "")
+				},
 
-				new("user", message)
+				ChatMessage.FromText("user", message)
 			};
 
 			await _openAIStreamingClient.StreamChatAsync(
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
-				callSign: callSign,
+				callSign: "AI",
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);

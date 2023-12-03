@@ -14,7 +14,7 @@ namespace BotNet.Services.OpenAI {
 			CancellationToken cancellationToken
 		) {
 			List<ChatMessage> messages = [
-				new("user", $$"""
+				ChatMessage.FromText("user", $$"""
 				These are available intents that one might query when they provide a text prompt:
 
 				    Question,
@@ -49,7 +49,7 @@ namespace BotNet.Services.OpenAI {
 			CancellationToken cancellationToken
 		) {
 			List<ChatMessage> messages = [
-				new("user", $$"""
+				ChatMessage.FromText("user", $$"""
 				These are available intents that one might query when they provide a prompt which contain an image:
 
 				    Vision,
