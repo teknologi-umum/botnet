@@ -21,7 +21,7 @@ namespace BotNet.Services.OpenAI {
 			string model,
 			IEnumerable<ChatMessage> messages,
 			int maxTokens,
-			User from,
+			string callSign,
 			long chatId,
 			int replyToMessageId
 		) {
@@ -57,12 +57,22 @@ namespace BotNet.Services.OpenAI {
 
 			// If downstream task is completed, send the last result
 			if (downstreamTask.IsCompleted) {
-				await telegramBotClient.SendTextMessageAsync(
+				Message completeMessage = await telegramBotClient.SendTextMessageAsync(
 					chatId: chatId,
 					text: MarkdownV2Sanitizer.Sanitize(lastResult!),
 					parseMode: ParseMode.MarkdownV2,
 					replyToMessageId: replyToMessageId
 				);
+
+				// Track thread
+				ThreadTracker threadTracker = serviceScope.ServiceProvider.GetRequiredService<ThreadTracker>();
+				threadTracker.TrackMessage(
+					messageId: completeMessage.MessageId,
+					sender: callSign,
+					text: lastResult!,
+					replyToMessageId: replyToMessageId
+				);
+
 				serviceScope.Dispose();
 				return;
 			}
@@ -122,7 +132,7 @@ namespace BotNet.Services.OpenAI {
 					ThreadTracker threadTracker = serviceScope.ServiceProvider.GetRequiredService<ThreadTracker>();
 					threadTracker.TrackMessage(
 						messageId: incompleteMessage.MessageId,
-						sender: $"{from.FirstName}{from.LastName?.Let(lastName => " " + lastName)}",
+						sender: callSign,
 						text: lastResult!,
 						replyToMessageId: replyToMessageId
 					);

@@ -82,7 +82,7 @@ namespace BotNet.Bot {
 							// Respond to call sign
 							switch (callSign) {
 								case "AI":
-									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, cancellationToken);
+									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, "AI", update.Message, cancellationToken);
 									break;
 								case "Pakde":
 									Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken);
@@ -139,7 +139,7 @@ namespace BotNet.Bot {
 								// Respond to thread
 								switch (callSign) {
 									case "AI":
-										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
+										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, "AI", update.Message, thread, cancellationToken);
 										break;
 									case "Pakde":
 										Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken);

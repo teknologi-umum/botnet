@@ -71,7 +71,7 @@ namespace BotNet.Services.OpenAI.Skills {
 			);
 		}
 
-		public async Task StreamChatAsync(string message, User from, long chatId, int replyToMessageId) {
+		public async Task StreamChatAsync(string message, string callSign, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = [
 				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 				new("user", message)
@@ -81,7 +81,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
-				from: from,
+				callSign: callSign,
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);
@@ -111,7 +111,7 @@ namespace BotNet.Services.OpenAI.Skills {
 			);
 		}
 
-		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, User from, long chatId, int replyToMessageId) {
+		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, string callSign, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = new() {
 				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 
@@ -131,7 +131,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
-				from: from,
+				callSign: callSign,
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);

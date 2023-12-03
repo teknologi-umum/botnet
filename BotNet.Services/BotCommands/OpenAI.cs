@@ -761,7 +761,7 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, string callSign, Message message, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -769,7 +769,7 @@ namespace BotNet.Services.BotCommands {
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
 				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 					message: message.Text!,
-					from: message.From!,
+					callSign: callSign,
 					chatId: message.Chat.Id,
 					replyToMessageId: message.MessageId
 				);
@@ -802,7 +802,7 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, string callSign, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -811,7 +811,7 @@ namespace BotNet.Services.BotCommands {
 				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 					message: message.Text!,
 					thread: thread,
-					from: message.From!,
+					callSign: callSign,
 					chatId: message.Chat.Id,
 					replyToMessageId: message.MessageId
 				);

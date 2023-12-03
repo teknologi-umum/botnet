@@ -4,7 +4,7 @@ using System.Text;
 namespace BotNet.Services.MarkdownV2 {
 	public static class MarkdownV2Sanitizer {
 		private static readonly HashSet<char> CHARACTERS_TO_ESCAPE = [
-			'_', '*', '[', ']', '(', ')', '~', '>', '#',
+			'[', ']', '(', ')', '~', '>', '#',
 			'+', '-', '=', '|', '{', '}', '.', '!'
 		];
 
@@ -24,6 +24,18 @@ namespace BotNet.Services.MarkdownV2 {
 			}
 
 			return sanitized.ToString();
+		}
+
+		private static int CountOccurences(string text, string substring) {
+			int count = 0;
+			int i = 0;
+
+			while ((i = text.IndexOf(substring, i)) != -1) {
+				i += substring.Length;
+				count++;
+			}
+
+			return count;
 		}
 	}
 }
