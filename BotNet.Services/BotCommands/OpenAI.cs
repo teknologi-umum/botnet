@@ -775,21 +775,26 @@ namespace BotNet.Services.BotCommands {
 					: CHAT_GROUP_RATE_LIMITER
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
 
-				PhotoSize? photoSize;
-				string? caption;
+				string? fileId;
+				string? prompt;
 				if (message is { Photo.Length: > 0, Caption: { } }) {
-					photoSize = message.Photo.OrderByDescending(photoSize => photoSize.Width).First();
-					caption = message.Caption;
-				} else if (message.ReplyToMessage is { Photo.Length: > 0, Caption: { } }) {
-					photoSize = message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First();
-					caption = message.ReplyToMessage.Caption;
+					fileId = message.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId;
+					prompt = message.Caption;
+				} else if (message.ReplyToMessage is { Photo.Length: > 0 }
+					&& message.Text is { }) {
+					fileId = message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId;
+					prompt = message.Caption;
+				} else if (message.ReplyToMessage is { Sticker: { } }
+					&& message.Text is { }) {
+					fileId = message.ReplyToMessage.Sticker.FileId;
+					prompt = message.Caption;
 				} else {
-					photoSize = null;
-					caption = null;
+					fileId = null;
+					prompt = null;
 				}
 
-				if (photoSize != null && caption != null) {
-					(string? imageBase64, string? error) = await GetImageBase64Async(botClient, photoSize, cancellationToken);
+				if (fileId != null && prompt != null) {
+					(string? imageBase64, string? error) = await GetImageBase64Async(botClient, fileId, cancellationToken);
 					if (error != null) {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
@@ -800,7 +805,7 @@ namespace BotNet.Services.BotCommands {
 						return;
 					}
 					await serviceProvider.GetRequiredService<VisionBot>().StreamChatAsync(
-						message: caption,
+						message: prompt,
 						imageBase64: imageBase64!,
 						chatId: message.Chat.Id,
 						replyToMessageId: message.MessageId
@@ -882,11 +887,11 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		private static async Task<(string? ImageBase64, string? Error)> GetImageBase64Async(ITelegramBotClient botClient, PhotoSize photoSize, CancellationToken cancellationToken) {
+		private static async Task<(string? ImageBase64, string? Error)> GetImageBase64Async(ITelegramBotClient botClient, string fileId, CancellationToken cancellationToken) {
 			// Download photo
 			using MemoryStream originalImageStream = new();
 			await botClient.GetInfoAndDownloadFileAsync(
-				fileId: photoSize.FileId,
+				fileId: fileId,
 				destination: originalImageStream,
 				cancellationToken: cancellationToken);
 			byte[] originalImage = originalImageStream.ToArray();

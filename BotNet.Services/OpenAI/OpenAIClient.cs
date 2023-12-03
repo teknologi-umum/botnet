@@ -127,13 +127,36 @@ namespace BotNet.Services.OpenAI {
 
 			while (!streamReader.EndOfStream) {
 				string? line = await streamReader.ReadLineAsync(cancellationToken);
-				if (line == null) break;
+
+				if (line == null) {
+					yield return (
+						Result: result.ToString(),
+						Stop: true
+					);
+					yield break;
+				}
+
 				if (line == "") continue;
 				if (!line.StartsWith("data: ", out string? json)) break;
-				if (json == "[DONE]") break;
+
+				if (json == "[DONE]") {
+					yield return (
+						Result: result.ToString(),
+						Stop: true
+					);
+					yield break;
+				}
+
 				CompletionResult? completionResult = JsonSerializer.Deserialize<CompletionResult>(json, JSON_SERIALIZER_OPTIONS);
-				if (completionResult == null) break;
-				if (completionResult.Choices.Count == 0) break;
+
+				if (completionResult == null || completionResult.Choices.Count == 0) {
+					yield return (
+						Result: result.ToString(),
+						Stop: true
+					);
+					yield break;
+				}
+
 				result.Append(completionResult.Choices[0].Delta!.Content);
 
 				if (completionResult.Choices[0].FinishReason == "stop") {
