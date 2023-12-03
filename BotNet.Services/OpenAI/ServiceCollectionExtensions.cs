@@ -17,6 +17,7 @@ namespace BotNet.Services.OpenAI {
 			services.AddTransient<TldrGenerator>();
 			services.AddTransient<IntentDetector>();
 			services.AddTransient<VisionBot>();
+			services.AddTransient<ImageGenerationBot>();
 			return services;
 		}
 	}

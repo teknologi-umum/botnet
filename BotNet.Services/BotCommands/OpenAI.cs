@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
+using BotNet.Services.OpenAI.Models;
 using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.DependencyInjection;
@@ -811,11 +813,49 @@ namespace BotNet.Services.BotCommands {
 						replyToMessageId: message.MessageId
 					);
 				} else {
-					await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
+					IntentDetector intentDetector = serviceProvider.GetRequiredService<IntentDetector>();
+					ChatIntent chatIntent = await intentDetector.DetectChatIntentAsync(
 						message: message.Text!,
-						chatId: message.Chat.Id,
-						replyToMessageId: message.MessageId
+						cancellationToken: cancellationToken
 					);
+
+					switch (chatIntent) {
+						case ChatIntent.Question:
+							await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
+								message: message.Text!,
+								chatId: message.Chat.Id,
+								replyToMessageId: message.MessageId
+							);
+							break;
+						case ChatIntent.ImageGeneration:
+							Message busyMessage = await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "Generating image… ⏳",
+								parseMode: ParseMode.Markdown,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken
+							);
+							Uri generatedImageUrl = await serviceProvider.GetRequiredService<ImageGenerationBot>().GenerateImageAsync(
+								prompt: message.Text!,
+								cancellationToken: cancellationToken
+							);
+							try {
+								await botClient.DeleteMessageAsync(
+									chatId: busyMessage.Chat.Id,
+									messageId: busyMessage.MessageId,
+									cancellationToken: cancellationToken
+								);
+							} catch (OperationCanceledException) {
+								throw;
+							}
+							await botClient.SendPhotoAsync(
+								chatId: message.Chat.Id,
+								photo: new InputFileUrl(generatedImageUrl),
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken
+							);
+							break;
+					}
 				}
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 				if (message.Chat.Type == ChatType.Private) {
