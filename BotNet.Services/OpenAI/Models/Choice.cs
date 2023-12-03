@@ -2,9 +2,14 @@
 	public record Choice(
 		string? Text,
 		int? Index,
-		ChatMessage? Message,
-		ChatMessage? Delta,
+		ChoiceChatMessage? Message,
+		ChoiceChatMessage? Delta,
 		Logprobs? Logprobs,
 		string? FinishReason
+	);
+
+	public record ChoiceChatMessage(
+		string Role,
+		string Content
 	);
 }

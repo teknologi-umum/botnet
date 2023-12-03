@@ -446,7 +446,7 @@ namespace BotNet.Services.BotCommands {
 		}
 
 		[Obsolete("Use StreamChatWithFriendlyBotAsync instead.", error: true)]
-		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+		public static async Task<Message?> ChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -592,7 +592,7 @@ namespace BotNet.Services.BotCommands {
 			return null;
 		}
 
-		public static async Task<Message?> ChatWithSarcasticBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string Text)> thread, string callSign, CancellationToken cancellationToken) {
+		public static async Task<Message?> ChatWithSarcasticBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, string callSign, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -761,7 +761,7 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, string callSign, Message message, CancellationToken cancellationToken) {
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -769,7 +769,6 @@ namespace BotNet.Services.BotCommands {
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
 				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 					message: message.Text!,
-					callSign: callSign,
 					chatId: message.Chat.Id,
 					replyToMessageId: message.MessageId
 				);
@@ -802,7 +801,7 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, string callSign, Message message, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -811,7 +810,6 @@ namespace BotNet.Services.BotCommands {
 				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 					message: message.Text!,
 					thread: thread,
-					callSign: callSign,
 					chatId: message.Chat.Id,
 					replyToMessageId: message.MessageId
 				);

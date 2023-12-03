@@ -11,7 +11,8 @@ namespace BotNet.Services.OpenAI {
 		public void TrackMessage(
 			long messageId,
 			string sender,
-			string text,
+			string? text,
+			string? imageBase64,
 			long? replyToMessageId
 		) {
 			_memoryCache.Set(
@@ -19,6 +20,7 @@ namespace BotNet.Services.OpenAI {
 				value: new Message(
 					Sender: sender,
 					Text: text,
+					ImageBase64: imageBase64,
 					ReplyToMessageId: replyToMessageId.HasValue
 						? new(replyToMessageId.Value)
 						: null
@@ -27,7 +29,7 @@ namespace BotNet.Services.OpenAI {
 			);
 		}
 
-		public IEnumerable<(string Sender, string Text)> GetThread(
+		public IEnumerable<(string Sender, string? Text, string? ImageBase64)> GetThread(
 			long messageId,
 			int maxLines
 		) {
@@ -37,7 +39,8 @@ namespace BotNet.Services.OpenAI {
 			) && message != null && maxLines-- > 0) {
 				yield return (
 					Sender: message.Sender,
-					Text: message.Text
+					Text: message.Text,
+					ImageBase64: message.ImageBase64
 				);
 
 				if (message.ReplyToMessageId == null) {
@@ -51,7 +54,8 @@ namespace BotNet.Services.OpenAI {
 		private readonly record struct MessageId(long Value);
 		private sealed record Message(
 			string Sender,
-			string Text,
+			string? Text,
+			string? ImageBase64,
 			MessageId? ReplyToMessageId
 		);
 	}

@@ -82,7 +82,7 @@ namespace BotNet.Bot {
 							// Respond to call sign
 							switch (callSign) {
 								case "AI":
-									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, "AI", update.Message, cancellationToken);
+									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
 								case "Pakde":
 									Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken);
@@ -92,6 +92,7 @@ namespace BotNet.Bot {
 											messageId: sentMessage.MessageId,
 											sender: callSign,
 											text: sentMessage.Text!,
+											imageBase64: null,
 											replyToMessageId: sentMessage.ReplyToMessage!.MessageId
 										);
 									}
@@ -122,11 +123,12 @@ namespace BotNet.Bot {
 								messageId: update.Message.MessageId,
 								sender: $"{firstName}{lastName?.Let(lastName => " " + lastName)}",
 								text: text,
+								imageBase64: null,
 								replyToMessageId: replyToMessageId
 							);
 
 							// Get thread
-							ImmutableList<(string Sender, string Text)> thread = threadTracker.GetThread(
+							ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread = threadTracker.GetThread(
 								messageId: replyToMessageId,
 								maxLines: 20
 							).ToImmutableList();
@@ -139,7 +141,7 @@ namespace BotNet.Bot {
 								// Respond to thread
 								switch (callSign) {
 									case "AI":
-										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, "AI", update.Message, thread, cancellationToken);
+										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, thread, cancellationToken);
 										break;
 									case "Pakde":
 										Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, thread, callSign, cancellationToken);
@@ -149,6 +151,7 @@ namespace BotNet.Bot {
 												messageId: sentMessage.MessageId,
 												sender: callSign,
 												text: sentMessage.Text!,
+												imageBase64: null,
 												replyToMessageId: sentMessage.ReplyToMessage!.MessageId
 											);
 										}

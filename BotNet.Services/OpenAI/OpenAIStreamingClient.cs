@@ -73,6 +73,7 @@ namespace BotNet.Services.OpenAI {
 					messageId: completeMessage.MessageId,
 					sender: callSign,
 					text: lastResult!,
+					imageBase64: null,
 					replyToMessageId: replyToMessageId
 				);
 
@@ -143,6 +144,7 @@ namespace BotNet.Services.OpenAI {
 						messageId: incompleteMessage.MessageId,
 						sender: callSign,
 						text: lastResult!,
+						imageBase64: null,
 						replyToMessageId: replyToMessageId
 					);
 				} catch {
