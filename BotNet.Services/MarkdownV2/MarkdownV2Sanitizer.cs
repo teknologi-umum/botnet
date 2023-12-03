@@ -15,12 +15,15 @@ namespace BotNet.Services.MarkdownV2 {
 			// Use StringBuilder for efficient string manipulation
 			StringBuilder sanitized = new(input.Length);
 
+			char previousCharacter = '\0';
 			foreach (char character in input) {
 				// If the character is in our list, append a backslash before it
-				if (CHARACTERS_TO_ESCAPE.Contains(character)) {
+				if (CHARACTERS_TO_ESCAPE.Contains(character)
+					&& previousCharacter != '\\') {
 					sanitized.Append('\\');
 				}
 				sanitized.Append(character);
+				previousCharacter = character;
 			}
 
 			return sanitized.ToString();

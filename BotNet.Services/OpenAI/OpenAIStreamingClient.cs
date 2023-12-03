@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.OpenAI {
 	public sealed class OpenAIStreamingClient(
-		IServiceProvider serviceProvider
+		IServiceProvider serviceProvider,
+		ILogger<OpenAIStreamingClient> logger
 	) {
 		private readonly IServiceProvider _serviceProvider = serviceProvider;
+		private readonly ILogger<OpenAIStreamingClient> _logger = logger;
 
 		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Manually managed")]
 		public async Task StreamChatAsync(
@@ -107,6 +110,7 @@ namespace BotNet.Services.OpenAI {
 									);
 								} catch (Exception exc) when (exc is not OperationCanceledException) {
 									// Message might be deleted
+									_logger.LogError(exc, null);
 									break;
 								}
 							}
@@ -120,13 +124,18 @@ namespace BotNet.Services.OpenAI {
 
 				try {
 					// Finalize message
-					await telegramBotClient.EditMessageTextAsync(
-						chatId: chatId,
-						messageId: incompleteMessage.MessageId,
-						text: MarkdownV2Sanitizer.Sanitize(lastResult!),
-						parseMode: ParseMode.MarkdownV2,
-						cancellationToken: cts.Token
-					);
+					try {
+						await telegramBotClient.EditMessageTextAsync(
+							chatId: chatId,
+							messageId: incompleteMessage.MessageId,
+							text: MarkdownV2Sanitizer.Sanitize(lastResult!),
+							parseMode: ParseMode.MarkdownV2,
+							cancellationToken: cts.Token
+						);
+					} catch (Exception exc) {
+						_logger.LogError(exc, null);
+						throw;
+					}
 
 					// Track thread
 					ThreadTracker threadTracker = serviceScope.ServiceProvider.GetRequiredService<ThreadTracker>();
