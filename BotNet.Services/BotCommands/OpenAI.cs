@@ -783,11 +783,11 @@ namespace BotNet.Services.BotCommands {
 				} else if (message.ReplyToMessage is { Photo.Length: > 0 }
 					&& message.Text is { }) {
 					fileId = message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First().FileId;
-					prompt = message.Caption;
+					prompt = message.Text;
 				} else if (message.ReplyToMessage is { Sticker: { } }
 					&& message.Text is { }) {
 					fileId = message.ReplyToMessage.Sticker.FileId;
-					prompt = message.Caption;
+					prompt = message.Text;
 				} else {
 					fileId = null;
 					prompt = null;
@@ -907,7 +907,9 @@ namespace BotNet.Services.BotCommands {
 			if (codecResult != SKCodecResult.Success) {
 				return (null, "Invalid image");
 			}
-			if (codec.EncodedFormat != SKEncodedImageFormat.Jpeg) {
+
+			if (codec.EncodedFormat != SKEncodedImageFormat.Jpeg
+				&& codec.EncodedFormat != SKEncodedImageFormat.Webp) {
 				return (null, "Image must be compressed image");
 			}
 			SKBitmap bitmap = SKBitmap.Decode(codec);
@@ -915,6 +917,17 @@ namespace BotNet.Services.BotCommands {
 			// Limit input image to 1280x1280
 			if (bitmap.Width > 1280 || bitmap.Width > 1280) {
 				return (null, "Image larger than 1280x1280");
+			}
+
+			// Handle stickers
+			if (codec.EncodedFormat == SKEncodedImageFormat.Webp) {
+				SKImage image = SKImage.FromBitmap(bitmap);
+				SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 20);
+				using MemoryStream jpegStream = new();
+				data.SaveTo(jpegStream);
+
+				// Encode image as base64
+				return (Convert.ToBase64String(jpegStream.ToArray()), null);
 			}
 
 			// Encode image as base64
