@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
@@ -765,7 +766,8 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		private static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(3));
+		private static readonly RateLimiter IMAGE_GENERATION_PER_USER_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(10));
+		private static readonly RateLimiter IMAGE_GENERATION_PER_CHAT_RATE_LIMITER = RateLimiter.PerUser(2, TimeSpan.FromMinutes(3));
 		public static async Task StreamChatWithFriendlyBotAsync(
 			ITelegramBotClient botClient,
 			IServiceProvider serviceProvider,
@@ -829,7 +831,11 @@ namespace BotNet.Services.BotCommands {
 							);
 							break;
 						case ChatIntent.ImageGeneration:
-							IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(
+							IMAGE_GENERATION_PER_USER_RATE_LIMITER.ValidateActionRate(
+								chatId: message.Chat.Id,
+								userId: message.From.Id
+							);
+							IMAGE_GENERATION_PER_CHAT_RATE_LIMITER.ValidateActionRate(
 								chatId: message.Chat.Id,
 								userId: message.From.Id
 							);
@@ -881,6 +887,13 @@ namespace BotNet.Services.BotCommands {
 						),
 						cancellationToken: cancellationToken);
 				}
+			} catch (HttpRequestException exc) when (exc.StatusCode == HttpStatusCode.TooManyRequests) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "<code>Too many requests.</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
 			} catch (OperationCanceledException) {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
