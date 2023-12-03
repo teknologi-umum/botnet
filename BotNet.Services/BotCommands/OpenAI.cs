@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -10,6 +11,7 @@ using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.DependencyInjection;
 using RG.Ninja;
+using SkiaSharp;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -761,17 +763,55 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
+		public static async Task StreamChatWithFriendlyBotAsync(
+			ITelegramBotClient botClient,
+			IServiceProvider serviceProvider,
+			Message message,
+			CancellationToken cancellationToken
+		) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
 					: CHAT_GROUP_RATE_LIMITER
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
-				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
-					message: message.Text!,
-					chatId: message.Chat.Id,
-					replyToMessageId: message.MessageId
-				);
+
+				PhotoSize? photoSize;
+				string? caption;
+				if (message is { Photo.Length: > 0, Caption: { } }) {
+					photoSize = message.Photo.OrderByDescending(photoSize => photoSize.Width).First();
+					caption = message.Caption;
+				} else if (message.ReplyToMessage is { Photo.Length: > 0, Caption: { } }) {
+					photoSize = message.ReplyToMessage.Photo.OrderByDescending(photoSize => photoSize.Width).First();
+					caption = message.ReplyToMessage.Caption;
+				} else {
+					photoSize = null;
+					caption = null;
+				}
+
+				if (photoSize != null && caption != null) {
+					(string? imageBase64, string? error) = await GetImageBase64Async(botClient, photoSize, cancellationToken);
+					if (error != null) {
+						await botClient.SendTextMessageAsync(
+							chatId: message.Chat.Id,
+							text: $"<code>{error}</code>",
+							parseMode: ParseMode.Html,
+							replyToMessageId: message.MessageId,
+							cancellationToken: cancellationToken);
+						return;
+					}
+					await serviceProvider.GetRequiredService<VisionBot>().StreamChatAsync(
+						message: caption,
+						imageBase64: imageBase64!,
+						chatId: message.Chat.Id,
+						replyToMessageId: message.MessageId
+					);
+				} else {
+					await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
+						message: message.Text!,
+						chatId: message.Chat.Id,
+						replyToMessageId: message.MessageId
+					);
+				}
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 				if (message.Chat.Type == ChatType.Private) {
 					await botClient.SendTextMessageAsync(
@@ -840,6 +880,40 @@ namespace BotNet.Services.BotCommands {
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);
 			}
+		}
+
+		private static async Task<(string? ImageBase64, string? Error)> GetImageBase64Async(ITelegramBotClient botClient, PhotoSize photoSize, CancellationToken cancellationToken) {
+			// Download photo
+			using MemoryStream originalImageStream = new();
+			await botClient.GetInfoAndDownloadFileAsync(
+				fileId: photoSize.FileId,
+				destination: originalImageStream,
+				cancellationToken: cancellationToken);
+			byte[] originalImage = originalImageStream.ToArray();
+
+			// Limit input image to 200KB
+			if (originalImage.Length > 200 * 1024) {
+				return (null, "Image larger than 200KB");
+			}
+
+			// Decode image
+			originalImageStream.Position = 0;
+			using SKCodec codec = SKCodec.Create(originalImageStream, out SKCodecResult codecResult);
+			if (codecResult != SKCodecResult.Success) {
+				return (null, "Invalid image");
+			}
+			if (codec.EncodedFormat != SKEncodedImageFormat.Jpeg) {
+				return (null, "Image must be compressed image");
+			}
+			SKBitmap bitmap = SKBitmap.Decode(codec);
+
+			// Limit input image to 1280x1280
+			if (bitmap.Width > 1280 || bitmap.Width > 1280) {
+				return (null, "Image larger than 1280x1280");
+			}
+
+			// Encode image as base64
+			return (Convert.ToBase64String(originalImage), null);
 		}
 	}
 }

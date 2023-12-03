@@ -9,13 +9,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.Json;
 using BotNet.Services.OpenAI.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RG.Ninja;
 
 namespace BotNet.Services.OpenAI {
 	public class OpenAIClient(
 		HttpClient httpClient,
-		IOptions<OpenAIOptions> openAIOptionsAccessor
+		IOptions<OpenAIOptions> openAIOptionsAccessor,
+		ILogger<OpenAIClient> logger
 	) {
 		private const string COMPLETION_URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
 		private const string CHAT_URL = "https://api.openai.com/v1/chat/completions";
@@ -24,6 +26,7 @@ namespace BotNet.Services.OpenAI {
 		};
 		private readonly HttpClient _httpClient = httpClient;
 		private readonly string _apiKey = openAIOptionsAccessor.Value.ApiKey!;
+		private readonly ILogger<OpenAIClient> _logger = logger;
 
 		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, double topP, CancellationToken cancellationToken) {
 			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(COMPLETION_URL_TEMPLATE, engine)) {
@@ -112,7 +115,11 @@ namespace BotNet.Services.OpenAI {
 				)
 			};
 			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-			response.EnsureSuccessStatusCode();
+			if (!response.IsSuccessStatusCode) {
+				string errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
+				_logger.LogError(errorMessage);
+				response.EnsureSuccessStatusCode();
+			}
 
 			StringBuilder result = new();
 			using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);

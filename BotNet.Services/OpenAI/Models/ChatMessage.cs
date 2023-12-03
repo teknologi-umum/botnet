@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace BotNet.Services.OpenAI.Models {
@@ -11,7 +12,7 @@ namespace BotNet.Services.OpenAI.Models {
 			Content: [
 				new ChatContent(
 					Type: "text",
-					Text: text,
+					Text: text ?? throw new ArgumentNullException(nameof(text)),
 					ImageUrl: null
 				)
 			]
@@ -22,14 +23,14 @@ namespace BotNet.Services.OpenAI.Models {
 			Content: [
 				new ChatContent(
 					Type: "text",
-					Text: text,
+					Text: text ?? throw new ArgumentNullException(nameof(text)),
 					ImageUrl: null
 				),
 				new ChatContent(
 					Type: "image_url",
 					Text: null,
 					ImageUrl: new(
-						Url: $"data:image/png;base64,{imageBase64}"
+						Url: $"data:image/jpeg;base64,{imageBase64 ?? throw new ArgumentNullException(nameof(imageBase64))}"
 					)
 				)
 			]
@@ -42,7 +43,7 @@ namespace BotNet.Services.OpenAI.Models {
 					Type: "image_url",
 					Text: null,
 					ImageUrl: new(
-						Url: $"data:image/png;base64,{imageBase64}"
+						Url: $"data:image/jpeg;base64,{imageBase64 ?? throw new ArgumentNullException(nameof(imageBase64))}"
 					)
 				)
 			]
