@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -21,6 +22,7 @@ namespace BotNet.Services.OpenAI {
 	) {
 		private const string COMPLETION_URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
 		private const string CHAT_URL = "https://api.openai.com/v1/chat/completions";
+		private const string IMAGE_GENERATION_URL = "https://api.openai.com/v1/images/generations";
 		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
 		};
@@ -172,6 +174,28 @@ namespace BotNet.Services.OpenAI {
 					);
 				}
 			}
+		}
+
+		public async Task<Uri> GenerateImageAsync(string model, string prompt, CancellationToken cancellationToken) {
+			using HttpRequestMessage request = new(HttpMethod.Post, IMAGE_GENERATION_URL) {
+				Headers = {
+					{ "Authorization", $"Bearer {_apiKey}" }
+				},
+				Content = JsonContent.Create(
+					inputValue: new {
+						Model = model,
+						Prompt = prompt,
+						N = 1,
+						Size = "1024x1024"
+					},
+					options: JSON_SERIALIZER_OPTIONS
+				)
+			};
+			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+			response.EnsureSuccessStatusCode();
+
+			ImageGenerationResult? imageGenerationResult = await response.Content.ReadFromJsonAsync<ImageGenerationResult>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+			return new(imageGenerationResult!.Data[0].Url);
 		}
 	}
 }
