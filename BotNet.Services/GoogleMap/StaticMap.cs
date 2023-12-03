@@ -1,5 +1,4 @@
 ﻿using System;
-using BotNet.Services.GoogleMap.Models;
 using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.GoogleMap {
@@ -7,17 +6,15 @@ namespace BotNet.Services.GoogleMap {
 	/// <summary>
 	/// Get static map image from google map api
 	/// </summary>
-	public class StaticMap {
-		private readonly string? _apiKey;
+	public class StaticMap(
+		IOptions<GoogleMapOptions> options
+	) {
+		private readonly string? _apiKey = options.Value.ApiKey;
 		protected string mapPosition = "center";
 		protected int zoom = 13;
 		protected string size = "600x300";
 		protected string marker = "color:red";
-		private string _uriTemplate = "https://maps.googleapis.com/maps/api/staticmap";
-
-		public StaticMap(IOptions<GoogleMapOptions> options) {
-			_apiKey = options.Value.ApiKey;
-		}
+		private const string URI_TEMPLATE = "https://maps.googleapis.com/maps/api/staticmap";
 
 		/// <summary>
 		/// Get static map image from google map api
@@ -33,7 +30,7 @@ namespace BotNet.Services.GoogleMap {
 				return "Api key is needed";
 			}
 
-			Uri uri = new(_uriTemplate + $"?{mapPosition}={place}&zoom={zoom}&size={size}&markers={marker}|{place}&key={_apiKey}");
+			Uri uri = new(URI_TEMPLATE + $"?{mapPosition}={place}&zoom={zoom}&size={size}&markers={marker}|{place}&key={_apiKey}");
 
 			return uri.ToString();
 		}

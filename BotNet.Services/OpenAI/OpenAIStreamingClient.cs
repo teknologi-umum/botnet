@@ -11,7 +11,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.OpenAI {
-	public sealed class StreamingResponseController(
+	public sealed class OpenAIStreamingClient(
 		IServiceProvider serviceProvider
 	) {
 		private readonly IServiceProvider _serviceProvider = serviceProvider;
@@ -21,6 +21,7 @@ namespace BotNet.Services.OpenAI {
 			string model,
 			IEnumerable<ChatMessage> messages,
 			int maxTokens,
+			User from,
 			long chatId,
 			int replyToMessageId
 		) {
@@ -107,14 +108,23 @@ namespace BotNet.Services.OpenAI {
 
 				await downstreamTask;
 
-				// Finalize message
 				try {
+					// Finalize message
 					await telegramBotClient.EditMessageTextAsync(
 						chatId: chatId,
 						messageId: incompleteMessage.MessageId,
 						text: MarkdownV2Sanitizer.Sanitize(lastResult!),
 						parseMode: ParseMode.MarkdownV2,
 						cancellationToken: cts.Token
+					);
+
+					// Track thread
+					ThreadTracker threadTracker = serviceScope.ServiceProvider.GetRequiredService<ThreadTracker>();
+					threadTracker.TrackMessage(
+						messageId: incompleteMessage.MessageId,
+						sender: $"{from.FirstName}{from.LastName?.Let(lastName => " " + lastName)}",
+						text: lastResult!,
+						replyToMessageId: replyToMessageId
 					);
 				} catch {
 					// Message might be deleted, suppress exception

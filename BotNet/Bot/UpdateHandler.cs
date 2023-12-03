@@ -82,7 +82,7 @@ namespace BotNet.Bot {
 							// Respond to call sign
 							switch (callSign) {
 								case "AI":
-									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken);
+									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider, update.Message, cancellationToken);
 									break;
 								case "Pakde":
 									Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient, _serviceProvider, update.Message, callSign, cancellationToken);

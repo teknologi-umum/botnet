@@ -2,15 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BotNet.Services.OpenAI {
-	public class Translator {
-		private readonly OpenAIClient _openAIClient;
-
-		public Translator(
-			OpenAIClient openAIClient
-		) {
-			_openAIClient = openAIClient;
-		}
+namespace BotNet.Services.OpenAI.Skills {
+	public class Translator(
+		OpenAIClient openAIClient
+	) {
+		private readonly OpenAIClient _openAIClient = openAIClient;
 
 		public async Task<string> TranslateAsync(string sentence, string languagePair, CancellationToken cancellationToken) {
 			switch (languagePair) {
@@ -61,7 +57,7 @@ namespace BotNet.Services.OpenAI {
 			return await _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
-				stop: new[] { "\n" },
+				stop: ["\n"],
 				maxTokens: 128,
 				frequencyPenalty: 0.0,
 				presencePenalty: 0.0,

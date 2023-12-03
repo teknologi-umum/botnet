@@ -1,15 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace BotNet.Services.OpenAI {
-	public class AssistantBot {
-		private readonly OpenAIClient _openAIClient;
-
-		public AssistantBot(
-			OpenAIClient openAIClient
-		) {
-			_openAIClient = openAIClient;
-		}
+namespace BotNet.Services.OpenAI.Skills {
+	public class AssistantBot(
+		OpenAIClient openAIClient
+	) {
+		private readonly OpenAIClient _openAIClient = openAIClient;
 
 		public Task<string> AskSomethingAsync(string name, string question, CancellationToken cancellationToken) {
 			string prompt = $"I am a highly intelligent question answering bot. If you ask me a question that is rooted in truth, I will give you the answer. If you ask me a question that is nonsense, trickery, or has no clear answer, I will respond with \"Unknown\".\n\n"
@@ -32,7 +28,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
-				stop: new[] { "\n" },
+				stop: ["\n"],
 				maxTokens: 100,
 				frequencyPenalty: 0.0,
 				presencePenalty: 0.0,

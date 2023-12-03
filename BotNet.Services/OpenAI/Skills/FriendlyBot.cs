@@ -4,14 +4,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.OpenAI.Models;
+using Telegram.Bot.Types;
 
-namespace BotNet.Services.OpenAI {
+namespace BotNet.Services.OpenAI.Skills {
 	public class FriendlyBot(
 		OpenAIClient openAIClient,
-		StreamingResponseController streamingResponseController
+		OpenAIStreamingClient openAIStreamingClient
 	) {
 		private readonly OpenAIClient _openAIClient = openAIClient;
-		private readonly StreamingResponseController _streamingResponseController = streamingResponseController;
+		private readonly OpenAIStreamingClient _openAIStreamingClient = openAIStreamingClient;
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
 			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
@@ -70,16 +71,17 @@ namespace BotNet.Services.OpenAI {
 			);
 		}
 
-		public async Task StreamChatAsync(string message, long chatId, int replyToMessageId) {
+		public async Task StreamChatAsync(string message, User from, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = [
 				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 				new("user", message)
 			];
 
-			await _streamingResponseController.StreamChatAsync(
+			await _openAIStreamingClient.StreamChatAsync(
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
+				from: from,
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);
@@ -109,7 +111,7 @@ namespace BotNet.Services.OpenAI {
 			);
 		}
 
-		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, long chatId, int replyToMessageId) {
+		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string Text)> thread, User from, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = new() {
 				new("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 
@@ -125,10 +127,11 @@ namespace BotNet.Services.OpenAI {
 				new("user", message)
 			};
 
-			await _streamingResponseController.StreamChatAsync(
+			await _openAIStreamingClient.StreamChatAsync(
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
+				from: from,
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);

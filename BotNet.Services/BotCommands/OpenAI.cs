@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
+using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.DependencyInjection;
 using RG.Ninja;
@@ -760,7 +761,7 @@ namespace BotNet.Services.BotCommands {
 			}
 		}
 
-		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, string callSign, CancellationToken cancellationToken) {
+		public static async Task StreamChatWithFriendlyBotAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			try {
 				(message.Chat.Type == ChatType.Private
 					? CHAT_PRIVATE_RATE_LIMITER
@@ -768,6 +769,7 @@ namespace BotNet.Services.BotCommands {
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
 				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 					message: message.Text!,
+					from: message.From!,
 					chatId: message.Chat.Id,
 					replyToMessageId: message.MessageId
 				);
@@ -809,6 +811,7 @@ namespace BotNet.Services.BotCommands {
 				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 					message: message.Text!,
 					thread: thread,
+					from: message.From!,
 					chatId: message.Chat.Id,
 					replyToMessageId: message.MessageId
 				);

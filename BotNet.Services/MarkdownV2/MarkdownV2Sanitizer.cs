@@ -3,10 +3,10 @@ using System.Text;
 
 namespace BotNet.Services.MarkdownV2 {
 	public static class MarkdownV2Sanitizer {
-		private static readonly HashSet<char> CHARACTERS_TO_ESCAPE = new() {
+		private static readonly HashSet<char> CHARACTERS_TO_ESCAPE = [
 			'_', '*', '[', ']', '(', ')', '~', '>', '#',
 			'+', '-', '=', '|', '{', '}', '.', '!'
-		};
+		];
 
 		public static string Sanitize(string input) {
 			if (string.IsNullOrEmpty(input))

@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using BotNet.Services.OpenAI.Skills;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BotNet.Services.OpenAI {
 	public static class ServiceCollectionExtensions {
 		public static IServiceCollection AddOpenAIClient(this IServiceCollection services) {
 			services.AddTransient<OpenAIClient>();
+			services.AddTransient<OpenAIStreamingClient>();
 			services.AddTransient<ThreadTracker>();
 			services.AddTransient<CodeExplainer>();
 			services.AddTransient<AssistantBot>();
@@ -13,7 +15,7 @@ namespace BotNet.Services.OpenAI {
 			services.AddTransient<SarcasticBot>();
 			services.AddTransient<AttachmentGenerator>();
 			services.AddTransient<TldrGenerator>();
-			services.AddTransient<StreamingResponseController>();
+			services.AddTransient<IntentDetector>();
 			return services;
 		}
 	}

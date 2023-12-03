@@ -2,15 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BotNet.Services.OpenAI {
-	public class SarcasticBot {
-		private readonly OpenAIClient _openAIClient;
-
-		public SarcasticBot(
-			OpenAIClient openAIClient
-		) {
-			_openAIClient = openAIClient;
-		}
+namespace BotNet.Services.OpenAI.Skills {
+	public class SarcasticBot(
+		OpenAIClient openAIClient
+	) {
+		private readonly OpenAIClient _openAIClient = openAIClient;
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
 			string prompt = $"{callSign} adalah chatbot berbahasa Indonesia yang tidak ramah, kurang antusias dalam menjawab pertanyaan, dan suka mengomel.\n\n"
@@ -27,7 +23,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-curie-001",
 				prompt: prompt,
-				stop: new[] { $"{name}:" },
+				stop: [$"{name}:"],
 				maxTokens: 128,
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.6,
@@ -57,7 +53,7 @@ namespace BotNet.Services.OpenAI {
 			return _openAIClient.AutocompleteAsync(
 				engine: "text-curie-001",
 				prompt: prompt,
-				stop: new[] { $"{name}:" },
+				stop: [$"{name}:"],
 				maxTokens: 128,
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.6,

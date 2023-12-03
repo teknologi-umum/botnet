@@ -1,15 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace BotNet.Services.OpenAI {
-	public class TldrGenerator {
-		private readonly OpenAIClient _openAIClient;
-
-		public TldrGenerator(
-			OpenAIClient openAIClient
-		) {
-			_openAIClient = openAIClient;
-		}
+namespace BotNet.Services.OpenAI.Skills {
+	public class TldrGenerator(
+		OpenAIClient openAIClient
+	) {
+		private readonly OpenAIClient _openAIClient = openAIClient;
 
 		public Task<string> GenerateTldrAsync(string text, CancellationToken cancellationToken) {
 			string prompt = $"{text}\n\nTl;dr:\n";

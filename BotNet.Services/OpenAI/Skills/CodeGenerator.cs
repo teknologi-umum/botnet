@@ -2,15 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BotNet.Services.OpenAI {
-	public class CodeGenerator {
-		private readonly OpenAIClient _openAIClient;
-
-		public CodeGenerator(
-			OpenAIClient openAIClient
-		) {
-			_openAIClient = openAIClient;
-		}
+namespace BotNet.Services.OpenAI.Skills {
+	public class CodeGenerator(
+		OpenAIClient openAIClient
+	) {
+		private readonly OpenAIClient _openAIClient = openAIClient;
 
 		public async Task<string> GenerateJavaScriptCodeAsync(string instructions, CancellationToken cancellationToken) {
 			string prompt = "<|endoftext|>"
@@ -26,7 +22,7 @@ namespace BotNet.Services.OpenAI {
 			string code = await _openAIClient.AutocompleteAsync(
 				engine: "code-davinci-002",
 				prompt: prompt,
-				stop: new[] { "/* Command:" },
+				stop: ["/* Command:"],
 				maxTokens: 256,
 				frequencyPenalty: 0.5,
 				presencePenalty: 0.0,

@@ -13,13 +13,10 @@ namespace BotNet.Services.GoogleMap {
 	/// This class intended to get geocoding from address.
 	/// </summary>
 	public class GeoCode {
-
-
 		private readonly string? _apiKey;
-		private string _uriTemplate = "https://maps.googleapis.com/maps/api/geocode/json";
+		private const string URI_TEMPLATE = "https://maps.googleapis.com/maps/api/geocode/json";
 		private readonly HttpClientHandler _httpClientHandler;
 		private readonly HttpClient _httpClient;
-
 
 		public GeoCode(IOptions<GoogleMapOptions> options) {
 			_apiKey = options.Value.ApiKey;
@@ -46,14 +43,14 @@ namespace BotNet.Services.GoogleMap {
 				throw new HttpRequestException("Api key is needed");
 			}
 
-			Uri uri = new(_uriTemplate + $"?address={place}&key={_apiKey}");
+			Uri uri = new(URI_TEMPLATE + $"?address={place}&key={_apiKey}");
 			HttpResponseMessage response = await _httpClient.GetAsync(uri.AbsoluteUri);
 
 			if (response is not { StatusCode: HttpStatusCode.OK, Content.Headers.ContentType.MediaType: string contentType }) {
 				throw new HttpRequestException("Unable to find location.");
 			}
 
-			if (response.Content is not object && contentType is not "application/json") {
+			if (response.Content is null && contentType is not "application/json") {
 				throw new HttpRequestException("Failed to parse result.");
 			}
 
