@@ -8,11 +8,11 @@ namespace BotNet.Services.SocialLink {
 			string url = link.ToString();
 			string newUrl = link.Host switch {
 				"twitter.com" => url.Replace("//twitter.com/", "//vxtwitter.com/"),
-				"www.twitter.com" => url.Replace("twitter.com", "vxtwitter.com"),
-				"x.com" => url.Replace("x.com", "vxtwitter.com"),
-				"www.x.com" => url.Replace("x.com", "vxtwitter.com"),
-				"instagram.com" => url.Replace("instagram.com", "ddinstagram.com"),
-				"www.instagram.com" => url.Replace("instagram.com", "ddinstagram.com"),
+				"www.twitter.com" => url.Replace("//www.twitter.com/", "//www.vxtwitter.com/"),
+				"x.com" => url.Replace("//x.com/", "//vxtwitter.com/"),
+				"www.x.com" => url.Replace("//www.x.com/", "//www.vxtwitter.com/"),
+				"instagram.com" => url.Replace("//instagram.com/", "//ddinstagram.com/"),
+				"www.instagram.com" => url.Replace("//www.instagram.com/", "//www.ddinstagram.com/"),
 				_ => url
 			};
 			return new Uri(newUrl);
