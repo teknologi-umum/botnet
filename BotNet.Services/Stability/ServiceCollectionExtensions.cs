@@ -6,6 +6,7 @@ namespace BotNet.Services.Stability {
 		public static IServiceCollection AddStabilityClient(this IServiceCollection services) {
 			services.AddSingleton<StabilityClient>();
 			services.AddSingleton<ImageGenerationBot>();
+			services.AddSingleton<ImageVariationBot>();
 			return services;
 		}
 	}
