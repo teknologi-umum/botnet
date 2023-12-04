@@ -8,7 +8,6 @@
   <ItemGroup>
     <None Remove="CopyPasta\Pasta.json" />
     <None Remove="Meme\Images\ramad.jpg" />
-    <None Remove="Stability\generation.proto" />
     <None Remove="FancyText\CharMaps\Bold.json" />
     <None Remove="FancyText\CharMaps\BoldItalic.json" />
     <None Remove="FancyText\CharMaps\Cursive.json" />
@@ -98,10 +97,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\pehape\csharp\Pehape\Pehape.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Stability\generation.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>
