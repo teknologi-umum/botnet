@@ -7,7 +7,7 @@ namespace BotNet.Services.SocialLink {
 		public static Uri Fix(Uri link) {
 			string url = link.ToString();
 			string newUrl = link.Host switch {
-				"twitter.com" => url.Replace("twitter.com", "vxtwitter.com"),
+				"twitter.com" => url.Replace("//twitter.com/", "//vxtwitter.com/"),
 				"www.twitter.com" => url.Replace("twitter.com", "vxtwitter.com"),
 				"x.com" => url.Replace("x.com", "vxtwitter.com"),
 				"www.x.com" => url.Replace("x.com", "vxtwitter.com"),
