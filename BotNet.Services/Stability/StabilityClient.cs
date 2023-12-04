@@ -69,6 +69,10 @@ namespace BotNet.Services.Stability {
 
 			TextToImageResponse? responseData = JsonSerializer.Deserialize<TextToImageResponse>(responseJson, CAMEL_CASE_SERIALIZER_OPTIONS);
 
+			if (responseData is { Artifacts: [Artifact { FinishReason: "CONTENT_FILTERED" }] }) {
+				throw new ContentFilteredException();
+			}
+
 			if (responseData is not { Artifacts: [Artifact { FinishReason: "SUCCESS", Base64: var base64 }] }) {
 				throw new HttpRequestException();
 			}

@@ -7,7 +7,6 @@ namespace BotNet.Services.Stability.Models {
 
 	internal sealed record Artifact(
 		string Base64,
-		string FinishReason,
-		int Seed
+		string FinishReason
 	);
 }

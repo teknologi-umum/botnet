@@ -12,6 +12,7 @@ using BotNet.Services.OpenAI;
 using BotNet.Services.OpenAI.Models;
 using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
+using BotNet.Services.Stability.Models;
 using BotNet.Services.Stability.Skills;
 using Microsoft.Extensions.DependencyInjection;
 using RG.Ninja;
@@ -851,26 +852,35 @@ namespace BotNet.Services.BotCommands {
 								//	prompt: message.Text!,
 								//	cancellationToken: cancellationToken
 								//);
-								byte[] generatedImage = await serviceProvider.GetRequiredService<Stability.Skills.ImageGenerationBot>().GenerateImageAsync(
-									prompt: message.Text!,
-									cancellationToken: cancellationToken
-								);
-								using MemoryStream generatedImageStream = new(generatedImage);
 								try {
-									await botClient.DeleteMessageAsync(
-										chatId: busyMessage.Chat.Id,
-										messageId: busyMessage.MessageId,
+									byte[] generatedImage = await serviceProvider.GetRequiredService<Stability.Skills.ImageGenerationBot>().GenerateImageAsync(
+										prompt: message.Text!,
 										cancellationToken: cancellationToken
 									);
-								} catch (OperationCanceledException) {
-									throw;
+									using MemoryStream generatedImageStream = new(generatedImage);
+									try {
+										await botClient.DeleteMessageAsync(
+											chatId: busyMessage.Chat.Id,
+											messageId: busyMessage.MessageId,
+											cancellationToken: cancellationToken
+										);
+									} catch (OperationCanceledException) {
+										throw;
+									}
+									await botClient.SendPhotoAsync(
+										chatId: message.Chat.Id,
+										photo: new InputFileStream(generatedImageStream, "art.png"),
+										replyToMessageId: message.MessageId,
+										cancellationToken: cancellationToken
+									);
+								} catch (ContentFilteredException) {
+									await botClient.EditMessageTextAsync(
+										chatId: busyMessage.Chat.Id,
+										messageId: busyMessage.MessageId,
+										text: "<code>Content filtered.</code>",
+										parseMode: ParseMode.Html
+									);
 								}
-								await botClient.SendPhotoAsync(
-									chatId: message.Chat.Id,
-									photo: new InputFileStream(generatedImageStream, "art.png"),
-									replyToMessageId: message.MessageId,
-									cancellationToken: cancellationToken
-								);
 								break;
 							}
 					}
@@ -898,6 +908,13 @@ namespace BotNet.Services.BotCommands {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
 					text: "<code>Too many requests.</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: message.MessageId,
+					cancellationToken: cancellationToken);
+			} catch (HttpRequestException exc) {
+				await botClient.SendTextMessageAsync(
+					chatId: message.Chat.Id,
+					text: "<code>Unknown error.</code>",
 					parseMode: ParseMode.Html,
 					replyToMessageId: message.MessageId,
 					cancellationToken: cancellationToken);

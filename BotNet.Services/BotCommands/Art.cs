@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.RateLimit;
+using BotNet.Services.Stability.Models;
 using BotNet.Services.ThisXDoesNotExist;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
@@ -48,6 +49,13 @@ namespace BotNet.Services.BotCommands {
 							await botClient.SendPhotoAsync(
 								chatId: message.Chat.Id,
 								photo: new InputFileStream(imageStream, "art.png"),
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken);
+						} catch (ContentFilteredException) {
+							await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "<code>Content filtered</code>",
+								parseMode: ParseMode.Html,
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						} catch {
