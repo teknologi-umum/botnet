@@ -55,7 +55,7 @@ namespace BotNet.Bot {
 							{
 								await botClient.SendTextMessageAsync(
 									chatId: update.Message.Chat.Id,
-									text: u.OriginalString,
+									text: $"Preview: {u.OriginalString}",
 									replyToMessageId: update.Message.MessageId,
 									cancellationToken: cancellationToken);
 							}
