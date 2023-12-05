@@ -865,11 +865,21 @@ namespace BotNet.Services.BotCommands {
 									} catch (OperationCanceledException) {
 										throw;
 									}
-									await botClient.SendPhotoAsync(
+
+									Message generatedImageMessage = await botClient.SendPhotoAsync(
 										chatId: message.Chat.Id,
 										photo: new InputFileStream(generatedImageStream, "art.png"),
 										replyToMessageId: message.MessageId,
 										cancellationToken: cancellationToken
+									);
+
+									// Track generated image for continuation
+									serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
+										messageId: generatedImageMessage.MessageId,
+										sender: "AI",
+										text: null,
+										imageBase64: Convert.ToBase64String(generatedImage),
+										replyToMessageId: message.MessageId
 									);
 								} catch (ContentFilteredException exc) {
 									await botClient.EditMessageTextAsync(
@@ -939,12 +949,22 @@ namespace BotNet.Services.BotCommands {
 					? CHAT_PRIVATE_RATE_LIMITER
 					: CHAT_GROUP_RATE_LIMITER
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
-				await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
-					message: message.Text!,
-					thread: thread,
-					chatId: message.Chat.Id,
-					replyToMessageId: message.MessageId
-				);
+
+				if (thread.FirstOrDefault().ImageBase64 is { } imageBase64) {
+					await serviceProvider.GetRequiredService<VisionBot>().StreamChatAsync(
+						message: message.Text!,
+						imageBase64: imageBase64,
+						chatId: message.Chat.Id,
+						replyToMessageId: message.MessageId
+					);
+				} else {
+					await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
+						message: message.Text!,
+						thread: thread,
+						chatId: message.Chat.Id,
+						replyToMessageId: message.MessageId
+					);
+				}
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 				if (message.Chat.Type == ChatType.Private) {
 					await botClient.SendTextMessageAsync(
