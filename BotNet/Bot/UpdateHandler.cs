@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp.Dom;
 using BotNet.Services.BotCommands;
 using BotNet.Services.BubbleWrap;
 using BotNet.Services.OpenAI;
@@ -45,14 +45,13 @@ namespace BotNet.Bot {
 
 						// Retrieve bot identity
 						_me ??= await GetMeAsync(botClient, cancellationToken);
-						
+
 						// Handle Social Link (better embed) using SocialLinkEmbedFixer 
 						if (update.Message != null) {
 							string message = update.Message.Text ?? update.Message.Caption ?? "";
 							IEnumerable<Uri> possibleUrls = SocialLinkEmbedFixer.GetPossibleUrls(message);
-	
-							foreach (Uri u in possibleUrls.Select(SocialLinkEmbedFixer.Fix))
-							{
+
+							foreach (Uri u in possibleUrls.Select(SocialLinkEmbedFixer.Fix)) {
 								await botClient.SendTextMessageAsync(
 									chatId: update.Message.Chat.Id,
 									text: $"Preview: {u.OriginalString}",
@@ -73,8 +72,8 @@ namespace BotNet.Bot {
 								cancellationToken: cancellationToken
 							);
 						} else if (update.Message?.Entities?.FirstOrDefault(entity =>
-							           entity is { Type: MessageEntityType.TextLink }) is { Url: { } textUrl }
-						           && textUrl.StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
+									   entity is { Type: MessageEntityType.TextLink }) is { Url: { } textUrl }
+								   && textUrl.StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
 							await botClient.SendTextMessageAsync(
 								chatId: update.Message.Chat.Id,
 								text: $"Mirror: https://libreddit.teknologiumum.com/{remainingTextUrl}",
@@ -86,9 +85,9 @@ namespace BotNet.Bot {
 
 						// Handle call sign
 						if ((update.Message?.Text ?? update.Message?.Caption) is { } messageText && (
-							    messageText.StartsWith("AI,")
-							    || messageText.StartsWith("Pakde,")
-						    )) {
+							messageText.StartsWith("AI,")
+							|| messageText.StartsWith("Pakde,")
+						)) {
 							// Get call sign
 							string callSign = messageText.Split(',')[0];
 
@@ -101,8 +100,35 @@ namespace BotNet.Bot {
 							// Respond to call sign
 							switch (callSign) {
 								case "AI":
-									await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider,
-										update.Message, cancellationToken);
+									// Try merging with previous thread
+									if (update.Message!.ReplyToMessage is { Text: { } replyToText, From: { } replyToFrom } replyToMessage) {
+										ThreadTracker threadTracker = _serviceProvider.GetRequiredService<ThreadTracker>();
+										threadTracker.TrackMessage(
+											messageId: replyToMessage.MessageId,
+											sender: $"{replyToFrom.FirstName}{replyToFrom.LastName?.Let(lastName => " " + lastName)}",
+											text: replyToText,
+											imageBase64: null,
+											replyToMessageId: replyToMessage.ReplyToMessage?.MessageId
+										);
+										threadTracker.TrackMessage(
+											messageId: update.Message.MessageId,
+											sender: $"{update.Message.From!.FirstName}{update.Message.From!.LastName?.Let(lastName => " " + lastName)}",
+											text: update.Message.Text!,
+											imageBase64: null,
+											replyToMessageId: update.Message.ReplyToMessage?.MessageId
+										);
+										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider,
+											message: update.Message,
+											thread: threadTracker.GetThread(
+												messageId: replyToMessage.MessageId,
+												maxLines: 20
+											).ToImmutableList(),
+											cancellationToken: cancellationToken
+										);
+									} else {
+										await OpenAI.StreamChatWithFriendlyBotAsync(botClient, _serviceProvider,
+											update.Message, cancellationToken);
+									}
 									break;
 								case "Pakde":
 									Message? sentMessage = await OpenAI.ChatWithSarcasticBotAsync(botClient,
@@ -128,17 +154,17 @@ namespace BotNet.Bot {
 
 						// Handle reply
 						if (update.Message is {
-							    MessageId: int messageId,
-							    From: { FirstName: string firstName, LastName: var lastName },
-							    Text: { Length: > 0 } text
-						    }
-						    && update.Message.Entities?.FirstOrDefault(entity =>
-							    entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is null
-						    && update.Message.ReplyToMessage is {
-							    MessageId: int replyToMessageId,
-							    From.Id: long replyToUserId
-						    }
-						    && replyToUserId == _me?.Id) {
+							MessageId: int messageId,
+							From: { FirstName: string firstName, LastName: var lastName },
+							Text: { Length: > 0 } text
+						}
+							&& update.Message.Entities?.FirstOrDefault(entity =>
+								entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is null
+							&& update.Message.ReplyToMessage is {
+								MessageId: int replyToMessageId,
+								From.Id: long replyToUserId
+							}
+							&& replyToUserId == _me?.Id) {
 							ThreadTracker threadTracker = _serviceProvider.GetRequiredService<ThreadTracker>();
 
 							// Track message
@@ -193,7 +219,7 @@ namespace BotNet.Bot {
 
 						// Handle commands
 						if (update.Message?.Entities?.FirstOrDefault(entity =>
-							    entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
+								entity is { Type: MessageEntityType.BotCommand, Offset: 0 }) is { } commandEntity) {
 							string command = update.Message.Text!.Substring(commandEntity.Offset, commandEntity.Length);
 
 							// Check if command is in /command@botname format
@@ -203,7 +229,7 @@ namespace BotNet.Bot {
 
 								// Command is not for me
 								if (!StringComparer.InvariantCultureIgnoreCase.Equals(targetUsername,
-									    (await GetMeAsync(botClient, cancellationToken)).Username)) break;
+										(await GetMeAsync(botClient, cancellationToken)).Username)) break;
 
 								// Normalize command
 								command = command[..ampersandPos];
