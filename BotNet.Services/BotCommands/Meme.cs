@@ -13,7 +13,7 @@ namespace BotNet.Services.BotCommands {
 		public static async Task HandleRamadAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities is { Length: 1 } entities
 				&& entities[0] is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
-				&& message.Text![commandLength..].Trim() is string commandArgument) {
+				&& message.Text![commandLength..].Trim() is { Length: > 0 } commandArgument) {
 				byte[] generatedImage = serviceProvider.GetRequiredService<MemeGenerator>().CaptionRamad(commandArgument);
 				using MemoryStream floppedImageStream = new(generatedImage);
 
