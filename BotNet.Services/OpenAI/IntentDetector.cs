@@ -53,7 +53,6 @@ namespace BotNet.Services.OpenAI {
 				These are available intents that one might query when they provide a prompt which contain an image:
 
 				    Vision,
-				    ImageEdit,
 					ImageVariation
 
 				Which intent is this query asking for? If none match, respond with Unknown.
@@ -74,7 +73,6 @@ namespace BotNet.Services.OpenAI {
 
 			return answer switch {
 				"Vision" => ImagePromptIntent.Vision,
-				"ImageEdit" => ImagePromptIntent.ImageEdit,
 				"ImageVariation" => ImagePromptIntent.ImageVariation,
 				"Unknown" => ImagePromptIntent.Vision,
 				_ => ImagePromptIntent.Vision
