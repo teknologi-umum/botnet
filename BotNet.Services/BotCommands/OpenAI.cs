@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,6 @@ using BotNet.Services.OpenAI.Models;
 using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Stability.Models;
-using BotNet.Services.Stability.Skills;
 using Microsoft.Extensions.DependencyInjection;
 using RG.Ninja;
 using SkiaSharp;
@@ -873,11 +871,18 @@ namespace BotNet.Services.BotCommands {
 										replyToMessageId: message.MessageId,
 										cancellationToken: cancellationToken
 									);
-								} catch (ContentFilteredException) {
+								} catch (ContentFilteredException exc) {
 									await botClient.EditMessageTextAsync(
 										chatId: busyMessage.Chat.Id,
 										messageId: busyMessage.MessageId,
-										text: "<code>Content filtered.</code>",
+										text: $"<code>{exc.Message ?? "Content filtered."}</code>",
+										parseMode: ParseMode.Html
+									);
+								} catch {
+									await botClient.EditMessageTextAsync(
+										chatId: busyMessage.Chat.Id,
+										messageId: busyMessage.MessageId,
+										text: "<code>Failed to generate image.</code>",
 										parseMode: ParseMode.Html
 									);
 								}

@@ -51,19 +51,19 @@ namespace BotNet.Services.BotCommands {
 								photo: new InputFileStream(imageStream, "art.png"),
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
-						} catch (ContentFilteredException) {
-							await botClient.SendTextMessageAsync(
+						} catch (ContentFilteredException exc) {
+							await botClient.EditMessageTextAsync(
 								chatId: message.Chat.Id,
-								text: "<code>Content filtered</code>",
+								messageId: busyMessage.MessageId,
+								text: $"<code>{exc.Message ?? "Content filtered."}</code>",
 								parseMode: ParseMode.Html,
-								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						} catch {
-							await botClient.SendTextMessageAsync(
+							await botClient.EditMessageTextAsync(
 								chatId: message.Chat.Id,
+								messageId: busyMessage.MessageId,
 								text: "<code>Could not generate art</code>",
 								parseMode: ParseMode.Html,
-								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
 						}
 					} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
