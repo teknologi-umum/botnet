@@ -33,15 +33,25 @@ namespace BotNet.Services.OpenAI {
 			long messageId,
 			int maxLines
 		) {
+			bool firstLine = true;
 			while (_memoryCache.TryGetValue<Message>(
 				key: new MessageId(messageId),
 				value: out Message? message
 			) && message != null && maxLines-- > 0) {
-				yield return (
-					Sender: message.Sender,
-					Text: message.Text,
-					ImageBase64: message.ImageBase64
-				);
+				if (firstLine) {
+					yield return (
+						Sender: message.Sender,
+						Text: message.Text,
+						ImageBase64: message.ImageBase64
+					);
+					firstLine = false;
+				} else {
+					yield return (
+						Sender: message.Sender,
+						Text: message.Text,
+						ImageBase64: null // Strip images from the rest of thread
+					);
+				}
 
 				if (message.ReplyToMessageId == null) {
 					yield break;

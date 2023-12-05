@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BotNet.Services.OpenAI.Models;
+using BotNet.Services.OpenAI;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Stability.Models;
 using BotNet.Services.ThisXDoesNotExist;
@@ -33,8 +35,8 @@ namespace BotNet.Services.BotCommands {
 						);
 
 						try {
-							byte[] image = await serviceProvider.GetRequiredService<Stability.Skills.ImageGenerationBot>().GenerateImageAsync(commandArgument, CancellationToken.None);
-							using MemoryStream imageStream = new(image);
+							byte[] generatedImage = await serviceProvider.GetRequiredService<Stability.Skills.ImageGenerationBot>().GenerateImageAsync(commandArgument, CancellationToken.None);
+							using MemoryStream imageStream = new(generatedImage);
 
 							try {
 								await botClient.DeleteMessageAsync(
@@ -46,11 +48,20 @@ namespace BotNet.Services.BotCommands {
 								throw;
 							}
 
-							await botClient.SendPhotoAsync(
+							Message generatedImageMessage = await botClient.SendPhotoAsync(
 								chatId: message.Chat.Id,
 								photo: new InputFileStream(imageStream, "art.png"),
 								replyToMessageId: message.MessageId,
 								cancellationToken: cancellationToken);
+
+							// Track generated image for continuation
+							serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
+								messageId: generatedImageMessage.MessageId,
+								sender: "AI",
+								text: null,
+								imageBase64: Convert.ToBase64String(generatedImage),
+								replyToMessageId: message.MessageId
+							);
 						} catch (ContentFilteredException exc) {
 							await botClient.EditMessageTextAsync(
 								chatId: message.Chat.Id,
