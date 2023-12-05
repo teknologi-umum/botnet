@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -61,6 +62,10 @@ namespace BotNet.Services.Stability {
 			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
 			if (!response.IsSuccessStatusCode) {
 				string error = await response.Content.ReadAsStringAsync(cancellationToken);
+				if (response.StatusCode == HttpStatusCode.BadRequest) {
+					ErrorResponse? errorResponse = JsonSerializer.Deserialize<ErrorResponse>(error, SNAKE_CASE_SERIALIZER_OPTIONS);
+					throw new ContentFilteredException(errorResponse?.Message);
+				}
 				_logger.LogError("Unable to generate image: {0}, HTTP Status Code: {1}", error, (int)response.StatusCode);
 				response.EnsureSuccessStatusCode();
 			}
