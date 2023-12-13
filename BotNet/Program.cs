@@ -4,6 +4,7 @@ using BotNet.Bot;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.BubbleWrap;
+using BotNet.Services.ChineseCalendar;
 using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Craiyon;
@@ -16,6 +17,7 @@ using BotNet.Services.OpenAI;
 using BotNet.Services.Pesto;
 using BotNet.Services.Piston;
 using BotNet.Services.Preview;
+using BotNet.Services.Primbon;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.Stability;
 using BotNet.Services.ThisXDoesNotExist;
@@ -72,6 +74,8 @@ builder.Services.AddBMKG();
 builder.Services.AddPreviewServices();
 builder.Services.AddMemeGenerator();
 builder.Services.AddBubbleWrapKeyboardGenerator();
+builder.Services.AddPrimbonScraper();
+builder.Services.AddChineseCalendarScraper();
 
 // Hosted Services
 builder.Services.Configure<BotOptions>(builder.Configuration.GetSection("BotOptions"));

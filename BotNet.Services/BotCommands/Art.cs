@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BotNet.Services.OpenAI.Models;
 using BotNet.Services.OpenAI;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Stability.Models;
