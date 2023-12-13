@@ -12,6 +12,7 @@ using BotNet.Services.OpenAI.Models;
 using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Stability.Models;
+using BotNet.Services.Stability.Skills;
 using Microsoft.Extensions.DependencyInjection;
 using RG.Ninja;
 using SkiaSharp;
@@ -809,6 +810,7 @@ namespace BotNet.Services.BotCommands {
 							cancellationToken: cancellationToken);
 						return;
 					}
+
 					await serviceProvider.GetRequiredService<VisionBot>().StreamChatAsync(
 						message: prompt,
 						imageBase64: imageBase64!,
@@ -951,12 +953,87 @@ namespace BotNet.Services.BotCommands {
 				).ValidateActionRate(message.Chat.Id, message.From!.Id);
 
 				if (thread.FirstOrDefault().ImageBase64 is { } imageBase64) {
-					await serviceProvider.GetRequiredService<VisionBot>().StreamChatAsync(
+					IntentDetector intentDetector = serviceProvider.GetRequiredService<IntentDetector>();
+					ImagePromptIntent imagePromptIntent = await intentDetector.DetectImagePromptIntentAsync(
 						message: message.Text!,
-						imageBase64: imageBase64,
-						chatId: message.Chat.Id,
-						replyToMessageId: message.MessageId
+						cancellationToken: cancellationToken
 					);
+
+					switch (imagePromptIntent) {
+						case ImagePromptIntent.ImageVariation:
+							IMAGE_GENERATION_PER_USER_RATE_LIMITER.ValidateActionRate(
+								chatId: message.Chat.Id,
+								userId: message.From.Id
+							);
+							IMAGE_GENERATION_PER_CHAT_RATE_LIMITER.ValidateActionRate(
+								chatId: message.Chat.Id,
+								userId: message.From.Id
+							);
+							Message busyMessage = await botClient.SendTextMessageAsync(
+								chatId: message.Chat.Id,
+								text: "Modifying image… ⏳",
+								parseMode: ParseMode.Markdown,
+								replyToMessageId: message.MessageId,
+								cancellationToken: cancellationToken
+							);
+							try {
+								byte[] promptImage = Convert.FromBase64String(imageBase64);
+								byte[] modifiedImage = await serviceProvider.GetRequiredService<ImageVariationBot>().ModifyImageAsync(
+									image: promptImage,
+									prompt: message.Text!,
+									cancellationToken
+								);
+								using MemoryStream modifiedImageStream = new(modifiedImage);
+								try {
+									await botClient.DeleteMessageAsync(
+										chatId: busyMessage.Chat.Id,
+										messageId: busyMessage.MessageId,
+										cancellationToken: cancellationToken
+									);
+								} catch (OperationCanceledException) {
+									throw;
+								}
+
+								Message modifiedImageMessage = await botClient.SendPhotoAsync(
+									chatId: message.Chat.Id,
+									photo: new InputFileStream(modifiedImageStream, "art.png"),
+									replyToMessageId: message.MessageId,
+									cancellationToken: cancellationToken
+								);
+
+								// Track generated image for continuation
+								serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
+									messageId: modifiedImageMessage.MessageId,
+									sender: "AI",
+									text: null,
+									imageBase64: Convert.ToBase64String(modifiedImage),
+									replyToMessageId: message.MessageId
+								);
+							} catch (ContentFilteredException exc) {
+								await botClient.EditMessageTextAsync(
+									chatId: busyMessage.Chat.Id,
+									messageId: busyMessage.MessageId,
+									text: $"<code>{exc.Message ?? "Content filtered."}</code>",
+									parseMode: ParseMode.Html
+								);
+							} catch {
+								await botClient.EditMessageTextAsync(
+									chatId: busyMessage.Chat.Id,
+									messageId: busyMessage.MessageId,
+									text: "<code>Failed to modify image.</code>",
+									parseMode: ParseMode.Html
+								);
+							}
+							break;
+						case ImagePromptIntent.Vision:
+							await serviceProvider.GetRequiredService<VisionBot>().StreamChatAsync(
+								message: message.Text!,
+								imageBase64: imageBase64,
+								chatId: message.Chat.Id,
+								replyToMessageId: message.MessageId
+							);
+							break;
+					}
 				} else {
 					await serviceProvider.GetRequiredService<FriendlyBot>().StreamChatAsync(
 						message: message.Text!,

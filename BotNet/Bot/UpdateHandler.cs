@@ -394,6 +394,10 @@ namespace BotNet.Bot {
 									await Meme.HandleRamadAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
 									break;
+								case "/primbon":
+									await Primbon.GetKamarokamAsync(botClient, _serviceProvider, update.Message,
+										cancellationToken);
+									break;
 							}
 						}
 
