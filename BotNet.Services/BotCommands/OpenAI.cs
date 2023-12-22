@@ -1080,9 +1080,9 @@ namespace BotNet.Services.BotCommands {
 				cancellationToken: cancellationToken);
 			byte[] originalImage = originalImageStream.ToArray();
 
-			// Limit input image to 200KB
-			if (originalImage.Length > 200 * 1024) {
-				return (null, "Image larger than 200KB");
+			// Limit input image to 300KB
+			if (originalImage.Length > 300 * 1024) {
+				return (null, "Image larger than 300KB");
 			}
 
 			// Decode image
