@@ -9,7 +9,8 @@ namespace BotNet.Commands.Telegram {
 			string senderName,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId
+			int? replyToMessageId,
+			MessageBase? replyToMessage
 		) : base(
 			messageId: messageId,
 			chatId: chatId,
@@ -17,7 +18,8 @@ namespace BotNet.Commands.Telegram {
 			senderName: senderName,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId
+			replyToMessageId: replyToMessageId,
+			replyToMessage: replyToMessage
 		) { }
 
 		public static NormalMessage FromMessage(Message message) {
@@ -41,7 +43,10 @@ namespace BotNet.Commands.Telegram {
 				senderName: senderFullName,
 				text: message.Text ?? "",
 				imageFileId: message.Photo?.LastOrDefault()?.FileId ?? message.Sticker?.FileId,
-				replyToMessageId: message.ReplyToMessage?.MessageId
+				replyToMessageId: message.ReplyToMessage?.MessageId,
+				replyToMessage: message.ReplyToMessage is null
+					? null
+					: MessageBase.FromMessage(message.ReplyToMessage)
 			);
 		}
 	}

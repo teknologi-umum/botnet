@@ -10,6 +10,7 @@ namespace BotNet.Commands.Telegram {
 		public string Text { get; private set; }
 		public string? ImageFileId { get; private set; }
 		public int? ReplyToMessageId { get; private set; }
+		public MessageBase? ReplyToMessage { get; private set; }
 
 		protected MessageBase(
 			int messageId,
@@ -18,7 +19,8 @@ namespace BotNet.Commands.Telegram {
 			string senderName,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId
+			int? replyToMessageId,
+			MessageBase? replyToMessage
 		) {
 			MessageId = messageId;
 			ChatId = chatId;
@@ -27,6 +29,7 @@ namespace BotNet.Commands.Telegram {
 			Text = text;
 			ImageFileId = imageFileId;
 			ReplyToMessageId = replyToMessageId;
+			ReplyToMessage = replyToMessage;
 		}
 
 		public static MessageBase FromMessage(Message message) {
@@ -36,7 +39,14 @@ namespace BotNet.Commands.Telegram {
 				Offset: 0,
 				Length: > 1
 			}) {
-				return SlashCommand.FromMessage(message);
+				if (!SlashCommand.TryCreate(
+					message: message,
+					slashCommand: out SlashCommand? slashCommand
+				)) {
+					throw new ArgumentException("Could not parse message into a slash command.", nameof(message));
+				}
+
+				return slashCommand;
 			}
 
 			// TODO: handle AI calls

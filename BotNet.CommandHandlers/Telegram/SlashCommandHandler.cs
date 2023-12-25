@@ -24,18 +24,14 @@ namespace BotNet.CommandHandlers.Telegram {
 				case "/flap":
 					await _commandQueue.DispatchAsync(FlipFlopCommand.FromSlashCommand(
 						slashCommand: command,
-						repliedToMessage: command.ReplyToMessageId.HasValue
-							? _telegramMessageCache.GetOrDefault(command.ReplyToMessageId.Value, command.ChatId)
-							: null
+						repliedToMessage: command.ReplyToMessage
 					));
 					break;
 				case "/evaljs":
 				case "/evalcs":
 					await _commandQueue.DispatchAsync(EvalCommand.FromSlashCommand(
 						slashCommand: command,
-						repliedToMessage: command.ReplyToMessageId.HasValue
-							? _telegramMessageCache.GetOrDefault(command.ReplyToMessageId.Value, command.ChatId)
-							: null
+						repliedToMessage: command.ReplyToMessage
 					));
 					break;
 			}

@@ -254,14 +254,6 @@ namespace BotNet.Bot {
 								case "/fuck":
 									await Fuck.HandleFuckAsync(botClient, update.Message, cancellationToken);
 									break;
-								//case "/evaljs":
-								//	await Eval.EvalJSAsync(botClient, _serviceProvider, update.Message,
-								//		cancellationToken);
-								//	break;
-								//case "/evalcs":
-								//	await Eval.EvalCSAsync(botClient, _serviceProvider, update.Message,
-								//		cancellationToken);
-								//	break;
 								case "/c":
 								case "/clojure":
 								case "/crystal":

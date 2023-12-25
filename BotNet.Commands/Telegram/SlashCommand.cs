@@ -14,6 +14,7 @@ namespace BotNet.Commands.Telegram {
 			string text,
 			string? imageFileId,
 			int? replyToMessageId,
+			MessageBase? replyToMessage,
 			string command
 		) : base(
 			messageId: messageId,
@@ -22,7 +23,8 @@ namespace BotNet.Commands.Telegram {
 			senderName: senderName,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId
+			replyToMessageId: replyToMessageId,
+			replyToMessage: replyToMessage
 		) {
 			ArgumentNullException.ThrowIfNull(command);
 
@@ -81,6 +83,9 @@ namespace BotNet.Commands.Telegram {
 				text: text[commandLength..].Trim(),
 				imageFileId: message.Photo?.LastOrDefault()?.FileId,
 				replyToMessageId: message.ReplyToMessage?.MessageId,
+				replyToMessage: message.ReplyToMessage is null
+					? null
+					: MessageBase.FromMessage(message.ReplyToMessage),
 				command: text[..commandLength]
 			);
 			return true;
