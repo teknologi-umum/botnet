@@ -5,6 +5,9 @@ using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BotNet.Commands;
+using BotNet.Commands.FlipFlop;
+using BotNet.Commands.Telegram;
 using BotNet.Services.BotCommands;
 using BotNet.Services.BubbleWrap;
 using BotNet.Services.OpenAI;
@@ -237,16 +240,19 @@ namespace BotNet.Bot {
 
 							switch (command.ToLowerInvariant()) {
 								case "/flip":
-									await FlipFlop.HandleFlipAsync(botClient, update.Message, cancellationToken);
-									break;
 								case "/flop":
-									await FlipFlop.HandleFlopAsync(botClient, update.Message, cancellationToken);
-									break;
 								case "/flap":
-									await FlipFlop.HandleFlapAsync(botClient, update.Message, cancellationToken);
-									break;
 								case "/flep":
-									await FlipFlop.HandleFlepAsync(botClient, update.Message, cancellationToken);
+									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
+										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
+											command: FlipFlopCommand.FromSlashCommand(
+												slashCommand: slashCommand,
+												repliedToMessage: update.Message.ReplyToMessage is null
+													? null
+													: MessageBase.FromMessage(update.Message.ReplyToMessage)
+											)
+										);
+									}
 									break;
 								case "/fuck":
 									await Fuck.HandleFuckAsync(botClient, update.Message, cancellationToken);

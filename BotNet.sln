@@ -30,6 +30,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotNet.Tests", "BotNet.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pehape", "pehape\csharp\Pehape\Pehape.csproj", "{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotNet.Commands", "BotNet.Commands\BotNet.Commands.csproj", "{6DDE5931-BC86-4A07-99EC-91AC29054524}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotNet.CommandHandlers", "BotNet.CommandHandlers\BotNet.CommandHandlers.csproj", "{11AFA72D-7F51-4D24-8F8F-E866202CE43D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +56,14 @@ Global
 		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D9A1E2F-CB5C-4DFF-BFCC-93740FE99E95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DDE5931-BC86-4A07-99EC-91AC29054524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DDE5931-BC86-4A07-99EC-91AC29054524}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DDE5931-BC86-4A07-99EC-91AC29054524}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DDE5931-BC86-4A07-99EC-91AC29054524}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11AFA72D-7F51-4D24-8F8F-E866202CE43D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11AFA72D-7F51-4D24-8F8F-E866202CE43D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11AFA72D-7F51-4D24-8F8F-E866202CE43D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11AFA72D-7F51-4D24-8F8F-E866202CE43D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

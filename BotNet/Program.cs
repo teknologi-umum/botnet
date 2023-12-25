@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Threading;
 using BotNet.Bot;
+using BotNet.CommandHandlers;
+using BotNet.CommandHandlers.Telegram;
+using BotNet.Commands;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.BubbleWrap;
@@ -76,11 +79,22 @@ builder.Services.AddMemeGenerator();
 builder.Services.AddBubbleWrapKeyboardGenerator();
 builder.Services.AddPrimbonScraper();
 builder.Services.AddChineseCalendarScraper();
+builder.Services.AddCommandHandlers();
+
+// MediatR
+builder.Services.AddMediatR(config => {
+	config.Lifetime = ServiceLifetime.Transient;
+	config.AutoRegisterRequestProcessors = true;
+	config.RegisterServicesFromAssemblies(
+		typeof(SlashCommandHandler).Assembly
+	);
+});
 
 // Hosted Services
 builder.Services.Configure<BotOptions>(builder.Configuration.GetSection("BotOptions"));
 builder.Services.AddSingleton<BotService>();
 builder.Services.AddHostedService<BotService>();
+builder.Services.AddHostedService<CommandConsumer>();
 
 // Telegram Bot
 builder.Services.AddTelegramBot(botToken: builder.Configuration["BotOptions:AccessToken"]!);

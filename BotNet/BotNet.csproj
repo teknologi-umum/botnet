@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BotNet.CommandHandlers\BotNet.CommandHandlers.csproj" />
     <ProjectReference Include="..\BotNet.Services\BotNet.Services.csproj" />
   </ItemGroup>
 
