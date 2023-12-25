@@ -1,6 +1,4 @@
-﻿using Telegram.Bot.Types;
-
-namespace BotNet.Commands.Telegram {
+﻿namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record NormalMessage : MessageBase {
 		private NormalMessage(
 			int messageId,
@@ -22,7 +20,7 @@ namespace BotNet.Commands.Telegram {
 			replyToMessage: replyToMessage
 		) { }
 
-		public static new NormalMessage FromMessage(Message message) {
+		public static new NormalMessage FromMessage(Telegram.Bot.Types.Message message) {
 			// Sender must not be null
 			if (message.From is not {
 				Id: long senderId,

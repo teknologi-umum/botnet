@@ -1,11 +1,11 @@
 ﻿using BotNet.CommandHandlers.Eval;
 using BotNet.CommandHandlers.FlipFlop;
-using BotNet.CommandHandlers.Telegram;
 using BotNet.Commands;
 using BotNet.Commands.Eval;
 using BotNet.Commands.FlipFlop;
-using BotNet.Commands.Telegram;
 using Microsoft.Extensions.DependencyInjection;
+using BotNet.Commands.BotUpdate.Message;
+using BotNet.CommandHandlers.BotUpdate.Message;
 
 namespace BotNet.CommandHandlers {
 	public static class _ {

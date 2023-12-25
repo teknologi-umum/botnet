@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace BotNet.Commands.Telegram {
+namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record SlashCommand : MessageBase, ICommand {
 		public string Command { get; }
 
@@ -27,20 +26,14 @@ namespace BotNet.Commands.Telegram {
 			replyToMessage: replyToMessage
 		) {
 			ArgumentNullException.ThrowIfNull(command);
-
-			if (!command.StartsWith('/')) {
-				throw new ArgumentException("Command must start with a slash.", nameof(command));
-			}
-
-			if (command.Length < 2) {
-				throw new ArgumentException("Command must have a name.", nameof(command));
-			}
+			if (!command.StartsWith('/')) throw new ArgumentException("Command must start with a slash.", nameof(command));
+			if (command.Length < 2) throw new ArgumentException("Command must have a name.", nameof(command));
 
 			Command = command;
 		}
 
 		public static bool TryCreate(
-			Message message,
+			Telegram.Bot.Types.Message message,
 			[NotNullWhen(true)] out SlashCommand? slashCommand
 		) {
 			// Message must start with a slash command
@@ -85,7 +78,7 @@ namespace BotNet.Commands.Telegram {
 				replyToMessageId: message.ReplyToMessage?.MessageId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
-					: MessageBase.FromMessage(message.ReplyToMessage),
+					: FromMessage(message.ReplyToMessage),
 				command: text[..commandLength]
 			);
 			return true;

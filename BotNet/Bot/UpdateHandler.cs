@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Commands;
 using BotNet.Commands.FlipFlop;
-using BotNet.Commands.Telegram;
 using BotNet.Services.BotCommands;
 using BotNet.Services.BubbleWrap;
 using BotNet.Services.OpenAI;
@@ -22,6 +21,9 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.ReplyMarkups;
+using BotNet.Commands.BotUpdate.Message;
+using MediatR;
+using BotNet.Commands.BotUpdate.CallbackQuery;
 
 namespace BotNet.Bot {
 	public class UpdateHandler(
@@ -271,20 +273,12 @@ namespace BotNet.Bot {
 								case "/js":
 								case "/ts":
 								case "/vb":
+								case "/pop":
 									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
 										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
 											command: slashCommand
 										);
 									}
-									break;
-								case "/pop":
-									await botClient.SendTextMessageAsync(
-										chatId: update.Message.Chat.Id,
-										text: "Here's a bubble wrap. Enjoy!",
-										parseMode: ParseMode.Html,
-										replyMarkup: BubbleWrapKeyboardGenerator.EMPTY_KEYBOARD,
-										cancellationToken: cancellationToken
-									);
 									break;
 								case "/explain":
 									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en",
@@ -379,19 +373,11 @@ namespace BotNet.Bot {
 
 						break;
 					case UpdateType.CallbackQuery:
-						BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator =
-							_serviceProvider.GetRequiredService<BubbleWrapKeyboardGenerator>();
-						InlineKeyboardMarkup poppedKeyboardMarkup = bubbleWrapKeyboardGenerator.HandleCallback(
-							chatId: update.CallbackQuery!.Message!.Chat.Id,
-							messageId: update.CallbackQuery.Message.MessageId,
-							callbackData: update.CallbackQuery.Data!
-						);
-						await botClient.EditMessageReplyMarkupAsync(
-							chatId: update.CallbackQuery!.Message!.Chat.Id,
-							messageId: update.CallbackQuery.Message.MessageId,
-							replyMarkup: poppedKeyboardMarkup,
-							cancellationToken: cancellationToken
-						);
+						await _serviceProvider
+							.GetRequiredService<IMediator>()
+							.Send(
+								new CallbackQueryUpdate(update.CallbackQuery!)
+							);
 						break;
 					default:
 						break;

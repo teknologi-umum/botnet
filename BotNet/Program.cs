@@ -2,7 +2,7 @@
 using System.Threading;
 using BotNet.Bot;
 using BotNet.CommandHandlers;
-using BotNet.CommandHandlers.Telegram;
+using BotNet.CommandHandlers.BotUpdate.Message;
 using BotNet.Commands;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;

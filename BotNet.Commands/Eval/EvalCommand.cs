@@ -1,6 +1,6 @@
 ﻿using BotNet.Commands.Common;
-using BotNet.Commands.Telegram;
 using Telegram.Bot.Types.Enums;
+using BotNet.Commands.BotUpdate.Message;
 
 namespace BotNet.Commands.Eval {
 	public sealed record EvalCommand : ICommand {

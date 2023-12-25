@@ -1,13 +1,14 @@
 ﻿using BotNet.Commands;
+using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;
 using BotNet.Commands.Eval;
 using BotNet.Commands.Exec;
 using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Fuck;
-using BotNet.Commands.Telegram;
+using BotNet.Commands.Pop;
 using Telegram.Bot;
 
-namespace BotNet.CommandHandlers.Telegram {
+namespace BotNet.CommandHandlers.BotUpdate.Message {
 	public sealed class SlashCommandHandler(
 		ITelegramBotClient telegramBotClient,
 		ICommandQueue commandQueue,
@@ -59,6 +60,9 @@ namespace BotNet.CommandHandlers.Telegram {
 					case "/ts":
 					case "/vb":
 						await _commandQueue.DispatchAsync(ExecCommand.FromSlashCommand(command));
+						break;
+					case "/pop":
+						await _commandQueue.DispatchAsync(PopCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {

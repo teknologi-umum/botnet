@@ -1,5 +1,5 @@
 ﻿using BotNet.Commands;
-using BotNet.Commands.Telegram;
+using BotNet.Commands.BotUpdate.Message;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace BotNet.CommandHandlers {

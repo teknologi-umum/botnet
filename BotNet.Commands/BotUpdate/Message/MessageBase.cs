@@ -1,7 +1,6 @@
-﻿using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+﻿using Telegram.Bot.Types.Enums;
 
-namespace BotNet.Commands.Telegram {
+namespace BotNet.Commands.BotUpdate.Message {
 	public abstract record MessageBase {
 		public int MessageId { get; private set; }
 		public long ChatId { get; private set; }
@@ -32,7 +31,7 @@ namespace BotNet.Commands.Telegram {
 			ReplyToMessage = replyToMessage;
 		}
 
-		public static MessageBase FromMessage(Message message) {
+		public static MessageBase FromMessage(Telegram.Bot.Types.Message message) {
 			// Handle slash command
 			if (message.Entities?.FirstOrDefault() is {
 				Type: MessageEntityType.BotCommand,

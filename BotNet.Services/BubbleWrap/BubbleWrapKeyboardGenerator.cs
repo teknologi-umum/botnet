@@ -9,9 +9,9 @@ namespace BotNet.Services.BubbleWrap {
 		public static readonly InlineKeyboardMarkup EMPTY_KEYBOARD = BubbleWrapSheet.EmptySheet.ToKeyboardMarkup();
 		private readonly IMemoryCache _memoryCache = memoryCache;
 
-		public InlineKeyboardMarkup HandleCallback(long chatId, int messageId, string callbackData) {
+		public InlineKeyboardMarkup HandleCallback(long chatId, int messageId, string sheetData) {
 			BubbleWrapId id = new(chatId, messageId);
-			BubbleWrapSheet expectedSheet = BubbleWrapSheet.ParseCallbackData(callbackData);
+			BubbleWrapSheet expectedSheet = BubbleWrapSheet.ParseSheetData(sheetData);
 			if (_memoryCache.TryGetValue(id, out BubbleWrapSheet? cachedSheet)) {
 				cachedSheet = cachedSheet!.CombineWith(expectedSheet);
 				_memoryCache.Set(
