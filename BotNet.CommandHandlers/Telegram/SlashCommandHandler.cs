@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using BotNet.Commands.Eval;
 using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Telegram;
 
@@ -22,6 +23,15 @@ namespace BotNet.CommandHandlers.Telegram {
 				case "/flep":
 				case "/flap":
 					await _commandQueue.DispatchAsync(FlipFlopCommand.FromSlashCommand(
+						slashCommand: command,
+						repliedToMessage: command.ReplyToMessageId.HasValue
+							? _telegramMessageCache.GetOrDefault(command.ReplyToMessageId.Value, command.ChatId)
+							: null
+					));
+					break;
+				case "/evaljs":
+				case "/evalcs":
+					await _commandQueue.DispatchAsync(EvalCommand.FromSlashCommand(
 						slashCommand: command,
 						repliedToMessage: command.ReplyToMessageId.HasValue
 							? _telegramMessageCache.GetOrDefault(command.ReplyToMessageId.Value, command.ChatId)

@@ -243,28 +243,25 @@ namespace BotNet.Bot {
 								case "/flop":
 								case "/flap":
 								case "/flep":
+								case "/evaljs":
+								case "/evalcs":
 									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
 										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
-											command: FlipFlopCommand.FromSlashCommand(
-												slashCommand: slashCommand,
-												repliedToMessage: update.Message.ReplyToMessage is null
-													? null
-													: MessageBase.FromMessage(update.Message.ReplyToMessage)
-											)
+											command: slashCommand
 										);
 									}
 									break;
 								case "/fuck":
 									await Fuck.HandleFuckAsync(botClient, update.Message, cancellationToken);
 									break;
-								case "/evaljs":
-									await Eval.EvalJSAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
-								case "/evalcs":
-									await Eval.EvalCSAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
+								//case "/evaljs":
+								//	await Eval.EvalJSAsync(botClient, _serviceProvider, update.Message,
+								//		cancellationToken);
+								//	break;
+								//case "/evalcs":
+								//	await Eval.EvalCSAsync(botClient, _serviceProvider, update.Message,
+								//		cancellationToken);
+								//	break;
 								case "/c":
 								case "/clojure":
 								case "/crystal":
