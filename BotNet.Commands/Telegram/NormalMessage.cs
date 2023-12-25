@@ -22,7 +22,7 @@ namespace BotNet.Commands.Telegram {
 			replyToMessage: replyToMessage
 		) { }
 
-		public static NormalMessage FromMessage(Message message) {
+		public static new NormalMessage FromMessage(Message message) {
 			// Sender must not be null
 			if (message.From is not {
 				Id: long senderId,

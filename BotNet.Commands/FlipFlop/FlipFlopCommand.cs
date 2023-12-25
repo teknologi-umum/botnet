@@ -21,7 +21,7 @@ namespace BotNet.Commands.FlipFlop {
 			ImageFileId = imageFileId;
 		}
 
-		public static FlipFlopCommand FromSlashCommand(SlashCommand slashCommand, MessageBase? repliedToMessage) {
+		public static FlipFlopCommand FromSlashCommand(SlashCommand slashCommand) {
 			string commandName = slashCommand.Command switch {
 				"/flip" => "flip",
 				"/flop" => "flop",
@@ -31,7 +31,7 @@ namespace BotNet.Commands.FlipFlop {
 			};
 
 			// Must reply to a message
-			if (slashCommand.ReplyToMessageId == null || repliedToMessage == null) {
+			if (slashCommand.ReplyToMessage == null) {
 				throw new UsageException(
 					message: $"Apa yang mau di{commandName}? Untuk nge{commandName} gambar, reply `{slashCommand.Command}` ke pesan yang ada gambarnya\\.",
 					parseMode: ParseMode.MarkdownV2,
@@ -39,25 +39,20 @@ namespace BotNet.Commands.FlipFlop {
 				);
 			}
 
-			// Must reply to repliedToMessage
-			if (slashCommand.ReplyToMessageId != repliedToMessage.MessageId) {
-				throw new ArgumentException("Reply to message ID must match replied to message ID.", nameof(repliedToMessage));
-			}
-
 			// Must reply to a message with a photo or sticker
-			if (repliedToMessage.ImageFileId == null) {
+			if (slashCommand.ReplyToMessage.ImageFileId == null) {
 				throw new UsageException(
 					message: $"Pesan ini tidak ada gambarnya\\. Untuk nge{commandName} gambar, reply `{slashCommand.Command}` ke pesan yang ada gambarnya\\.",
 					parseMode: ParseMode.MarkdownV2,
-					commandMessageId: repliedToMessage.MessageId
+					commandMessageId: slashCommand.ReplyToMessage.MessageId
 				);
 			}
 
 			return new(
 				command: slashCommand.Command,
 				chatId: slashCommand.ChatId,
-				imageMessageId: repliedToMessage.MessageId,
-				imageFileId: repliedToMessage.ImageFileId
+				imageMessageId: slashCommand.ReplyToMessage.MessageId,
+				imageFileId: slashCommand.ReplyToMessage.ImageFileId
 			);
 		}
 	}

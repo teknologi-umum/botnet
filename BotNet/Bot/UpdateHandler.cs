@@ -245,15 +245,7 @@ namespace BotNet.Bot {
 								case "/flep":
 								case "/evaljs":
 								case "/evalcs":
-									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
-										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
-											command: slashCommand
-										);
-									}
-									break;
 								case "/fuck":
-									await Fuck.HandleFuckAsync(botClient, update.Message, cancellationToken);
-									break;
 								case "/c":
 								case "/clojure":
 								case "/crystal":
@@ -271,41 +263,19 @@ namespace BotNet.Bot {
 								case "/scala":
 								case "/swift":
 								case "/julia":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message,
-										command.ToLowerInvariant()[1..], command.ToLowerInvariant()[1..],
-										cancellationToken);
-									break;
 								case "/sqlite3":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "SQLite3",
-										"sqlite3", cancellationToken);
-									break;
 								case "/commonlisp":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "CommonLisp",
-										"cl", cancellationToken);
-									break;
 								case "/cpp":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "C++", "cpp",
-										cancellationToken);
-									break;
 								case "/cs":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "csharp.net",
-										"csharp", cancellationToken);
-									break;
 								case "/fs":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "fsharp.net",
-										"fsharp", cancellationToken);
-									break;
 								case "/js":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "JavaScript",
-										"js", cancellationToken);
-									break;
 								case "/ts":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "TypeScript",
-										"ts", cancellationToken);
-									break;
 								case "/vb":
-									await Exec.ExecAsync(botClient, _serviceProvider, update.Message, "basic.net",
-										"vbnet", cancellationToken);
+									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
+										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
+											command: slashCommand
+										);
+									}
 									break;
 								case "/pop":
 									await botClient.SendTextMessageAsync(

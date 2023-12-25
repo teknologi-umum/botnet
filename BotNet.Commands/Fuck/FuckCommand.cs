@@ -2,31 +2,26 @@
 using BotNet.Commands.Telegram;
 using Telegram.Bot.Types.Enums;
 
-namespace BotNet.Commands.Eval {
-	public sealed record EvalCommand : ICommand {
-		public string Command { get; }
+namespace BotNet.Commands.Fuck {
+	public sealed record FuckCommand : ICommand {
 		public string Code { get; }
 		public long ChatId { get; }
 		public int CodeMessageId { get; }
 
-		private EvalCommand(
-			string command,
+		private FuckCommand(
 			string code,
 			long chatId,
 			int codeMessageId
 		) {
-			Command = command;
 			Code = code;
 			ChatId = chatId;
 			CodeMessageId = codeMessageId;
 		}
 
-		public static EvalCommand FromSlashCommand(SlashCommand slashCommand) {
-			string language = slashCommand.Command switch {
-				"/evaljs" => "javascript",
-				"/evalcs" => "C\\#", // C#, but escaped for Markdown
-				_ => throw new ArgumentException("Command must be /evaljs or /evalcs.", nameof(slashCommand))
-			};
+		public static FuckCommand FromSlashCommand(SlashCommand slashCommand) {
+			if (slashCommand.Command != "/fuck") {
+				throw new ArgumentException("Command must be /fuck.", nameof(slashCommand));
+			}
 
 			string code;
 			int codeMessageId;
@@ -43,14 +38,13 @@ namespace BotNet.Commands.Eval {
 			// Must have code
 			if (string.IsNullOrWhiteSpace(code)) {
 				throw new UsageException(
-					message: $"Kode tidak boleh kosong\\. Untuk mengevaluasi {language}, silakan ketik `{slashCommand.Command}` diikuti ekspresi {language}, atau reply `{slashCommand.Command}` ke pesan yang ada kodenya\\.",
+					message: "Kode tidak boleh kosong\\. Untuk menjalankan program brainfuck, silakan ketik `/fuck` diikuti kode program, atau reply `/fuck` ke pesan yang ada kodenya\\.",
 					parseMode: ParseMode.MarkdownV2,
 					commandMessageId: codeMessageId
 				);
 			}
 
 			return new(
-				command: slashCommand.Command,
 				code: code,
 				chatId: slashCommand.ChatId,
 				codeMessageId: codeMessageId
