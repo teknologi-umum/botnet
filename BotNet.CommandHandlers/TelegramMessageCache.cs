@@ -9,7 +9,7 @@ namespace BotNet.CommandHandlers {
 		private static readonly TimeSpan CACHE_TTL = TimeSpan.FromHours(1);
 		private readonly IMemoryCache _memoryCache = memoryCache;
 
-		public void Set(MessageBase message) {
+		public void Add(MessageBase message) {
 			_memoryCache.Set(
 				key: new Key(message.MessageId, message.ChatId),
 				value: message,

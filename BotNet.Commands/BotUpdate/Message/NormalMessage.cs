@@ -20,7 +20,7 @@
 			replyToMessage: replyToMessage
 		) { }
 
-		public static new NormalMessage FromMessage(Telegram.Bot.Types.Message message) {
+		public static NormalMessage FromMessage(Telegram.Bot.Types.Message message) {
 			// Sender must not be null
 			if (message.From is not {
 				Id: long senderId,
@@ -44,7 +44,7 @@
 				replyToMessageId: message.ReplyToMessage?.MessageId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
-					: MessageBase.FromMessage(message.ReplyToMessage)
+					: NormalMessage.FromMessage(message.ReplyToMessage)
 			);
 		}
 	}

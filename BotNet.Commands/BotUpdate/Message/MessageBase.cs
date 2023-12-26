@@ -30,28 +30,5 @@ namespace BotNet.Commands.BotUpdate.Message {
 			ReplyToMessageId = replyToMessageId;
 			ReplyToMessage = replyToMessage;
 		}
-
-		public static MessageBase FromMessage(Telegram.Bot.Types.Message message) {
-			// Handle slash command
-			if (message.Entities?.FirstOrDefault() is {
-				Type: MessageEntityType.BotCommand,
-				Offset: 0,
-				Length: > 1
-			}) {
-				if (!SlashCommand.TryCreate(
-					message: message,
-					slashCommand: out SlashCommand? slashCommand
-				)) {
-					throw new ArgumentException("Could not parse message into a slash command.", nameof(message));
-				}
-
-				return slashCommand;
-			}
-
-			// TODO: handle AI calls
-			// TODO: handle AI thread replies
-
-			return NormalMessage.FromMessage(message);
-		}
 	}
 }

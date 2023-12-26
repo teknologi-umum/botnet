@@ -2,7 +2,7 @@
 
 namespace BotNet.Commands {
 	public interface ITelegramMessageCache {
-		void Set(MessageBase message);
+		void Add(MessageBase message);
 		MessageBase? GetOrDefault(int messageId, long chatId);
 		IEnumerable<MessageBase> GetThread(int messageId, long chatId);
 	}
