@@ -56,5 +56,37 @@ namespace BotNet.Commands.AI.OpenAI {
 				thread: thread
 			);
 		}
+
+		public static OpenAITextPrompt FromAIFollowUpMessage(AIFollowUpMessage aiFollowUpMessage, IEnumerable<MessageBase> thread) {
+			// Call sign must be AI, Bot, or GPT
+			if (aiFollowUpMessage.CallSign is not "AI" and not "Bot" and not "GPT") {
+				throw new ArgumentException("Call sign must be AI, Bot, or GPT.", nameof(aiFollowUpMessage));
+			}
+
+			// Prompt must be non-empty
+			if (string.IsNullOrWhiteSpace(aiFollowUpMessage.Text)) {
+				throw new ArgumentException("Prompt must be non-empty.", nameof(aiFollowUpMessage));
+			}
+
+			// Non-empty thread must begin with reply to message
+			if (thread.FirstOrDefault() is {
+				MessageId: { } firstMessageId,
+				ChatId: { } firstChatId
+			}) {
+				if (firstMessageId != aiFollowUpMessage.ReplyToMessageId
+					|| firstChatId != aiFollowUpMessage.ChatId) {
+					throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
+				}
+			}
+
+			return new(
+				callSign: aiFollowUpMessage.CallSign,
+				prompt: aiFollowUpMessage.Text,
+				promptMessageId: aiFollowUpMessage.MessageId,
+				chatId: aiFollowUpMessage.ChatId,
+				senderId: aiFollowUpMessage.SenderId,
+				thread: thread
+			);
+		}
 	}
 }

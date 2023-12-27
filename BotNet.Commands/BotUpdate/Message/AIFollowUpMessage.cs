@@ -1,19 +1,10 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace BotNet.Commands.BotUpdate.Message {
-	public sealed record AICallCommand : MessageBase, ICommand {
-		public static readonly ImmutableHashSet<string> CALL_SIGNS = [
-			"AI",
-			"Bot",
-			"GPT",
-			"Gemini",
-			"Pakde"
-		];
-
+	public sealed record AIFollowUpMessage : MessageBase, ICommand {
 		public string CallSign { get; }
 
-		private AICallCommand(
+		public AIFollowUpMessage(
 			int messageId,
 			long chatId,
 			long senderId,
@@ -38,17 +29,19 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
-			[NotNullWhen(true)] out AICallCommand? aiCallCommand
+			IEnumerable<MessageBase> thread,
+			[NotNullWhen(true)] out AIFollowUpMessage? aiFollowUpMessage
 		) {
 			// Message must contain text or caption
 			if ((message.Text ?? message.Caption) is not { } text) {
-				aiCallCommand = null;
+				aiFollowUpMessage = null;
 				return false;
 			}
 
-			// Message must start with call sign
-			if (CALL_SIGNS.FirstOrDefault(callSign => text.StartsWith($"{callSign},", StringComparison.OrdinalIgnoreCase)) is not { } callSign) {
-				aiCallCommand = null;
+			// Must reply to AI response message
+			if (thread.FirstOrDefault() is not AIResponseMessage { CallSign: string callSign } aiResponseMessage
+				|| aiResponseMessage.MessageId != message.ReplyToMessage?.MessageId) {
+				aiFollowUpMessage = null;
 				return false;
 			}
 
@@ -59,7 +52,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				FirstName: string senderFirstName,
 				LastName: var senderLastName
 			}) {
-				aiCallCommand = null;
+				aiFollowUpMessage = null;
 				return false;
 			}
 
@@ -67,18 +60,15 @@ namespace BotNet.Commands.BotUpdate.Message {
 				? senderFirstName
 				: $"{senderFirstName} {senderLastName}";
 
-			aiCallCommand = new(
+			aiFollowUpMessage = new(
 				messageId: message.MessageId,
 				chatId: message.Chat.Id,
 				senderId: senderId,
 				senderName: senderFullName,
-				text: text[(callSign.Length + 1)..].Trim(),
-				imageFileId: message.Photo?.LastOrDefault()?.FileId
-					?? message.ReplyToMessage?.Sticker?.FileId,
+				text: text,
+				imageFileId: message.Photo?.FirstOrDefault()?.FileId,
 				replyToMessageId: message.ReplyToMessage?.MessageId,
-				replyToMessage: message.ReplyToMessage is null
-					? null
-					: NormalMessage.FromMessage(message.ReplyToMessage),
+				replyToMessage: aiResponseMessage,
 				callSign: callSign
 			);
 			return true;
