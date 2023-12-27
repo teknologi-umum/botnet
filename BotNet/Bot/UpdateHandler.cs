@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Commands;
-using BotNet.Commands.FlipFlop;
+using BotNet.Commands.BotUpdate.CallbackQuery;
+using BotNet.Commands.BotUpdate.Message;
 using BotNet.Services.BotCommands;
-using BotNet.Services.BubbleWrap;
 using BotNet.Services.OpenAI;
 using BotNet.Services.SocialLink;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RG.Ninja;
@@ -20,17 +20,15 @@ using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
-using Telegram.Bot.Types.ReplyMarkups;
-using BotNet.Commands.BotUpdate.Message;
-using MediatR;
-using BotNet.Commands.BotUpdate.CallbackQuery;
 
 namespace BotNet.Bot {
 	public class UpdateHandler(
+		IMediator mediator,
 		IServiceProvider serviceProvider,
 		ILogger<BotService> logger,
 		InlineQueryHandler inlineQueryHandler
 	) : IUpdateHandler {
+		private readonly IMediator _mediator = mediator;
 		private readonly IServiceProvider _serviceProvider = serviceProvider;
 		private readonly ILogger<BotService> _logger = logger;
 		private readonly InlineQueryHandler _inlineQueryHandler = inlineQueryHandler;
@@ -280,14 +278,6 @@ namespace BotNet.Bot {
 										);
 									}
 									break;
-								case "/explain":
-									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "en",
-										cancellationToken);
-									break;
-								case "/jelaskan":
-									await OpenAI.ExplainAsync(botClient, _serviceProvider, update.Message, "id",
-										cancellationToken);
-									break;
 								case "/ask":
 									await OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
@@ -299,27 +289,12 @@ namespace BotNet.Bot {
 									await OpenAI.TranslateAsync(botClient, _serviceProvider, update.Message,
 										command.ToLowerInvariant()[1..], cancellationToken);
 									break;
-								case "/genjs":
-									await OpenAI.GenerateJavaScriptCodeAsync(botClient, _serviceProvider,
-										update.Message, cancellationToken);
-									break;
 								case "/humor":
 									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
 									break;
 								case "/clean":
 									await Clean.SanitizeLinkAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
-								case "/waifu":
-									await Waifu.GetRandomWaifuAsync(botClient, update.Message, cancellationToken);
-									break;
-								case "/cat":
-									await Cat.GetRandomCatAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
-								case "/idea":
-									await Idea.GetRandomIdeaAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
 									break;
 								case "/art":
@@ -373,11 +348,9 @@ namespace BotNet.Bot {
 
 						break;
 					case UpdateType.CallbackQuery:
-						await _serviceProvider
-							.GetRequiredService<IMediator>()
-							.Send(
-								new CallbackQueryUpdate(update.CallbackQuery!)
-							);
+						await _mediator.Send(
+							new CallbackQueryUpdate(update.CallbackQuery!)
+						);
 						break;
 					default:
 						break;
