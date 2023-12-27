@@ -279,13 +279,6 @@ namespace BotNet.Bot {
 										);
 									}
 									break;
-								case "/enid":
-								case "/iden":
-								case "/eniden":
-								case "/idenid":
-									await OpenAI.TranslateAsync(botClient, _serviceProvider, update.Message,
-										command.ToLowerInvariant()[1..], cancellationToken);
-									break;
 								case "/humor":
 									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
