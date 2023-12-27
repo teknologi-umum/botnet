@@ -3,7 +3,7 @@ using Telegram.Bot.Types.Enums;
 using BotNet.Commands.BotUpdate.Message;
 
 namespace BotNet.Commands.Exec {
-	public sealed record class ExecCommand : ICommand {
+	public sealed record ExecCommand : ICommand {
 		public string PistonLanguageIdentifier { get; }
 		public string HighlightLanguageIdentifier { get; }
 		public string Code { get; }

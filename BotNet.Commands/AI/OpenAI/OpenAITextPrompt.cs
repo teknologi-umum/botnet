@@ -36,14 +36,15 @@ namespace BotNet.Commands.AI.OpenAI {
 				throw new ArgumentException("Prompt must be non-empty.", nameof(aiCallCommand));
 			}
 
-			// Thread must begin with prompt message
-			if (thread.FirstOrDefault() is not {
+			// Non-empty thread must begin with reply to message
+			if (thread.FirstOrDefault() is {
 				MessageId: { } firstMessageId,
 				ChatId: { } firstChatId
-			}
-			|| firstMessageId != aiCallCommand.MessageId
-			|| firstChatId != aiCallCommand.ChatId) {
-				throw new ArgumentException("Thread must begin with prompt message.", nameof(thread));
+			}) {
+				if (firstMessageId != aiCallCommand.ReplyToMessageId
+					|| firstChatId != aiCallCommand.ChatId) {
+					throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
+				}
 			}
 
 			return new(

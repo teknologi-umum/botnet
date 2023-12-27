@@ -272,15 +272,12 @@ namespace BotNet.Bot {
 								case "/ts":
 								case "/vb":
 								case "/pop":
+								case "/ask":
 									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
 										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
 											command: slashCommand
 										);
 									}
-									break;
-								case "/ask":
-									await OpenAI.AskHelpAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
 									break;
 								case "/enid":
 								case "/iden":

@@ -5,5 +5,6 @@ namespace BotNet.Commands {
 		void Add(MessageBase message);
 		MessageBase? GetOrDefault(int messageId, long chatId);
 		IEnumerable<MessageBase> GetThread(int messageId, long chatId);
+		IEnumerable<MessageBase> GetThread(MessageBase firstMessage);
 	}
 }

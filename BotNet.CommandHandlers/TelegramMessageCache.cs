@@ -38,6 +38,16 @@ namespace BotNet.CommandHandlers {
 			}
 		}
 
+		public IEnumerable<MessageBase> GetThread(MessageBase firstMessage) {
+			yield return firstMessage;
+			Add(firstMessage);
+			if (firstMessage.ReplyToMessageId.HasValue) {
+				foreach (MessageBase reply in GetThread(firstMessage.ReplyToMessageId.Value, firstMessage.ChatId)) {
+					yield return reply;
+				}
+			}
+		}
+
 		readonly record struct Key(
 			int MessageId,
 			long ChatId

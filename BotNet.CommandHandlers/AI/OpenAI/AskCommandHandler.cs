@@ -1,6 +1,5 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
-using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
@@ -12,24 +11,20 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.AI.OpenAI {
-	public sealed class OpenAITextPromptHandler(
+	public sealed class AskCommandHandler(
 		ITelegramBotClient telegramBotClient,
-		ICommandQueue commandQueue,
-		ITelegramMessageCache telegramMessageCache,
 		OpenAIClient openAIClient,
-		ILogger<OpenAITextPromptHandler> logger
-	) : ICommandHandler<OpenAITextPrompt> {
-		internal static readonly RateLimiter CHAT_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
-
+		ITelegramMessageCache telegramMessageCache,
+		ILogger<AskCommandHandler> logger
+	) : ICommandHandler<AskCommand> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ICommandQueue _commandQueue = commandQueue;
-		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 		private readonly OpenAIClient _openAIClient = openAIClient;
-		private readonly ILogger<OpenAITextPromptHandler> _logger = logger;
+		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
+		private readonly ILogger<AskCommandHandler> _logger = logger;
 
-		public async Task Handle(OpenAITextPrompt command, CancellationToken cancellationToken) {
+		public async Task Handle(AskCommand command, CancellationToken cancellationToken) {
 			try {
-				CHAT_RATE_LIMITER.ValidateActionRate(
+				OpenAITextPromptHandler.CHAT_RATE_LIMITER.ValidateActionRate(
 					chatId: command.ChatId,
 					userId: command.SenderId
 				);
@@ -47,7 +42,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			// Fire and forget
 			Task _ = Task.Run(async () => {
 				List<ChatMessage> messages = [
-					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image."),
+					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
 					ChatMessage.FromText("user", command.Prompt)
 				];
 
@@ -75,22 +70,6 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					maxTokens: 512,
 					cancellationToken: cancellationToken
 				);
-
-				// Handle image generation intent
-				if (response.StartsWith("ImageGeneration:")) {
-					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
-					await _commandQueue.DispatchAsync(
-						command: new StabilityTextToImagePrompt(
-							callSign: command.CallSign,
-							prompt: imageGenerationPrompt,
-							promptMessageId: command.PromptMessageId,
-							responseMessageId: responseMessage.MessageId,
-							chatId: command.ChatId,
-							senderId: command.SenderId
-						)
-					);
-					return;
-				}
 
 				// Finalize message
 				try {

@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;
 using BotNet.Commands.Eval;
@@ -63,6 +64,18 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/pop":
 						await _commandQueue.DispatchAsync(PopCommand.FromSlashCommand(command));
+						break;
+					case "/ask":
+						await _commandQueue.DispatchAsync(
+							command: AskCommand.FromSlashCommand(
+								command: command,
+								thread: command.ReplyToMessage is null
+									? Enumerable.Empty<MessageBase>()
+									: _telegramMessageCache.GetThread(
+										firstMessage: command.ReplyToMessage
+									)
+							)
+						);
 						break;
 				}
 			} catch (UsageException exc) {
