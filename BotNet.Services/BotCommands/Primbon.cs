@@ -41,6 +41,10 @@ namespace BotNet.Services.BotCommands {
 			try {
 				RATE_LIMITER.ValidateActionRate(message.Chat.Id, message.From!.Id);
 
+				(string javaneseDate, string sangar, string restriction) = await serviceProvider.GetRequiredService<PrimbonScraper>().GetTaliwangkeAsync(
+					date: date,
+					cancellationToken: cancellationToken
+				);
 				(string title, string[] traits) = await serviceProvider.GetRequiredService<PrimbonScraper>().GetKamarokamAsync(
 					date: date,
 					cancellationToken: cancellationToken
@@ -61,10 +65,13 @@ namespace BotNet.Services.BotCommands {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
 					text: $$"""
-						<b>{{date:dd MMMM yyyy}}</b>
+						<b>{{javaneseDate}}</b>
 
-						<b>Pentung Kamarokam</b>
+						<b>Petung Hari Baik</b>
 						{{title}}: {{string.Join(", ", traits)}}
+
+						<b>Hari Larangan</b>
+						{{sangar}}{{restriction}}
 
 						<b>Chinese Calendar</b>
 						Clash: {{clash}} Evil: {{evil}}
