@@ -6,7 +6,6 @@
 [*]
 indent_style = space
 indent_size = 2
-end_of_line=lf
 # XAML files
 [*.xaml]
 indent_size = 4
@@ -243,7 +242,7 @@ dotnet_diagnostic.RG0021.severity = error
 dotnet_diagnostic.RG0022.severity = error
 
 # IDE0055: Fix formatting
-dotnet_diagnostic.IDE0055.severity = warning
+dotnet_diagnostic.IDE0055.severity = none
 
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = warning

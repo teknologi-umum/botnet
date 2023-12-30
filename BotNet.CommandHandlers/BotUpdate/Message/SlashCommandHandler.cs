@@ -6,6 +6,7 @@ using BotNet.Commands.Eval;
 using BotNet.Commands.Exec;
 using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Fuck;
+using BotNet.Commands.Humor;
 using BotNet.Commands.Pop;
 using Telegram.Bot;
 
@@ -76,6 +77,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 									)
 							)
 						);
+						break;
+					case "/humor":
+						await _commandQueue.DispatchAsync(HumorCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {

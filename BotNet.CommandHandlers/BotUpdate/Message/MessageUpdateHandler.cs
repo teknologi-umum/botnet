@@ -55,7 +55,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			} && _telegramMessageCache.GetOrDefault(
 				messageId: replyToMessageId,
 				chatId: chatId
-			) is AIResponseMessage aiResponseMessage) {
+			) is AIResponseMessage) {
 				if (!AIFollowUpMessage.TryCreate(
 					message: update.Message,
 					thread: _telegramMessageCache.GetThread(

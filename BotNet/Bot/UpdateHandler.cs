@@ -273,15 +273,12 @@ namespace BotNet.Bot {
 								case "/vb":
 								case "/pop":
 								case "/ask":
+								case "/humor":
 									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
 										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
 											command: slashCommand
 										);
 									}
-									break;
-								case "/humor":
-									await Joke.GetRandomJokeAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
 									break;
 								case "/clean":
 									await Clean.SanitizeLinkAsync(botClient, _serviceProvider, update.Message,
