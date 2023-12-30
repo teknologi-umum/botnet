@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BotNet.Commands;
 using BotNet.Commands.BotUpdate.CallbackQuery;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BotCommands;
 using BotNet.Services.OpenAI;
 using BotNet.Services.SocialLink;
@@ -275,7 +276,12 @@ namespace BotNet.Bot {
 								case "/ask":
 								case "/humor":
 								case "/primbon":
-									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
+									if (SlashCommand.TryCreate(
+										message: update.Message!,
+										commandPriority: _serviceProvider.GetRequiredService<CommandPriorityCategorizer>()
+											.Categorize(update.Message),
+										slashCommand: out SlashCommand? slashCommand
+									)) {
 										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
 											command: slashCommand
 										);

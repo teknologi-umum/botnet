@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using BotNet.Commands.CommandPrioritization;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record AICallCommand : MessageBase, ICommand {
@@ -18,6 +19,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			long chatId,
 			long senderId,
 			string senderName,
+			CommandPriority commandPriority,
 			string text,
 			string? imageFileId,
 			int? replyToMessageId,
@@ -28,6 +30,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			chatId: chatId,
 			senderId: senderId,
 			senderName: senderName,
+			commandPriority: commandPriority,
 			text: text,
 			imageFileId: imageFileId,
 			replyToMessageId: replyToMessageId,
@@ -38,6 +41,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
+			CommandPriority commandPriority,
 			[NotNullWhen(true)] out AICallCommand? aiCallCommand
 		) {
 			// Message must contain text or caption
@@ -72,6 +76,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				chatId: message.Chat.Id,
 				senderId: senderId,
 				senderName: senderFullName,
+				commandPriority: commandPriority,
 				text: text[(callSign.Length + 1)..].Trim(),
 				imageFileId: message.Photo?.LastOrDefault()?.FileId
 					?? message.ReplyToMessage?.Sticker?.FileId,

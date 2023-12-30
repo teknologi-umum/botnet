@@ -1,4 +1,6 @@
-﻿namespace BotNet.Commands.BotUpdate.Message {
+﻿using BotNet.Commands.CommandPrioritization;
+
+namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record NormalMessage : MessageBase {
 		private NormalMessage(
 			int messageId,
@@ -14,6 +16,7 @@
 			chatId: chatId,
 			senderId: senderId,
 			senderName: senderName,
+			commandPriority: CommandPriority.Void,
 			text: text,
 			imageFileId: imageFileId,
 			replyToMessageId: replyToMessageId,

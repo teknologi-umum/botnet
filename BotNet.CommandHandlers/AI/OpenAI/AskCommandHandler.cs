@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
 using BotNet.Services.OpenAI.Models;
@@ -65,7 +66,10 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				);
 
 				string response = await _openAIClient.ChatAsync(
-					model: "gpt-4-1106-preview",
+					model: command.CommandPriority switch {
+						CommandPriority.VIPChat or CommandPriority.HomeGroupChat => "gpt-4-1106-preview",
+						_ => "gpt-3.5-turbo"
+					},
 					messages: messages,
 					maxTokens: 512,
 					cancellationToken: cancellationToken

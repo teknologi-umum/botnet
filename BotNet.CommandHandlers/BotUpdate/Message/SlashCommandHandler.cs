@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
+using BotNet.Commands.Art;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;
 using BotNet.Commands.Eval;
@@ -85,6 +86,30 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/primbon":
 						await _commandQueue.DispatchAsync(PrimbonCommand.FromSlashCommand(command));
 						break;
+					case "/art":
+						await _commandQueue.DispatchAsync(
+							command: ArtCommand.FromSlashCommand(
+								command: command,
+								thread: command.ReplyToMessage is null
+									? Enumerable.Empty<MessageBase>()
+									: _telegramMessageCache.GetThread(
+										firstMessage: command.ReplyToMessage
+									)
+							)
+						);
+						break;
+					//case "/map":
+					//	await _commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));
+					//	break;
+					//case "/weather":
+					//	await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
+					//	break;
+					//case "/bmkg":
+					//	await _commandQueue.DispatchAsync(BMKGCommand.FromSlashCommand(command));
+					//	break;
+					//case "/preview":
+					//	await _commandQueue.DispatchAsync(PreviewCommand.FromSlashCommand(command));
+					//	break;
 				}
 			} catch (UsageException exc) {
 				await _telegramBotClient.SendTextMessageAsync(

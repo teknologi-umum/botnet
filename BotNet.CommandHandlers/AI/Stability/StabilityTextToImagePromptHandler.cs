@@ -11,7 +11,7 @@ using Telegram.Bot.Types.Enums;
 namespace BotNet.CommandHandlers.AI.Stability {
 	public sealed class StabilityTextToImagePromptHandler(
 		ITelegramBotClient telegramBotClient,
-		BotNet.Services.Stability.Skills.ImageGenerationBot imageGenerationBot,
+		ImageGenerationBot imageGenerationBot,
 		ITelegramMessageCache telegramMessageCache
 	) : ICommandHandler<StabilityTextToImagePrompt> {
 		private static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(5));

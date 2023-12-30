@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 
 namespace BotNet.Commands.AI.OpenAI {
 	public sealed record OpenAITextPrompt : ICommand {
@@ -7,6 +8,7 @@ namespace BotNet.Commands.AI.OpenAI {
 		public int PromptMessageId { get; }
 		public long ChatId { get; }
 		public long SenderId { get; }
+		public CommandPriority CommandPriority { get; }
 		public IEnumerable<MessageBase> Thread { get; }
 
 		private OpenAITextPrompt(
@@ -15,6 +17,7 @@ namespace BotNet.Commands.AI.OpenAI {
 			int promptMessageId,
 			long chatId,
 			long senderId,
+			CommandPriority commandPriority,
 			IEnumerable<MessageBase> thread
 		) {
 			CallSign = callSign;
@@ -22,6 +25,7 @@ namespace BotNet.Commands.AI.OpenAI {
 			PromptMessageId = promptMessageId;
 			ChatId = chatId;
 			SenderId = senderId;
+			CommandPriority = commandPriority;
 			Thread = thread;
 		}
 
@@ -53,6 +57,7 @@ namespace BotNet.Commands.AI.OpenAI {
 				promptMessageId: aiCallCommand.MessageId,
 				chatId: aiCallCommand.ChatId,
 				senderId: aiCallCommand.SenderId,
+				commandPriority: aiCallCommand.CommandPriority,
 				thread: thread
 			);
 		}
@@ -85,6 +90,7 @@ namespace BotNet.Commands.AI.OpenAI {
 				promptMessageId: aiFollowUpMessage.MessageId,
 				chatId: aiFollowUpMessage.ChatId,
 				senderId: aiFollowUpMessage.SenderId,
+				commandPriority: aiFollowUpMessage.CommandPriority,
 				thread: thread
 			);
 		}

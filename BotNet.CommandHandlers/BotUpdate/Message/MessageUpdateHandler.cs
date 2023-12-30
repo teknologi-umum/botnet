@@ -1,14 +1,17 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
 	public sealed class MessageUpdateHandler(
 		ICommandQueue commandQueue,
-		ITelegramMessageCache telegramMessageCache
+		ITelegramMessageCache telegramMessageCache,
+		CommandPriorityCategorizer commandPriorityCategorizer
 	) : ICommandHandler<MessageUpdate> {
 		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
+		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 
 		public async Task Handle(MessageUpdate update, CancellationToken cancellationToken) {
 			// Handle slash commands
@@ -18,6 +21,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			}) {
 				if (SlashCommand.TryCreate(
 					message: update.Message,
+					commandPriority: _commandPriorityCategorizer.Categorize(
+						message: update.Message
+					),
 					out SlashCommand? slashCommand
 				)) {
 					await _commandQueue.DispatchAsync(
@@ -30,6 +36,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			// Handle AI calls
 			if (AICallCommand.TryCreate(
 				message: update.Message,
+				commandPriority: _commandPriorityCategorizer.Categorize(
+					message: update.Message
+				),
 				out AICallCommand? aiCallCommand
 			)) {
 				// Cache both message and reply to message
@@ -58,6 +67,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			) is AIResponseMessage) {
 				if (!AIFollowUpMessage.TryCreate(
 					message: update.Message,
+					commandPriority: _commandPriorityCategorizer.Categorize(
+						message: update.Message
+					),
 					thread: _telegramMessageCache.GetThread(
 						messageId: replyToMessageId,
 						chatId: chatId

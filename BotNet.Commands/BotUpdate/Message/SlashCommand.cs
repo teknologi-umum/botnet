@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using BotNet.Commands.CommandPrioritization;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.BotUpdate.Message {
@@ -10,6 +11,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			long chatId,
 			long senderId,
 			string senderName,
+			CommandPriority commandPriority,
 			string text,
 			string? imageFileId,
 			int? replyToMessageId,
@@ -20,6 +22,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			chatId: chatId,
 			senderId: senderId,
 			senderName: senderName,
+			commandPriority: commandPriority,
 			text: text,
 			imageFileId: imageFileId,
 			replyToMessageId: replyToMessageId,
@@ -34,6 +37,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
+			CommandPriority commandPriority,
 			[NotNullWhen(true)] out SlashCommand? slashCommand
 		) {
 			// Message must start with a slash command
@@ -73,6 +77,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				chatId: message.Chat.Id,
 				senderId: senderId,
 				senderName: senderFullName,
+				commandPriority: commandPriority,
 				text: text[commandLength..].Trim(),
 				imageFileId: message.Photo?.LastOrDefault()?.FileId,
 				replyToMessageId: message.ReplyToMessage?.MessageId,

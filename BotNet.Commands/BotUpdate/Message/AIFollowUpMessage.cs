@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using BotNet.Commands.CommandPrioritization;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record AIFollowUpMessage : MessageBase, ICommand {
@@ -9,6 +10,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			long chatId,
 			long senderId,
 			string senderName,
+			CommandPriority commandPriority,
 			string text,
 			string? imageFileId,
 			int? replyToMessageId,
@@ -19,6 +21,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			chatId: chatId,
 			senderId: senderId,
 			senderName: senderName,
+			commandPriority: commandPriority,
 			text: text,
 			imageFileId: imageFileId,
 			replyToMessageId: replyToMessageId,
@@ -29,6 +32,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
+			CommandPriority commandPriority,
 			IEnumerable<MessageBase> thread,
 			[NotNullWhen(true)] out AIFollowUpMessage? aiFollowUpMessage
 		) {
@@ -65,6 +69,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				chatId: message.Chat.Id,
 				senderId: senderId,
 				senderName: senderFullName,
+				commandPriority: commandPriority,
 				text: text,
 				imageFileId: message.Photo?.FirstOrDefault()?.FileId,
 				replyToMessageId: message.ReplyToMessage?.MessageId,

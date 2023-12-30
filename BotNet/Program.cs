@@ -4,6 +4,7 @@ using BotNet.Bot;
 using BotNet.CommandHandlers;
 using BotNet.CommandHandlers.BotUpdate.Message;
 using BotNet.Commands;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BMKG;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.BubbleWrap;
@@ -55,6 +56,7 @@ builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Open
 builder.Services.Configure<StabilityOptions>(builder.Configuration.GetSection("StabilityOptions"));
 builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("GoogleMapOptions"));
 builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
+builder.Services.Configure<CommandPrioritizationOptions>(builder.Configuration.GetSection("CommandPrioritizationOptions"));
 builder.Services.AddHttpClient();
 builder.Services.AddFontService();
 builder.Services.AddColorCardRenderer();
@@ -80,6 +82,7 @@ builder.Services.AddBubbleWrapKeyboardGenerator();
 builder.Services.AddPrimbonScraper();
 builder.Services.AddChineseCalendarScraper();
 builder.Services.AddCommandHandlers();
+builder.Services.AddCommandPriorityCategorizer();
 
 // MediatR
 builder.Services.AddMediatR(config => {

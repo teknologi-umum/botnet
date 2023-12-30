@@ -20,6 +20,7 @@
 			CallSign = callSign;
 			Prompt = prompt;
 			PromptMessageId = promptMessageId;
+			ResponseMessageId = responseMessageId;
 			ChatId = chatId;
 			SenderId = senderId;
 		}
