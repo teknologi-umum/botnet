@@ -17,7 +17,7 @@ namespace BotNet.CommandHandlers.Humor {
 
 		public async Task Handle(HumorCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.ChatId, command.CommandMessageId);
+				RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
 
 				(string title, byte[] image) = await _programmerHumorScraper.GetRandomJokeAsync(cancellationToken);
 				using MemoryStream imageStream = new(image);

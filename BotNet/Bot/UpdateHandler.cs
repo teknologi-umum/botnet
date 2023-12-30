@@ -274,6 +274,7 @@ namespace BotNet.Bot {
 								case "/pop":
 								case "/ask":
 								case "/humor":
+								case "/primbon":
 									if (SlashCommand.TryCreate(update.Message!, out SlashCommand? slashCommand)) {
 										await _serviceProvider.GetRequiredService<ICommandQueue>().DispatchAsync(
 											command: slashCommand
@@ -313,10 +314,6 @@ namespace BotNet.Bot {
 									break;
 								case "/ramad":
 									await Meme.HandleRamadAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
-								case "/primbon":
-									await Primbon.GetKamarokamAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
 									break;
 							}

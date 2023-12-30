@@ -4,13 +4,16 @@ namespace BotNet.Commands.Humor {
 	public sealed record HumorCommand : ICommand {
 		public long ChatId { get; }
 		public int CommandMessageId { get; }
+		public long SenderId { get; }
 
 		private HumorCommand(
 			long chatId,
-			int commandMessageId
+			int commandMessageId,
+			long senderId
 		) {
 			ChatId = chatId;
 			CommandMessageId = commandMessageId;
+			SenderId = senderId;
 		}
 
 		public static HumorCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -20,7 +23,8 @@ namespace BotNet.Commands.Humor {
 
 			return new(
 				chatId: slashCommand.ChatId,
-				commandMessageId: slashCommand.MessageId
+				commandMessageId: slashCommand.MessageId,
+				senderId: slashCommand.SenderId
 			);
 		}
 	}

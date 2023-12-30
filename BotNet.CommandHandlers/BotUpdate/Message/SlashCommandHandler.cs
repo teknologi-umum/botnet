@@ -8,6 +8,7 @@ using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Fuck;
 using BotNet.Commands.Humor;
 using BotNet.Commands.Pop;
+using BotNet.Commands.Primbon;
 using Telegram.Bot;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
@@ -80,6 +81,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/humor":
 						await _commandQueue.DispatchAsync(HumorCommand.FromSlashCommand(command));
+						break;
+					case "/primbon":
+						await _commandQueue.DispatchAsync(PrimbonCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
