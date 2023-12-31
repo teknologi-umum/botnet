@@ -2,15 +2,20 @@
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BotProfile;
+using BotNet.Services.SocialLink;
+using RG.Ninja;
+using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
 	public sealed class MessageUpdateHandler(
+		ITelegramBotClient telegramBotClient,
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
 		CommandPriorityCategorizer commandPriorityCategorizer,
 		BotProfileAccessor botProfileAccessor
 	) : ICommandHandler<MessageUpdate> {
+		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
@@ -37,11 +42,79 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				return;
 			}
 
+			// Handle Social Link (better preview)
+			if ((update.Message.Text ?? update.Message.Caption) is { } textOrCaption) {
+				IEnumerable<Uri> betterLinks = SocialLinkEmbedFixer.GetPossibleUrls(textOrCaption);
+
+				if (betterLinks.Any()) {
+					// Fire and forget
+					Task _ = Task.Run(async () => {
+						try {
+							foreach (Uri betterLink in betterLinks) {
+								await _telegramBotClient.SendTextMessageAsync(
+									chatId: update.Message.Chat.Id,
+									text: $"Preview: {betterLink.OriginalString}",
+									replyToMessageId: update.Message.MessageId,
+									cancellationToken: cancellationToken
+								);
+							}
+						} catch (OperationCanceledException) {
+							// Terminate gracefully
+						}
+					});
+					return;
+				}
+			}
+
+			// Handle reddit mirroring
+			if (update.Message?.Entities?.FirstOrDefault(entity => entity is {
+				Type: MessageEntityType.Url
+			}) is {
+				Offset: var offset,
+				Length: var length
+			} && update.Message.Text?.Substring(offset, length) is { } url
+			&& url.StartsWith("https://www.reddit.com/", out string? remainingUrl)) {
+				// Fire and forget
+				Task _ = Task.Run(async () => {
+					try {
+						await _telegramBotClient.SendTextMessageAsync(
+							chatId: update.Message.Chat.Id,
+							text: $"Mirror: https://libreddit.teknologiumum.com/{remainingUrl}",
+							replyToMessageId: update.Message.MessageId,
+							disableWebPagePreview: true,
+							cancellationToken: cancellationToken
+						);
+					} catch (OperationCanceledException) {
+						// Terminate gracefully
+					}
+				});
+				return;
+			} else if (update.Message?.Entities?.FirstOrDefault(entity => entity is {
+				Type: MessageEntityType.TextLink
+			}) is { Url: { } textUrl }
+			&& textUrl.StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
+				// Fire and forget
+				Task _ = Task.Run(async () => {
+					try {
+						await _telegramBotClient.SendTextMessageAsync(
+							chatId: update.Message.Chat.Id,
+							text: $"Mirror: https://libreddit.teknologiumum.com/{remainingTextUrl}",
+							replyToMessageId: update.Message.MessageId,
+							disableWebPagePreview: true,
+							cancellationToken: cancellationToken
+						);
+					} catch (OperationCanceledException) {
+						// Terminate gracefully
+					}
+				});
+				return;
+			}
+
 			// Handle AI calls
 			if (AICallCommand.TryCreate(
-				message: update.Message,
+				message: update.Message!,
 				commandPriority: _commandPriorityCategorizer.Categorize(
-					message: update.Message
+					message: update.Message!
 				),
 				out AICallCommand? aiCallCommand
 			)) {
