@@ -91,7 +91,11 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 				// Track thread
 				_telegramMessageCache.Add(
-					message: AIResponseMessage.FromMessage(responseMessage, "AI")
+					message: AIResponseMessage.FromMessage(
+						message: responseMessage,
+						replyToMessageId: command.PromptMessageId,
+						callSign: "AI"
+					)
 				);
 			});
 		}

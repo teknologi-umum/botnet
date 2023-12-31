@@ -17,10 +17,12 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					await _commandQueue.DispatchAsync(
 						command: OpenAITextPrompt.FromAICallCommand(
 							aiCallCommand: command,
-							thread: _telegramMessageCache.GetThread(
-								messageId: command.MessageId,
-								chatId: command.ChatId
-							)
+							thread: command.ReplyToMessageId.HasValue
+								? _telegramMessageCache.GetThread(
+									messageId: command.ReplyToMessageId.Value,
+									chatId: command.ChatId
+								)
+								: Enumerable.Empty<MessageBase>()
 						)
 					);
 					break;

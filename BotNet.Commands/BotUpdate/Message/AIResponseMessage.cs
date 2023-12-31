@@ -30,13 +30,9 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static AIResponseMessage FromMessage(
 			Telegram.Bot.Types.Message message,
+			int replyToMessageId,
 			string callSign
 		) {
-			// Message must be a reply
-			if (message.ReplyToMessage is not { } replyToMessage) {
-				throw new ArgumentException("Message must be a reply.", nameof(message));
-			}
-
 			return new(
 				messageId: message.MessageId,
 				chatId: message.Chat.Id,
@@ -44,7 +40,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				senderName: callSign,
 				text: message.Text ?? message.Caption ?? "",
 				imageFileId: message.Photo?.FirstOrDefault()?.FileId,
-				replyToMessageId: replyToMessage.MessageId,
+				replyToMessageId: replyToMessageId,
 				replyToMessage: null,
 				callSign: callSign
 			);
