@@ -1,6 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
-using BotNet.Commands.AI.Stability;
+using BotNet.Commands.Art;
 using BotNet.Commands.BMKG;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;

@@ -3,7 +3,7 @@ using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.Common;
 using Telegram.Bot.Types.Enums;
 
-namespace BotNet.Commands.AI.Stability {
+namespace BotNet.Commands.Art {
 	public sealed record ArtCommand : ICommand {
 		public string Prompt { get; }
 		public int PromptMessageId { get; }

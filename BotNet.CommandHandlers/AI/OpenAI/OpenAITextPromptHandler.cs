@@ -1,4 +1,5 @@
-﻿using BotNet.Commands;
+﻿using BotNet.CommandHandlers.Art;
+using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
@@ -81,6 +82,21 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 				// Handle image generation intent
 				if (response.StartsWith("ImageGeneration:")) {
+					if (command.CommandPriority != CommandPriority.VIPChat) {
+						try {
+							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+						} catch (RateLimitExceededException exc) {
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.ChatId,
+								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
+								parseMode: ParseMode.Html,
+								replyToMessageId: command.PromptMessageId,
+								cancellationToken: cancellationToken
+							);
+							return;
+						}
+					}
+
 					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
 					switch (command.CommandPriority) {
 						case CommandPriority.VIPChat:
