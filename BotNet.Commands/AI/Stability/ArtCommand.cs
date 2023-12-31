@@ -25,22 +25,27 @@ namespace BotNet.Commands.AI.Stability {
 			CommandPriority = commandPriority;
 		}
 
-		public static ArtCommand FromSlashCommand(SlashCommand command) {
+		public static ArtCommand FromSlashCommand(SlashCommand slashCommand) {
+			// Must be /art
+			if (slashCommand.Command != "/art") {
+				throw new ArgumentException("Command must be /art.", nameof(slashCommand));
+			}
+
 			// Prompt must be non-empty
-			if (string.IsNullOrWhiteSpace(command.Text)) {
+			if (string.IsNullOrWhiteSpace(slashCommand.Text)) {
 				throw new UsageException(
 					message: "Prompt tidak boleh kosong\\. Untuk menghasilkan gambar, silakan ketik `/art` diikuti prompt\\.",
 					parseMode: ParseMode.MarkdownV2,
-					commandMessageId: command.MessageId
+					commandMessageId: slashCommand.MessageId
 				);
 			}
 
 			return new(
-				prompt: command.Text,
-				promptMessageId: command.MessageId,
-				chatId: command.ChatId,
-				senderId: command.SenderId,
-				commandPriority: command.CommandPriority
+				prompt: slashCommand.Text,
+				promptMessageId: slashCommand.MessageId,
+				chatId: slashCommand.ChatId,
+				senderId: slashCommand.SenderId,
+				commandPriority: slashCommand.CommandPriority
 			);
 		}
 	}

@@ -278,6 +278,7 @@ namespace BotNet.Bot {
 								case "/primbon":
 								case "/art":
 								case "/bmkg":
+								case "/map":
 									if (SlashCommand.TryCreate(
 										message: update.Message!,
 										botUsername: _me!.Username!,
@@ -289,10 +290,6 @@ namespace BotNet.Bot {
 											command: slashCommand
 										);
 									}
-									break;
-								case "/map":
-									await SearchPlace.SearchPlaceAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
 									break;
 								case "/weather":
 									await Weather.GetWeatherAsync(botClient, _serviceProvider, update.Message,

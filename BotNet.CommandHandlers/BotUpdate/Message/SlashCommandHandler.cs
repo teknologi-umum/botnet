@@ -8,6 +8,7 @@ using BotNet.Commands.Eval;
 using BotNet.Commands.Exec;
 using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Fuck;
+using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
@@ -93,9 +94,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/bmkg":
 						await _commandQueue.DispatchAsync(BMKGCommand.FromSlashCommand(command));
 						break;
-					//case "/map":
-					//	await _commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));
-					//	break;
+					case "/map":
+						await _commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));
+						break;
 					//case "/weather":
 					//	await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
 					//	break;
