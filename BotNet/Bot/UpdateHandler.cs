@@ -290,14 +290,6 @@ namespace BotNet.Bot {
 										);
 									}
 									break;
-								case "/clean":
-									await Clean.SanitizeLinkAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
-								case "/tldr":
-									await OpenAI.GenerateTldrAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
 								case "/webp":
 									await Webp.ConvertToImageAsync(botClient, update.Message, cancellationToken);
 									break;
