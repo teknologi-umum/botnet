@@ -290,9 +290,6 @@ namespace BotNet.Bot {
 										);
 									}
 									break;
-								case "/webp":
-									await Webp.ConvertToImageAsync(botClient, update.Message, cancellationToken);
-									break;
 								case "/map":
 									await SearchPlace.SearchPlaceAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
