@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Commands;
 using BotNet.Commands.BotUpdate.CallbackQuery;
+using BotNet.Commands.BotUpdate.InlineQuery;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BotCommands;
@@ -20,7 +21,6 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InlineQueryResults;
 
 namespace BotNet.Bot {
 	public class UpdateHandler(
@@ -297,15 +297,9 @@ namespace BotNet.Bot {
 
 						break;
 					case UpdateType.InlineQuery:
-						if (update.InlineQuery?.Query.Trim().ToLowerInvariant() is { Length: > 0 } query) {
-							IEnumerable<InlineQueryResult> inlineQueryResults =
-								await _inlineQueryHandler.GetResultsAsync(query, cancellationToken);
-							await botClient.AnswerInlineQueryAsync(
-								inlineQueryId: update.InlineQuery.Id,
-								results: inlineQueryResults,
-								cancellationToken: cancellationToken);
-						}
-
+						await _mediator.Send(
+							new InlineQueryUpdate(update.InlineQuery!)
+						);
 						break;
 					case UpdateType.CallbackQuery:
 						await _mediator.Send(

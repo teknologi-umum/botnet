@@ -11,8 +11,4 @@
     <ProjectReference Include="..\BotNet.Services\BotNet.Services.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="BotUpdate\InlineQuery\" />
-  </ItemGroup>
-
 </Project>
