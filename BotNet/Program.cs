@@ -3,7 +3,6 @@ using System.Threading;
 using BotNet.Bot;
 using BotNet.CommandHandlers;
 using BotNet.CommandHandlers.BotUpdate.Message;
-using BotNet.Commands;
 using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BMKG;
 using BotNet.Services.BotProfile;

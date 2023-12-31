@@ -27,7 +27,7 @@ namespace BotNet.Bot {
 				try {
 					while (_cancellationTokenSource is { IsCancellationRequested: false }) {
 						// Execution strategy is defined here.
-						// Current strategy is sequential and not concurrent.
+						// Current strategy is sequential, not concurrent, no DLQ, in single queue.
 						ICommand command = await _commandQueue.ReceiveAsync(_cancellationTokenSource.Token);
 						await _mediator.Send(command, _cancellationTokenSource.Token);
 					}

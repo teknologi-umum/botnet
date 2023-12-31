@@ -20,24 +20,21 @@ namespace BotNet.Bot {
 		private readonly IMediator _mediator = mediator;
 		private readonly ILogger<BotService> _logger = logger;
 
-		public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
-			CancellationToken cancellationToken) {
+		public async Task HandleUpdateAsync(
+			ITelegramBotClient botClient,
+			Update update,
+			CancellationToken cancellationToken
+		) {
 			try {
 				switch (update.Type) {
 					case UpdateType.Message:
-						await _mediator.Send(
-							new MessageUpdate(update.Message!)
-						);
+						await _mediator.Send(new MessageUpdate(update.Message!));
 						break;
 					case UpdateType.InlineQuery:
-						await _mediator.Send(
-							new InlineQueryUpdate(update.InlineQuery!)
-						);
+						await _mediator.Send(new InlineQueryUpdate(update.InlineQuery!));
 						break;
 					case UpdateType.CallbackQuery:
-						await _mediator.Send(
-							new CallbackQueryUpdate(update.CallbackQuery!)
-						);
+						await _mediator.Send(new CallbackQueryUpdate(update.CallbackQuery!));
 						break;
 					default:
 						break;
@@ -49,8 +46,11 @@ namespace BotNet.Bot {
 			}
 		}
 
-		public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
-			CancellationToken cancellationToken) {
+		public Task HandleErrorAsync(
+			ITelegramBotClient botClient,
+			Exception exception,
+			CancellationToken cancellationToken
+		) {
 			string errorMessage = exception switch {
 				ApiRequestException apiRequestException =>
 					$"Telegram API Error:\n{apiRequestException.ErrorCode}\n{apiRequestException.Message}",

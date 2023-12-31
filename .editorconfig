@@ -247,6 +247,9 @@ dotnet_diagnostic.IDE0055.severity = none
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = warning
 
+# CS9124: Parameter is captured into the state of the enclosing type and its value is also used to initialize a field, property, or event.
+dotnet_diagnostic.CS9124.severity = none
+
 [*.vb]
 # Modifier preferences
 visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
