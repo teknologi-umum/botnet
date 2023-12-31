@@ -56,5 +56,9 @@ namespace BotNet.Commands.CommandPrioritization {
 					return CommandPriority.Void;
 			}
 		}
+
+		public bool IsHomeGroup(long ChatId) {
+			return _homeGroupChatIds.Contains(ChatId);
+		}
 	}
 }

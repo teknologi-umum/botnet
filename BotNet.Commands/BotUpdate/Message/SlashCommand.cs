@@ -9,6 +9,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 		private SlashCommand(
 			int messageId,
 			long chatId,
+			ChatType chatType,
+			string? chatTitle,
 			long senderId,
 			string senderName,
 			CommandPriority commandPriority,
@@ -20,6 +22,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 		) : base(
 			messageId: messageId,
 			chatId: chatId,
+			chatType: chatType,
+			chatTitle: chatTitle,
 			senderId: senderId,
 			senderName: senderName,
 			commandPriority: commandPriority,
@@ -91,6 +95,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 			slashCommand = new(
 				messageId: message.MessageId,
 				chatId: message.Chat.Id,
+				chatType: message.Chat.Type,
+				chatTitle: message.Chat.Title,
 				senderId: senderId,
 				senderName: senderFullName,
 				commandPriority: commandPriority,

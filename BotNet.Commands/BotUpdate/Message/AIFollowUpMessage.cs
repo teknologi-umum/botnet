@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using BotNet.Commands.CommandPrioritization;
+using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record AIFollowUpMessage : MessageBase, ICommand {
@@ -8,6 +9,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public AIFollowUpMessage(
 			int messageId,
 			long chatId,
+			ChatType chatType,
+			string? chatTitle,
 			long senderId,
 			string senderName,
 			CommandPriority commandPriority,
@@ -19,6 +22,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 		) : base(
 			messageId: messageId,
 			chatId: chatId,
+			chatType: chatType,
+			chatTitle: chatTitle,
 			senderId: senderId,
 			senderName: senderName,
 			commandPriority: commandPriority,
@@ -67,6 +72,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 			aiFollowUpMessage = new(
 				messageId: message.MessageId,
 				chatId: message.Chat.Id,
+				chatType: message.Chat.Type,
+				chatTitle: message.Chat.Title,
 				senderId: senderId,
 				senderName: senderFullName,
 				commandPriority: commandPriority,

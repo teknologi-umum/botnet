@@ -1,10 +1,13 @@
 ﻿using BotNet.Commands.CommandPrioritization;
+using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record NormalMessage : MessageBase {
 		private NormalMessage(
 			int messageId,
 			long chatId,
+			ChatType chatType,
+			string? chatTitle,
 			long senderId,
 			string senderName,
 			string text,
@@ -14,6 +17,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 		) : base(
 			messageId: messageId,
 			chatId: chatId,
+			chatType: chatType,
+			chatTitle: chatTitle,
 			senderId: senderId,
 			senderName: senderName,
 			commandPriority: CommandPriority.Void,
@@ -40,6 +45,8 @@ namespace BotNet.Commands.BotUpdate.Message {
 			return new(
 				messageId: message.MessageId,
 				chatId: message.Chat.Id,
+				chatType: message.Chat.Type,
+				chatTitle: message.Chat.Title,
 				senderId: senderId,
 				senderName: senderFullName,
 				text: message.Text ?? "",

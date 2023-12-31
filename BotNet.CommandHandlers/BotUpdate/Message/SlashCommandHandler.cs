@@ -12,6 +12,7 @@ using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
+using BotNet.Commands.Privilege;
 using BotNet.Commands.Weather;
 using Telegram.Bot;
 
@@ -100,6 +101,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/weather":
 						await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
+						break;
+					case "/privilege":
+						await _commandQueue.DispatchAsync(PrivilegeCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
