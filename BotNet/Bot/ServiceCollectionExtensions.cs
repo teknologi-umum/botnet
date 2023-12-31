@@ -7,7 +7,6 @@ namespace BotNet.Bot {
 			services.AddHttpClient("tgwebhook")
 				.AddTypedClient<ITelegramBotClient>(httpClient => new TelegramBotClient(botToken, httpClient));
 			services.AddSingleton<UpdateHandler>();
-			services.AddSingleton<InlineQueryHandler>();
 			return services;
 		}
 	}

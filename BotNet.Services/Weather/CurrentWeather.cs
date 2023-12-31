@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.Weather.Models;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,7 @@ namespace BotNet.Services.Weather {
 
 		}
 
-		public async Task<(string Text, string Icon)> GetCurrentWeatherAsync(string? place) {
+		public async Task<(string Text, string Icon)> GetCurrentWeatherAsync(string? place, CancellationToken cancellationToken) {
 			string url = string.Format(_uriTemplate, "current");
 			if (string.IsNullOrEmpty(place)) {
 				throw new ArgumentNullException(nameof(place));
@@ -27,7 +28,7 @@ namespace BotNet.Services.Weather {
 			}
 
 			Uri uri = new(url + $"?key={_apiKey}&q={place}");
-			HttpResponseMessage response = await _httpClient.GetAsync(uri.AbsoluteUri);
+			HttpResponseMessage response = await _httpClient.GetAsync(uri.AbsoluteUri, cancellationToken);
 
 			if (response is not { StatusCode: HttpStatusCode.OK, Content.Headers.ContentType.MediaType: string contentType }) {
 				throw new HttpRequestException("Unable to find location.");
@@ -37,9 +38,9 @@ namespace BotNet.Services.Weather {
 				throw new HttpRequestException("Failed to parse result.");
 			}
 
-			Stream bodyContent = await response.Content!.ReadAsStreamAsync();
+			Stream bodyContent = await response.Content!.ReadAsStreamAsync(cancellationToken);
 
-			CurrentWeatherResponse? weatherResponse = await JsonSerializer.DeserializeAsync<CurrentWeatherResponse>(bodyContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			CurrentWeatherResponse? weatherResponse = await JsonSerializer.DeserializeAsync<CurrentWeatherResponse>(bodyContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, cancellationToken);
 
 			if (weatherResponse is null) {
 				throw new JsonException("Failed to parse result.");

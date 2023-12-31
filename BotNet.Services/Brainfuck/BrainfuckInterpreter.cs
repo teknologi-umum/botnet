@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Text;
 
 namespace BotNet.Services.Brainfuck {
-	public class BrainfuckInterpreter {
+	public static class BrainfuckInterpreter {
 		public static string RunBrainfuck(string code) {
 			byte[] program = Encoding.UTF8.GetBytes(code);
 			int programPointer = 0;

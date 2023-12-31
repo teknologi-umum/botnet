@@ -7,10 +7,8 @@ namespace BotNet.Services.OpenAI {
 			services.AddTransient<OpenAIClient>();
 			services.AddTransient<OpenAIStreamingClient>();
 			services.AddTransient<ThreadTracker>();
-			services.AddTransient<CodeExplainer>();
 			services.AddTransient<AssistantBot>();
 			services.AddTransient<Translator>();
-			services.AddTransient<CodeGenerator>();
 			services.AddTransient<FriendlyBot>();
 			services.AddTransient<SarcasticBot>();
 			services.AddTransient<AttachmentGenerator>();

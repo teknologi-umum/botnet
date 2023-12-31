@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Threading;
 using BotNet.Bot;
+using BotNet.CommandHandlers;
+using BotNet.CommandHandlers.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BMKG;
+using BotNet.Services.BotProfile;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.BubbleWrap;
 using BotNet.Services.ChineseCalendar;
@@ -52,6 +56,7 @@ builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Open
 builder.Services.Configure<StabilityOptions>(builder.Configuration.GetSection("StabilityOptions"));
 builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("GoogleMapOptions"));
 builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
+builder.Services.Configure<CommandPrioritizationOptions>(builder.Configuration.GetSection("CommandPrioritizationOptions"));
 builder.Services.AddHttpClient();
 builder.Services.AddFontService();
 builder.Services.AddColorCardRenderer();
@@ -76,11 +81,24 @@ builder.Services.AddMemeGenerator();
 builder.Services.AddBubbleWrapKeyboardGenerator();
 builder.Services.AddPrimbonScraper();
 builder.Services.AddChineseCalendarScraper();
+builder.Services.AddCommandHandlers();
+builder.Services.AddCommandPriorityCategorizer();
+builder.Services.AddBotProfileAccessor();
+
+// MediatR
+builder.Services.AddMediatR(config => {
+	config.Lifetime = ServiceLifetime.Transient;
+	config.AutoRegisterRequestProcessors = true;
+	config.RegisterServicesFromAssemblies(
+		typeof(SlashCommandHandler).Assembly
+	);
+});
 
 // Hosted Services
 builder.Services.Configure<BotOptions>(builder.Configuration.GetSection("BotOptions"));
 builder.Services.AddSingleton<BotService>();
 builder.Services.AddHostedService<BotService>();
+builder.Services.AddHostedService<CommandConsumer>();
 
 // Telegram Bot
 builder.Services.AddTelegramBot(botToken: builder.Configuration["BotOptions:AccessToken"]!);

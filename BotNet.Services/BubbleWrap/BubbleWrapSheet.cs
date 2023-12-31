@@ -18,10 +18,10 @@ namespace BotNet.Services.BubbleWrap {
 			})
 		);
 
-		public static BubbleWrapSheet ParseCallbackData(string callbackData = "FFFF") {
+		public static BubbleWrapSheet ParseSheetData(string sheetData = "FFFF") {
 			bool[,] data = new bool[4, 4];
 			for (int row = 0; row < 4; row++) {
-				byte bitmap = byte.Parse(callbackData.Substring(row, 1), NumberStyles.HexNumber);
+				byte bitmap = byte.Parse(sheetData.Substring(row, 1), NumberStyles.HexNumber);
 				for (int col = 0; col < 4; col++) {
 					data[row, col] = (bitmap & (1 << (3 - col))) > 0;
 				}
@@ -47,7 +47,7 @@ namespace BotNet.Services.BubbleWrap {
 			return new(data);
 		}
 
-		public string ToCallbackData() {
+		public string ToSheetData() {
 			StringBuilder callbackData = new();
 			for (int row = 0; row < 4; row++) {
 				int bitmap = 0;
@@ -66,7 +66,7 @@ namespace BotNet.Services.BubbleWrap {
 				Enumerable.Range(0, 4).Select(row => {
 					return Enumerable.Range(0, 4).Select(col => {
 						BubbleWrapSheet popped = Pop(row, col);
-						string poppedCallbackData = popped.ToCallbackData();
+						string poppedCallbackData = "pop:" + popped.ToSheetData();
 						return InlineKeyboardButton.WithCallbackData(
 							text: Data[row, col] ? "⚪" : "💥",
 							callbackData: poppedCallbackData

@@ -9,6 +9,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.BotCommands {
+	[Obsolete("Should be refactored to PreviewCommandHandler later")]
 	public static class Preview {
 		public static async Task GetPreviewAsync(ITelegramBotClient botClient, IServiceProvider serviceProvider, Message message, CancellationToken cancellationToken) {
 			if (message.Entities?.FirstOrDefault() is { Type: MessageEntityType.BotCommand, Offset: 0, Length: int commandLength }
