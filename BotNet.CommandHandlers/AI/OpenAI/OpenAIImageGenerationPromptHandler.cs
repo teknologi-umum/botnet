@@ -1,26 +1,28 @@
 ﻿using BotNet.Commands;
-using BotNet.Commands.AI.Stability;
+using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Services.OpenAI.Skills;
 using BotNet.Services.RateLimit;
-using BotNet.Services.Stability.Models;
-using BotNet.Services.Stability.Skills;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace BotNet.CommandHandlers.AI.Stability {
-	public sealed class StabilityTextToImagePromptHandler(
+namespace BotNet.CommandHandlers.AI.OpenAI {
+	public sealed class OpenAIImageGenerationPromptHandler(
 		ITelegramBotClient telegramBotClient,
 		ImageGenerationBot imageGenerationBot,
-		ITelegramMessageCache telegramMessageCache
-	) : ICommandHandler<StabilityTextToImagePrompt> {
-		internal static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(5));
+		ITelegramMessageCache telegramMessageCache,
+		ILogger<OpenAIImageGenerationPromptHandler> logger
+	) : ICommandHandler<OpenAIImageGenerationPrompt> {
+		private static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(5));
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ImageGenerationBot _imageGenerationBot = imageGenerationBot;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
+		private readonly ILogger<OpenAIImageGenerationPromptHandler> _logger = logger;
 
-		public Task Handle(StabilityTextToImagePrompt command, CancellationToken cancellationToken) {
+		public Task Handle(OpenAIImageGenerationPrompt command, CancellationToken cancellationToken) {
 			try {
 				IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
 			} catch (RateLimitExceededException exc) {
@@ -36,22 +38,14 @@ namespace BotNet.CommandHandlers.AI.Stability {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					byte[] generatedImage;
+					Uri generatedImageUrl;
 					try {
-						generatedImage = await _imageGenerationBot.GenerateImageAsync(
+						generatedImageUrl = await _imageGenerationBot.GenerateImageAsync(
 							prompt: command.Prompt,
 							cancellationToken: cancellationToken
 						);
-					} catch (ContentFilteredException exc) {
-						await _telegramBotClient.EditMessageTextAsync(
-							chatId: command.ChatId,
-							messageId: command.ResponseMessageId,
-							text: $"<code>{exc.Message ?? "Content filtered."}</code>",
-							parseMode: ParseMode.Html,
-							cancellationToken: cancellationToken
-						);
-						return;
-					} catch {
+					} catch (Exception exc) {
+						_logger.LogError(exc, "Could not generate image");
 						await _telegramBotClient.EditMessageTextAsync(
 							chatId: command.ChatId,
 							messageId: command.ResponseMessageId,
@@ -74,10 +68,9 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					}
 
 					// Send generated image
-					using MemoryStream generatedImageStream = new(generatedImage);
 					Message responseMessage = await _telegramBotClient.SendPhotoAsync(
 						chatId: command.ChatId,
-						photo: new InputFileStream(generatedImageStream, "art.png"),
+						photo: new InputFileUrl(generatedImageUrl),
 						replyToMessageId: command.PromptMessageId,
 						cancellationToken: cancellationToken
 					);

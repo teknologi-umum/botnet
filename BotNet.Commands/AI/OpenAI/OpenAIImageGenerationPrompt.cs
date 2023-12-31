@@ -1,7 +1,7 @@
 ﻿using BotNet.Commands.CommandPrioritization;
 
-namespace BotNet.Commands.AI.Stability {
-	public sealed record StabilityTextToImagePrompt : ICommand {
+namespace BotNet.Commands.AI.OpenAI {
+	public sealed record class OpenAIImageGenerationPrompt : ICommand {
 		public string CallSign { get; }
 		public string Prompt { get; }
 		public int PromptMessageId { get; }
@@ -10,7 +10,7 @@ namespace BotNet.Commands.AI.Stability {
 		public long SenderId { get; }
 		public CommandPriority CommandPriority { get; }
 
-		public StabilityTextToImagePrompt(
+		public OpenAIImageGenerationPrompt(
 			string callSign,
 			string prompt,
 			int promptMessageId,

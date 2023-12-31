@@ -28,25 +28,24 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		private readonly OpenAIClient _openAIClient = openAIClient;
 		private readonly ILogger<OpenAITextPromptHandler> _logger = logger;
 
-		public async Task Handle(OpenAITextPrompt command, CancellationToken cancellationToken) {
+		public Task Handle(OpenAITextPrompt command, CancellationToken cancellationToken) {
 			try {
 				CHAT_RATE_LIMITER.ValidateActionRate(
 					chatId: command.ChatId,
 					userId: command.SenderId
 				);
 			} catch (RateLimitExceededException exc) {
-				await _telegramBotClient.SendTextMessageAsync(
+				return _telegramBotClient.SendTextMessageAsync(
 					chatId: command.ChatId,
 					text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.PromptMessageId,
 					cancellationToken: cancellationToken
 				);
-				return;
 			}
 
 			// Fire and forget
-			Task _ = Task.Run(async () => {
+			Task.Run(async () => {
 				List<ChatMessage> messages = [
 					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image."),
 					ChatMessage.FromText("user", command.Prompt)
@@ -83,16 +82,43 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				// Handle image generation intent
 				if (response.StartsWith("ImageGeneration:")) {
 					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
-					await _commandQueue.DispatchAsync(
-						command: new StabilityTextToImagePrompt(
-							callSign: command.CallSign,
-							prompt: imageGenerationPrompt,
-							promptMessageId: command.PromptMessageId,
-							responseMessageId: responseMessage.MessageId,
-							chatId: command.ChatId,
-							senderId: command.SenderId
-						)
-					);
+					switch (command.CommandPriority) {
+						case CommandPriority.VIPChat:
+							await _commandQueue.DispatchAsync(
+								command: new OpenAIImageGenerationPrompt(
+									callSign: command.CallSign,
+									prompt: imageGenerationPrompt,
+									promptMessageId: command.PromptMessageId,
+									responseMessageId: responseMessage.MessageId,
+									chatId: command.ChatId,
+									senderId: command.SenderId,
+									commandPriority: command.CommandPriority
+								)
+							);
+							break;
+						case CommandPriority.HomeGroupChat:
+							await _commandQueue.DispatchAsync(
+								command: new StabilityTextToImagePrompt(
+									callSign: command.CallSign,
+									prompt: imageGenerationPrompt,
+									promptMessageId: command.PromptMessageId,
+									responseMessageId: responseMessage.MessageId,
+									chatId: command.ChatId,
+									senderId: command.SenderId,
+									commandPriority: command.CommandPriority
+								)
+							);
+							break;
+						default:
+							await _telegramBotClient.EditMessageTextAsync(
+								chatId: command.ChatId,
+								messageId: responseMessage.MessageId,
+								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
+								parseMode: ParseMode.MarkdownV2,
+								cancellationToken: cancellationToken
+							);
+							break;
+					}
 					return;
 				}
 
@@ -118,6 +144,8 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					)
 				);
 			});
+
+			return Task.CompletedTask;
 		}
 	}
 }

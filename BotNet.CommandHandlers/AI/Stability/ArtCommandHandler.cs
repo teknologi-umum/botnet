@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Stability.Models;
 using BotNet.Services.Stability.Skills;
@@ -9,20 +10,18 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.AI.Stability {
-	public sealed class StabilityTextToImagePromptHandler(
+	public sealed class ArtCommandHandler(
 		ITelegramBotClient telegramBotClient,
 		ImageGenerationBot imageGenerationBot,
 		ITelegramMessageCache telegramMessageCache
-	) : ICommandHandler<StabilityTextToImagePrompt> {
-		internal static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(5));
-
+	) : ICommandHandler<ArtCommand> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ImageGenerationBot _imageGenerationBot = imageGenerationBot;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 
-		public Task Handle(StabilityTextToImagePrompt command, CancellationToken cancellationToken) {
+		public Task Handle(ArtCommand command, CancellationToken cancellationToken) {
 			try {
-				IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				StabilityTextToImagePromptHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
 					chatId: command.ChatId,
@@ -36,6 +35,13 @@ namespace BotNet.CommandHandlers.AI.Stability {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
+					Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
+						chatId: command.ChatId,
+						text: MarkdownV2Sanitizer.Sanitize("Generating image… ⏳"),
+						parseMode: ParseMode.MarkdownV2,
+						replyToMessageId: command.PromptMessageId
+					);
+
 					byte[] generatedImage;
 					try {
 						generatedImage = await _imageGenerationBot.GenerateImageAsync(
@@ -45,7 +51,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					} catch (ContentFilteredException exc) {
 						await _telegramBotClient.EditMessageTextAsync(
 							chatId: command.ChatId,
-							messageId: command.ResponseMessageId,
+							messageId: responseMessage.MessageId,
 							text: $"<code>{exc.Message ?? "Content filtered."}</code>",
 							parseMode: ParseMode.Html,
 							cancellationToken: cancellationToken
@@ -54,7 +60,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					} catch {
 						await _telegramBotClient.EditMessageTextAsync(
 							chatId: command.ChatId,
-							messageId: command.ResponseMessageId,
+							messageId: responseMessage.MessageId,
 							text: "<code>Failed to generate image.</code>",
 							parseMode: ParseMode.Html,
 							cancellationToken: cancellationToken
@@ -66,7 +72,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					try {
 						await _telegramBotClient.DeleteMessageAsync(
 							chatId: command.ChatId,
-							messageId: command.ResponseMessageId,
+							messageId: responseMessage.MessageId,
 							cancellationToken: cancellationToken
 						);
 					} catch (OperationCanceledException) {
@@ -75,7 +81,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 
 					// Send generated image
 					using MemoryStream generatedImageStream = new(generatedImage);
-					Message responseMessage = await _telegramBotClient.SendPhotoAsync(
+					responseMessage = await _telegramBotClient.SendPhotoAsync(
 						chatId: command.ChatId,
 						photo: new InputFileStream(generatedImageStream, "art.png"),
 						replyToMessageId: command.PromptMessageId,
@@ -88,7 +94,6 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					);
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
-					// TODO: tie up loose ends
 				}
 			});
 

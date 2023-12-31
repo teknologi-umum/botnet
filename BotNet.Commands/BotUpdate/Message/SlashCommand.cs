@@ -37,6 +37,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
+			string botUsername,
 			CommandPriority commandPriority,
 			[NotNullWhen(true)] out SlashCommand? slashCommand
 		) {
@@ -48,6 +49,28 @@ namespace BotNet.Commands.BotUpdate.Message {
 			}) {
 				slashCommand = null;
 				return false;
+			}
+
+			// Message must have text or a caption
+			if ((message.Text ?? message.Caption) is not { } text
+				|| text.Length < commandLength) {
+				slashCommand = null;
+				return false;
+			}
+
+			string commandText = text[..commandLength];
+			string arg = text[commandLength..].Trim();
+
+			// Command must be for this bot
+			if (commandText.IndexOf('@') is int ampersandPos and not -1) {
+				string targetUsername = commandText[(ampersandPos + 1)..];
+				if (!StringComparer.OrdinalIgnoreCase.Equals(targetUsername, botUsername)) {
+					slashCommand = null;
+					return false;
+				}
+
+				// Simplify command text
+				commandText = commandText[..ampersandPos];
 			}
 
 			// Sender must be a user
@@ -65,26 +88,19 @@ namespace BotNet.Commands.BotUpdate.Message {
 				? senderFirstName
 				: $"{senderFirstName} {senderLastName}";
 
-			// Message must have text or a caption
-			if ((message.Text ?? message.Caption) is not { } text
-				|| text.Length < commandLength) {
-				slashCommand = null;
-				return false;
-			}
-
 			slashCommand = new(
 				messageId: message.MessageId,
 				chatId: message.Chat.Id,
 				senderId: senderId,
 				senderName: senderFullName,
 				commandPriority: commandPriority,
-				text: text[commandLength..].Trim(),
+				text: arg,
 				imageFileId: message.Photo?.LastOrDefault()?.FileId,
 				replyToMessageId: message.ReplyToMessage?.MessageId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
 					: NormalMessage.FromMessage(message.ReplyToMessage),
-				command: text[..commandLength]
+				command: commandText
 			);
 			return true;
 		}

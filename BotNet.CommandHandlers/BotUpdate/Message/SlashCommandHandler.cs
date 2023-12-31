@@ -1,6 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
-using BotNet.Commands.Art;
+using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;
 using BotNet.Commands.Eval;
@@ -87,16 +87,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						await _commandQueue.DispatchAsync(PrimbonCommand.FromSlashCommand(command));
 						break;
 					case "/art":
-						await _commandQueue.DispatchAsync(
-							command: ArtCommand.FromSlashCommand(
-								command: command,
-								thread: command.ReplyToMessage is null
-									? Enumerable.Empty<MessageBase>()
-									: _telegramMessageCache.GetThread(
-										firstMessage: command.ReplyToMessage
-									)
-							)
-						);
+						await _commandQueue.DispatchAsync(ArtCommand.FromSlashCommand(command));
 						break;
 					//case "/map":
 					//	await _commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));

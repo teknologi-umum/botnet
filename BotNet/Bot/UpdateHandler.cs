@@ -276,8 +276,10 @@ namespace BotNet.Bot {
 								case "/ask":
 								case "/humor":
 								case "/primbon":
+								case "/art":
 									if (SlashCommand.TryCreate(
 										message: update.Message!,
+										botUsername: _me!.Username!,
 										commandPriority: _serviceProvider.GetRequiredService<CommandPriorityCategorizer>()
 											.Categorize(update.Message),
 										slashCommand: out SlashCommand? slashCommand
@@ -289,10 +291,6 @@ namespace BotNet.Bot {
 									break;
 								case "/clean":
 									await Clean.SanitizeLinkAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
-								case "/art":
-									await Art.GetRandomArtAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
 									break;
 								case "/tldr":

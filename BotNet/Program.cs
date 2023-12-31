@@ -6,6 +6,7 @@ using BotNet.CommandHandlers.BotUpdate.Message;
 using BotNet.Commands;
 using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BMKG;
+using BotNet.Services.BotProfile;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.BubbleWrap;
 using BotNet.Services.ChineseCalendar;
@@ -83,6 +84,7 @@ builder.Services.AddPrimbonScraper();
 builder.Services.AddChineseCalendarScraper();
 builder.Services.AddCommandHandlers();
 builder.Services.AddCommandPriorityCategorizer();
+builder.Services.AddBotProfileAccessor();
 
 // MediatR
 builder.Services.AddMediatR(config => {

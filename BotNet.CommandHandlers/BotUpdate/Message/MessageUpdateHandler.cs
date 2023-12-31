@@ -1,17 +1,20 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
+using BotNet.Services.BotProfile;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
 	public sealed class MessageUpdateHandler(
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
-		CommandPriorityCategorizer commandPriorityCategorizer
+		CommandPriorityCategorizer commandPriorityCategorizer,
+		BotProfileAccessor botProfileAccessor
 	) : ICommandHandler<MessageUpdate> {
 		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
+		private readonly BotProfileAccessor _botProfileAccessor = botProfileAccessor;
 
 		public async Task Handle(MessageUpdate update, CancellationToken cancellationToken) {
 			// Handle slash commands
@@ -21,6 +24,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			}) {
 				if (SlashCommand.TryCreate(
 					message: update.Message,
+					botUsername: (await _botProfileAccessor.GetBotProfileAsync(cancellationToken)).Username!,
 					commandPriority: _commandPriorityCategorizer.Categorize(
 						message: update.Message
 					),
