@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
+using BotNet.Commands.BMKG;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;
 using BotNet.Commands.Eval;
@@ -89,14 +90,14 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/art":
 						await _commandQueue.DispatchAsync(ArtCommand.FromSlashCommand(command));
 						break;
+					case "/bmkg":
+						await _commandQueue.DispatchAsync(BMKGCommand.FromSlashCommand(command));
+						break;
 					//case "/map":
 					//	await _commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));
 					//	break;
 					//case "/weather":
 					//	await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
-					//	break;
-					//case "/bmkg":
-					//	await _commandQueue.DispatchAsync(BMKGCommand.FromSlashCommand(command));
 					//	break;
 					//case "/preview":
 					//	await _commandQueue.DispatchAsync(PreviewCommand.FromSlashCommand(command));

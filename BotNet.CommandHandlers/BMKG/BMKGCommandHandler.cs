@@ -1,27 +1,27 @@
-﻿using BotNet.Commands.Humor;
-using BotNet.Services.ProgrammerHumor;
+﻿using BotNet.Commands.BMKG;
+using BotNet.Services.BMKG;
 using BotNet.Services.RateLimit;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace BotNet.CommandHandlers.Humor {
-	public sealed class HumorCommandHandler(
+namespace BotNet.CommandHandlers.BMKG {
+	public sealed class BMKGCommandHandler(
 		ITelegramBotClient telegramBotClient,
-		ProgrammerHumorScraper programmerHumorScraper
-	) : ICommandHandler<HumorCommand> {
-		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
+		LatestEarthQuake latestEarthQuake
+	) : ICommandHandler<BMKGCommand> {
+		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(3, TimeSpan.FromMinutes(2));
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ProgrammerHumorScraper _programmerHumorScraper = programmerHumorScraper;
+		private readonly LatestEarthQuake _latestEarthQuake = latestEarthQuake;
 
-		public Task Handle(HumorCommand command, CancellationToken cancellationToken) {
+		public Task Handle(BMKGCommand command, CancellationToken cancellationToken) {
 			try {
 				RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
 					chatId: command.ChatId,
-					text: $"Bentar ya saya mikir dulu jokenya. Coba lagi {exc.Cooldown}.",
+					text: $"Sabar dulu ya, tunggu giliran yang lain. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CommandMessageId,
 					cancellationToken: cancellationToken
@@ -31,13 +31,14 @@ namespace BotNet.CommandHandlers.Humor {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					(string title, byte[] image) = await _programmerHumorScraper.GetRandomJokeAsync(cancellationToken);
-					using MemoryStream imageStream = new(image);
+					(string text, string shakemapUrl) = await _latestEarthQuake.GetLatestAsync();
 
 					await _telegramBotClient.SendPhotoAsync(
 						chatId: command.ChatId,
-						photo: new InputFileStream(imageStream, "joke.webp"),
-						caption: title,
+						photo: new InputFileUrl(shakemapUrl),
+						caption: text,
+						replyToMessageId: command.CommandMessageId,
+						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken
 					);
 				} catch (OperationCanceledException) {
