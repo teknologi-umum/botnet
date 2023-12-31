@@ -296,10 +296,6 @@ namespace BotNet.Bot {
 									await Preview.GetPreviewAsync(botClient, _serviceProvider, update.Message,
 										cancellationToken);
 									break;
-								case "/ramad":
-									await Meme.HandleRamadAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
 							}
 						}
 
