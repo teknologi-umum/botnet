@@ -292,10 +292,6 @@ namespace BotNet.Bot {
 										);
 									}
 									break;
-								case "/preview":
-									await Preview.GetPreviewAsync(botClient, _serviceProvider, update.Message,
-										cancellationToken);
-									break;
 							}
 						}
 

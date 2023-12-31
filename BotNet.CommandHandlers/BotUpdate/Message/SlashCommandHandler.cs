@@ -101,9 +101,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/weather":
 						await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
 						break;
-					//case "/preview":
-					//	await _commandQueue.DispatchAsync(PreviewCommand.FromSlashCommand(command));
-					//	break;
+					case "/preview":
+						await _commandQueue.DispatchAsync(PreviewCommand.FromSlashCommand(command));
+						break;
 				}
 			} catch (UsageException exc) {
 				await _telegramBotClient.SendTextMessageAsync(
