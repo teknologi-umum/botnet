@@ -103,6 +103,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
 						break;
 					case "/privilege":
+					case "/start":
 						await _commandQueue.DispatchAsync(PrivilegeCommand.FromSlashCommand(command));
 						break;
 				}
