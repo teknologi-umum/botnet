@@ -50,7 +50,7 @@ namespace BotNet.CommandHandlers.Primbon {
 						{{title}}: {{string.Join(", ", traits)}}
 
 						<b>Hari Larangan</b>
-						{{sangar}}{{restriction}}
+						{{sangar}}! {{restriction}}
 
 						<b>Chinese Calendar</b>
 						Clash: {{clash}} Evil: {{evil}}

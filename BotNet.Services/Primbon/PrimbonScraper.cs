@@ -48,7 +48,7 @@ namespace BotNet.Services.Primbon {
 			}
 
 			return (
-				Title: title.Trim(),
+				Title: title.Trim(' ', ':'),
 				Traits: traits.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 			);
 		}
@@ -96,8 +96,8 @@ namespace BotNet.Services.Primbon {
 
 			return (
 				JavaneseDate: body.Trim(),
-				Title: title.Trim(),
-				Description: desc.Trim()
+				Title: title.Trim(' ', '!'),
+				Description: desc.Trim(' ', '!')
 			);
 		}
 	}
