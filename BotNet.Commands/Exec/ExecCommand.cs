@@ -97,7 +97,7 @@ namespace BotNet.Commands.Exec {
 			// Must have code
 			if (string.IsNullOrWhiteSpace(code)) {
 				throw new UsageException(
-					message: $"Untuk mengeksekusi program, silakan ketik `{slashCommand.Command}` diikuti code\\..",
+					message: $"Untuk mengeksekusi program, silakan ketik `{slashCommand.Command}` diikuti code\\.",
 					parseMode: ParseMode.MarkdownV2,
 					commandMessageId: codeMessageId
 				);
