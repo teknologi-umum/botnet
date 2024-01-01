@@ -40,7 +40,7 @@ namespace BotNet.Commands.Primbon {
 			} else if (arg is "lusa") {
 				DateTime datetime = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(7)).Date.AddDays(2);
 				date = new(datetime.Year, datetime.Month, datetime.Day);
-			} else if (arg is not null) {
+			} else if (!string.IsNullOrWhiteSpace(arg)) {
 				if (!DateOnly.TryParseExact(arg, "d-M-yyyy", out date)
 					&& !DateOnly.TryParseExact(arg, "yyyy-M-d", out date)
 					&& !DateOnly.TryParseExact(arg, "d/M/yyyy", out date)
