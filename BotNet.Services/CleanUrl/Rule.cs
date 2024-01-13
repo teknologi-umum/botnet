@@ -155,6 +155,16 @@ new Rule
       Match = new Regex(@"play\.google\.com", RegexOptions.IgnoreCase),
       Rules = ["referrer", "pcampaignid"]
     },
+    new Rule
+    {
+      Name = "bing.com",
+      Match = new Regex(@"^www\.bing\.com", RegexOptions.IgnoreCase),
+      Rules = [
+        "qs", "form", "sp", "pq", "sc", "sk", "cvid", "FORM",
+        "ck", "simid", "thid", "cdnurl", "pivotparams", "ghsh", "ghacc",
+        "ccid", "", "ru"
+      ]
+    }
     ];
   }
 }
