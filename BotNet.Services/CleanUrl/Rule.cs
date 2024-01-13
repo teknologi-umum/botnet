@@ -94,7 +94,7 @@ namespace BotNet.Services.UrlCleaner {
       Match = new Regex(@".*\.facebook\.com", RegexOptions.IgnoreCase),
       Rules =
     [
-    "fbclid", "fb_ref", "fb_source", "referral_code", "referral_story_type", "tracking", "ref", "mibextid", "app"
+    "fbclid", "fb_ref", "fb_source", "referral_code", "referral_story_type", "tracking", "ref", "mibextid", "app", "_rdr", "m_entstream_source", "paipv", "locale", "eav"
       ],
     },
     new Rule

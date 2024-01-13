@@ -10,6 +10,7 @@ namespace BotNet.Tests.Services.CleanUrl {
 		[InlineData("https://www.kaorinusantara.or.id/newsline/194064/kak-seto-beneran-jadi-seto-kaiba-di-google?fbclid=IwAR2TTZgHLAAYJtZj_L5MKRGrHzrCa04_y8SMwYG-cteuyL6A5u1VVDjqh_c", "https://www.kaorinusantara.or.id/newsline/194064/kak-seto-beneran-jadi-seto-kaiba-di-google")]
 		[InlineData("https://www.facebook.com/groups/informatika.cringeposting/permalink/1110311033679168/?ref=share&mibextid=Cw5JYn", "https://www.facebook.com/groups/informatika.cringeposting/permalink/1110311033679168")]
 		[InlineData("https://www.instagram.com/reel/CvOeEfJhG0f/?igshid=NTc4MTIwNjQ2YQ%3D%3D", "https://www.instagram.com/reel/CvOeEfJhG0f")]
+		[InlineData("https://www.facebook.com/story.php?story_fbid=410430604519673&id=109479077948162&m_entstream_source=permalink&locale=ms_MY&paipv=0&eav=AfYTS-fXj_ioV3KMOuFjUx1hAV_g_FQX1W_Jfxi1SowzDV9LarINjBexw46zqBxKCTo&_rdr", "https://www.facebook.com/story.php?story_fbid=410430604519673&id=109479077948162")]
 		[InlineData("https://twitter.com/petergyang/status/1573489316147306496?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1573489316147306496%7Ctwgr%5E9bfbec9d831b2a896ffc769afc3b65024c52850b%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Fgames.ensipedia.id%2Fnews%2Fcerdas-mahasiswa-ini-manfaatkan-ai-untuk-mengerjakan-tugas-kuliah-dan-dapat-nilai-a%2F", "https://twitter.com/petergyang/status/1573489316147306496")]
 		public void CleanUrl_ShouldRemoveQueryParametersBasedOnRules(string url, string result) {
 			string cleanedUrl = UrlCleaner.Clean(new System.Uri(url)).ToString();
