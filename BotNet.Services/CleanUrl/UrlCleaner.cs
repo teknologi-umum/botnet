@@ -12,7 +12,7 @@ namespace BotNet.Services.UrlCleaner {
       foreach (Rule rule in RuleData.Rules) {
         if (rule.Match.IsMatch(url.ToString())) {
           foreach (string r in rule.Rules) {
-            url = new Uri(Regex.Replace(url.ToString(), $"[&?]({r})=[^&]*", ""));
+            url = new Uri(Regex.Replace(url.ToString(), $"[&?]({r})=?[^&]*", ""));
           }
         }
       }
