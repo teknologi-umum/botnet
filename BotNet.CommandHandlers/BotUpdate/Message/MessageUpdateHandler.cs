@@ -44,16 +44,17 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 
 			// Handle Social Link (better preview)
 			if ((update.Message.Text ?? update.Message.Caption) is { } textOrCaption) {
-				IEnumerable<Uri> betterLinks = SocialLinkEmbedFixer.GetPossibleUrls(textOrCaption);
+				IEnumerable<Uri> possibleUrls = SocialLinkEmbedFixer.GetPossibleUrls(textOrCaption);
 
-				if (betterLinks.Any()) {
+				if (possibleUrls.Any()) {
 					// Fire and forget
 					Task _ = Task.Run(async () => {
 						try {
-							foreach (Uri betterLink in betterLinks) {
+							foreach (Uri url in possibleUrls) {
+								Uri fixedUrl = SocialLinkEmbedFixer.Fix(url);
 								await _telegramBotClient.SendTextMessageAsync(
 									chatId: update.Message.Chat.Id,
-									text: $"Preview: {betterLink.OriginalString}",
+									text: $"Preview: {fixedUrl.OriginalString}",
 									replyToMessageId: update.Message.MessageId,
 									cancellationToken: cancellationToken
 								);
