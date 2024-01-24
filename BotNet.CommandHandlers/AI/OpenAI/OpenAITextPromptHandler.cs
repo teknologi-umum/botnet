@@ -48,8 +48,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			// Fire and forget
 			Task.Run(async () => {
 				List<ChatMessage> messages = [
-					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image."),
-					ChatMessage.FromText("user", command.Prompt)
+					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image.")
 				];
 
 				messages.AddRange(
@@ -61,6 +60,10 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						},
 						text: message.Text
 					)
+				);
+
+				messages.Add(
+					ChatMessage.FromText("user", command.Prompt)
 				);
 
 				Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
