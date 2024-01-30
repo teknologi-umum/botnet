@@ -2,6 +2,7 @@
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
@@ -17,11 +18,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		ITelegramBotClient telegramBotClient,
 		OpenAIClient openAIClient,
 		ITelegramMessageCache telegramMessageCache,
+		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<AskCommandHandler> logger
 	) : ICommandHandler<AskCommand> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly OpenAIClient _openAIClient = openAIClient;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
+		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 		private readonly ILogger<AskCommandHandler> _logger = logger;
 
 		public async Task Handle(AskCommand askCommand, CancellationToken cancellationToken) {
@@ -92,7 +95,8 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					message: AIResponseMessage.FromMessage(
 						message: responseMessage,
 						replyToMessage: askCommand.Command,
-						callSign: "AI"
+						callSign: "AI",
+						commandPriorityCategorizer: _commandPriorityCategorizer
 					)
 				);
 			});

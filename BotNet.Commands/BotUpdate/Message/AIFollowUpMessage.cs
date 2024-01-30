@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
@@ -26,17 +27,18 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
 			IEnumerable<MessageBase> thread,
+			CommandPriorityCategorizer commandPriorityCategorizer,
 			[NotNullWhen(true)] out AIFollowUpMessage? aiFollowUpMessage
 		) {
 			// Chat must be private or group
-			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+			if (!ChatBase.TryCreate(message.Chat, commandPriorityCategorizer, out ChatBase? chat)) {
 				aiFollowUpMessage = null;
 				return false;
 			}
 
 			// Sender must be a user
 			if (message.From is not { } from
-				|| !HumanSender.TryCreate(from, out HumanSender? sender)) {
+				|| !HumanSender.TryCreate(from, commandPriorityCategorizer, out HumanSender? sender)) {
 				aiFollowUpMessage = null;
 				return false;
 			}

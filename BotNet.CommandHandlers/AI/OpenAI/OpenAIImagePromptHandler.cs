@@ -4,6 +4,7 @@ using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
@@ -21,6 +22,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
 		OpenAIClient openAIClient,
+		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<OpenAIImageGenerationPromptHandler> logger
 	) : ICommandHandler<OpenAIImagePrompt> {
 		internal static readonly RateLimiter VISION_RATE_LIMITER = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(15));
@@ -29,6 +31,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 		private readonly OpenAIClient _openAIClient = openAIClient;
+		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 		private readonly ILogger<OpenAIImageGenerationPromptHandler> _logger = logger;
 
 		public Task Handle(OpenAIImagePrompt imagePrompt, CancellationToken cancellationToken) {
@@ -185,7 +188,8 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					message: AIResponseMessage.FromMessage(
 						message: responseMessage,
 						replyToMessage: imagePrompt.Command,
-						callSign: imagePrompt.CallSign
+						callSign: imagePrompt.CallSign,
+						commandPriorityCategorizer: _commandPriorityCategorizer
 					)
 				);
 			});

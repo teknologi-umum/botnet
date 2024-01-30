@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.Stability.Models;
 using BotNet.Services.Stability.Skills;
 using Telegram.Bot;
@@ -11,11 +12,13 @@ namespace BotNet.CommandHandlers.AI.Stability {
 	public sealed class StabilityTextToImagePromptHandler(
 		ITelegramBotClient telegramBotClient,
 		ImageGenerationBot imageGenerationBot,
-		ITelegramMessageCache telegramMessageCache
+		ITelegramMessageCache telegramMessageCache,
+		CommandPriorityCategorizer commandPriorityCategorizer
 	) : ICommandHandler<StabilityTextToImagePrompt> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ImageGenerationBot _imageGenerationBot = imageGenerationBot;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
+		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 
 		public Task Handle(StabilityTextToImagePrompt command, CancellationToken cancellationToken) {
 			// Fire and forget
@@ -69,7 +72,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 
 					// Track thread
 					_telegramMessageCache.Add(
-						NormalMessage.FromMessage(responseMessage)
+						NormalMessage.FromMessage(responseMessage, _commandPriorityCategorizer)
 					);
 				} catch (OperationCanceledException) {
 					// Terminate gracefully

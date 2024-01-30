@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using BotNet.Commands.CommandPrioritization;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.ChatAggregate {
@@ -16,11 +17,14 @@ namespace BotNet.Commands.ChatAggregate {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Chat telegramChat,
+			CommandPriorityCategorizer priorityCategorizer,
 			[NotNullWhen(true)] out ChatBase? chat
 		) {
 			chat = telegramChat switch {
 				Telegram.Bot.Types.Chat { Type: ChatType.Private } => PrivateChat.FromTelegramChat(telegramChat),
-				Telegram.Bot.Types.Chat { Type: ChatType.Group or ChatType.Supergroup } => GroupChat.FromTelegramChat(telegramChat),
+				Telegram.Bot.Types.Chat { Type: ChatType.Group or ChatType.Supergroup } => priorityCategorizer.IsHomeGroup(telegramChat.Id)
+					? HomeGroupChat.FromTelegramChat(telegramChat)
+					: GroupChat.FromTelegramChat(telegramChat),
 				_ => null
 			};
 			return chat is not null;
