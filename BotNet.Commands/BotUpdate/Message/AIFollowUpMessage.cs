@@ -1,46 +1,46 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using BotNet.Commands.CommandPrioritization;
-using Telegram.Bot.Types.Enums;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
-	public sealed record AIFollowUpMessage : MessageBase, ICommand {
-		public string CallSign { get; }
+	public sealed record AIFollowUpMessage : HumanMessageBase, ICommand {
+		public override AIResponseMessage ReplyToMessage => (AIResponseMessage)base.ReplyToMessage!;
+		public string CallSign => ReplyToMessage.CallSign;
 
 		public AIFollowUpMessage(
-			int messageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
-			CommandPriority commandPriority,
+			MessageId messageId,
+			ChatBase chat,
+			HumanSender sender,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId,
-			MessageBase? replyToMessage,
-			string callSign
+			AIResponseMessage replyToMessage
 		) : base(
 			messageId: messageId,
-			chatId: chatId,
-			chatType: chatType,
-			chatTitle: chatTitle,
-			senderId: senderId,
-			senderName: senderName,
-			commandPriority: commandPriority,
+			chat: chat,
+			sender: sender,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId,
 			replyToMessage: replyToMessage
-		) {
-			CallSign = callSign;
-		}
+		) { }
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
-			CommandPriority commandPriority,
 			IEnumerable<MessageBase> thread,
 			[NotNullWhen(true)] out AIFollowUpMessage? aiFollowUpMessage
 		) {
+			// Chat must be private or group
+			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+				aiFollowUpMessage = null;
+				return false;
+			}
+
+			// Sender must be a user
+			if (message.From is not { } from
+				|| !HumanSender.TryCreate(from, out HumanSender? sender)) {
+				aiFollowUpMessage = null;
+				return false;
+			}
+
 			// Message must contain text or caption
 			if ((message.Text ?? message.Caption) is not { } text) {
 				aiFollowUpMessage = null;
@@ -70,18 +70,12 @@ namespace BotNet.Commands.BotUpdate.Message {
 				: $"{senderFirstName} {senderLastName}";
 
 			aiFollowUpMessage = new(
-				messageId: message.MessageId,
-				chatId: message.Chat.Id,
-				chatType: message.Chat.Type,
-				chatTitle: message.Chat.Title,
-				senderId: senderId,
-				senderName: senderFullName,
-				commandPriority: commandPriority,
+				messageId: new(message.MessageId),
+				chat: chat,
+				sender: sender,
 				text: text,
 				imageFileId: message.Photo?.FirstOrDefault()?.FileId,
-				replyToMessageId: message.ReplyToMessage?.MessageId,
-				replyToMessage: aiResponseMessage,
-				callSign: callSign
+				replyToMessage: aiResponseMessage
 			);
 			return true;
 		}

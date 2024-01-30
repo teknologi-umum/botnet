@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace BotNet.CommandHandlers {
@@ -11,13 +12,13 @@ namespace BotNet.CommandHandlers {
 
 		public void Add(MessageBase message) {
 			_memoryCache.Set(
-				key: new Key(message.MessageId, message.ChatId),
+				key: new Key(message.MessageId, message.Chat.Id),
 				value: message,
 				absoluteExpirationRelativeToNow: CACHE_TTL
 			);
 		}
 
-		public MessageBase? GetOrDefault(int messageId, long chatId) {
+		public MessageBase? GetOrDefault(MessageId messageId, ChatId chatId) {
 			if (_memoryCache.TryGetValue<MessageBase>(
 				key: new Key(messageId, chatId),
 				value: out MessageBase? message
@@ -28,29 +29,29 @@ namespace BotNet.CommandHandlers {
 			}
 		}
 
-		public IEnumerable<MessageBase> GetThread(int messageId, long chatId) {
+		public IEnumerable<MessageBase> GetThread(MessageId messageId, ChatId chatId) {
 			while (GetOrDefault(messageId, chatId) is MessageBase message) {
 				yield return message;
-				if (message.ReplyToMessageId == null) {
+				if (message.ReplyToMessage == null) {
 					yield break;
 				}
-				messageId = message.ReplyToMessageId.Value;
+				messageId = message.ReplyToMessage.MessageId;
 			}
 		}
 
 		public IEnumerable<MessageBase> GetThread(MessageBase firstMessage) {
 			yield return firstMessage;
 			Add(firstMessage);
-			if (firstMessage.ReplyToMessageId.HasValue) {
-				foreach (MessageBase reply in GetThread(firstMessage.ReplyToMessageId.Value, firstMessage.ChatId)) {
+			if (firstMessage.ReplyToMessage is not null) {
+				foreach (MessageBase reply in GetThread(firstMessage.ReplyToMessage.MessageId, firstMessage.Chat.Id)) {
 					yield return reply;
 				}
 			}
 		}
 
 		readonly record struct Key(
-			int MessageId,
-			long ChatId
+			MessageId MessageId,
+			ChatId ChatId
 		);
 	}
 }

@@ -29,7 +29,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 						);
 					} catch (ContentFilteredException exc) {
 						await _telegramBotClient.EditMessageTextAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							text: $"<code>{exc.Message ?? "Content filtered."}</code>",
 							parseMode: ParseMode.Html,
@@ -38,7 +38,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 						return;
 					} catch {
 						await _telegramBotClient.EditMessageTextAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							text: "<code>Failed to generate image.</code>",
 							parseMode: ParseMode.Html,
@@ -50,7 +50,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					// Delete busy message
 					try {
 						await _telegramBotClient.DeleteMessageAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							cancellationToken: cancellationToken
 						);
@@ -61,7 +61,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					// Send generated image
 					using MemoryStream generatedImageStream = new(generatedImage);
 					Message responseMessage = await _telegramBotClient.SendPhotoAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						photo: new InputFileStream(generatedImageStream, "art.png"),
 						replyToMessageId: command.PromptMessageId,
 						cancellationToken: cancellationToken

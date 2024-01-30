@@ -17,10 +17,10 @@ namespace BotNet.CommandHandlers.Humor {
 
 		public Task Handle(HumorCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $"Bentar ya saya mikir dulu jokenya. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CommandMessageId,
@@ -35,7 +35,7 @@ namespace BotNet.CommandHandlers.Humor {
 					using MemoryStream imageStream = new(image);
 
 					await _telegramBotClient.SendPhotoAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						photo: new InputFileStream(imageStream, "joke.webp"),
 						caption: title,
 						cancellationToken: cancellationToken

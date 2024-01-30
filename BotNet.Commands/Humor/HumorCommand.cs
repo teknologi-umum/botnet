@@ -1,19 +1,21 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.Humor {
 	public sealed record HumorCommand : ICommand {
-		public long ChatId { get; }
-		public int CommandMessageId { get; }
-		public long SenderId { get; }
+		public MessageId CommandMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		private HumorCommand(
-			long chatId,
-			int commandMessageId,
-			long senderId
+			MessageId commandMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
-			ChatId = chatId;
 			CommandMessageId = commandMessageId;
-			SenderId = senderId;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static HumorCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -22,9 +24,9 @@ namespace BotNet.Commands.Humor {
 			}
 
 			return new(
-				chatId: slashCommand.ChatId,
 				commandMessageId: slashCommand.MessageId,
-				senderId: slashCommand.SenderId
+				chat: slashCommand.Chat,
+				sender: slashCommand.Sender
 			);
 		}
 	}

@@ -41,7 +41,7 @@ namespace BotNet.CommandHandlers.FlipFlop {
 			// Send result image
 			using MemoryStream resultImageStream = new(resultImage);
 			await _telegramBotClient.SendPhotoAsync(
-				chatId: command.ChatId,
+				chatId: command.Chat.Id,
 				photo: new InputFileStream(resultImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 				replyToMessageId: command.ImageMessageId,
 				cancellationToken: cancellationToken

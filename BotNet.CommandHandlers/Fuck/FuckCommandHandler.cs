@@ -16,7 +16,7 @@ namespace BotNet.CommandHandlers.Fuck {
 					code: command.Code
 				);
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: WebUtility.HtmlEncode(stdout),
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CodeMessageId,
@@ -24,7 +24,7 @@ namespace BotNet.CommandHandlers.Fuck {
 				);
 			} catch (InvalidProgramException exc) {
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: "<code>" + WebUtility.HtmlEncode(exc.Message) + "</code>",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CodeMessageId,
@@ -32,7 +32,7 @@ namespace BotNet.CommandHandlers.Fuck {
 				);
 			} catch (IndexOutOfRangeException) {
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: "<code>Memory access violation</code>",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CodeMessageId,
@@ -40,7 +40,7 @@ namespace BotNet.CommandHandlers.Fuck {
 				);
 			} catch (TimeoutException) {
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: "<code>Operation timed out</code>",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CodeMessageId,

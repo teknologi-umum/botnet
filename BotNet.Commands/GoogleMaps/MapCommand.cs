@@ -1,24 +1,26 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Common;
+using BotNet.Commands.SenderAggregate;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.GoogleMaps {
 	public sealed record MapCommand : ICommand {
 		public string PlaceName { get; }
-		public int CommandMessageId { get; }
-		public long ChatId { get; }
-		public long SenderId { get; }
+		public MessageId CommandMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		private MapCommand(
 			string placeName,
-			int commandMessageId,
-			long chatId,
-			long senderId
+			MessageId commandMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
 			PlaceName = placeName;
 			CommandMessageId = commandMessageId;
-			ChatId = chatId;
-			SenderId = senderId;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static MapCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -39,8 +41,8 @@ namespace BotNet.Commands.GoogleMaps {
 			return new(
 				placeName: slashCommand.Text,
 				commandMessageId: slashCommand.MessageId,
-				chatId: slashCommand.ChatId,
-				senderId: slashCommand.SenderId
+				chat: slashCommand.Chat,
+				sender: slashCommand.Sender
 			);
 		}
 	}

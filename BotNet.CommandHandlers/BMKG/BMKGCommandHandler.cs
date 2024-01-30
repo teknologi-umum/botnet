@@ -17,10 +17,10 @@ namespace BotNet.CommandHandlers.BMKG {
 
 		public Task Handle(BMKGCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $"Sabar dulu ya, tunggu giliran yang lain. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CommandMessageId,
@@ -34,7 +34,7 @@ namespace BotNet.CommandHandlers.BMKG {
 					(string text, string shakemapUrl) = await _latestEarthQuake.GetLatestAsync();
 
 					await _telegramBotClient.SendPhotoAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						photo: new InputFileUrl(shakemapUrl),
 						caption: text,
 						replyToMessageId: command.CommandMessageId,

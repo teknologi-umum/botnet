@@ -19,16 +19,14 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					await _commandQueue.DispatchAsync(
 						command: OpenAITextPrompt.FromAICallCommand(
 							aiCallCommand: command,
-							thread: command.ReplyToMessageId.HasValue
-								? _telegramMessageCache.GetThread(
-									messageId: command.ReplyToMessageId.Value,
-									chatId: command.ChatId
-								)
+							thread: command.ReplyToMessage is { } replyToMessage
+								? _telegramMessageCache.GetThread(replyToMessage)
 								: Enumerable.Empty<MessageBase>()
 						)
 					);
 					break;
 				case "AI" or "Bot" or "GPT" when command.ImageFileId is { } imageFileId:
+					// TODO: Implement GPT-4 Vision
 					break;
 			}
 		}

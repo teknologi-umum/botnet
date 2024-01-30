@@ -29,7 +29,7 @@ namespace BotNet.CommandHandlers.Exec {
 
 					if (result.Compile is { Code: not 0 }) {
 						await _telegramBotClient.SendTextMessageAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							text: $"<code>{WebUtility.HtmlEncode(result.Compile.Stderr)}</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: command.CodeMessageId,
@@ -37,7 +37,7 @@ namespace BotNet.CommandHandlers.Exec {
 						);
 					} else if (result.Run.Code != 0) {
 						await _telegramBotClient.SendTextMessageAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							text: $"<code>{WebUtility.HtmlEncode(result.Run.Stderr)}</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: command.CodeMessageId,
@@ -45,7 +45,7 @@ namespace BotNet.CommandHandlers.Exec {
 						);
 					} else if (result.Run.Output.Length > 1000 || result.Run.Output.Count(c => c == '\n') > 20) {
 						await _telegramBotClient.SendTextMessageAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 							text: "<code>Output is too long.</code>",
 							parseMode: ParseMode.Html,
 							replyToMessageId: command.CodeMessageId,
@@ -53,7 +53,7 @@ namespace BotNet.CommandHandlers.Exec {
 						);
 					} else {
 						await _telegramBotClient.SendTextMessageAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							text: $"Code:\n```{command.HighlightLanguageIdentifier}\n{MarkdownV2Sanitizer.Sanitize(command.Code)}\n```\nOutput:\n```\n{MarkdownV2Sanitizer.Sanitize(result.Run.Output)}\n```",
 							parseMode: ParseMode.MarkdownV2,
 							replyToMessageId: command.CodeMessageId,
@@ -64,7 +64,7 @@ namespace BotNet.CommandHandlers.Exec {
 				} catch (ExecutionEngineException exc) {
 #pragma warning restore CS0618 // Type or member is obsolete
 					await _telegramBotClient.SendTextMessageAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						text: "<code>" + WebUtility.HtmlEncode(exc.Message ?? "Unknown error") + "</code>",
 						parseMode: ParseMode.Html,
 						replyToMessageId: command.CodeMessageId,
@@ -72,7 +72,7 @@ namespace BotNet.CommandHandlers.Exec {
 					);
 				} catch (OperationCanceledException) {
 					await _telegramBotClient.SendTextMessageAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						text: "<code>Timeout exceeded.</code>",
 						parseMode: ParseMode.Html,
 						replyToMessageId: command.CodeMessageId,

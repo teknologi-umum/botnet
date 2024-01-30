@@ -1,6 +1,5 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
-using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
 using RG.Ninja;
@@ -12,13 +11,11 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ITelegramBotClient telegramBotClient,
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
-		CommandPriorityCategorizer commandPriorityCategorizer,
 		BotProfileAccessor botProfileAccessor
 	) : ICommandHandler<MessageUpdate> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
-		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 		private readonly BotProfileAccessor _botProfileAccessor = botProfileAccessor;
 
 		public async Task Handle(MessageUpdate update, CancellationToken cancellationToken) {
@@ -30,9 +27,6 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				if (SlashCommand.TryCreate(
 					message: update.Message,
 					botUsername: (await _botProfileAccessor.GetBotProfileAsync(cancellationToken)).Username!,
-					commandPriority: _commandPriorityCategorizer.Categorize(
-						message: update.Message
-					),
 					out SlashCommand? slashCommand
 				)) {
 					await _commandQueue.DispatchAsync(
@@ -114,9 +108,6 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			// Handle AI calls
 			if (AICallCommand.TryCreate(
 				message: update.Message!,
-				commandPriority: _commandPriorityCategorizer.Categorize(
-					message: update.Message!
-				),
 				out AICallCommand? aiCallCommand
 			)) {
 				// Cache both message and reply to message
@@ -140,17 +131,14 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				ReplyToMessage.MessageId: int replyToMessageId,
 				Chat.Id: long chatId
 			} && _telegramMessageCache.GetOrDefault(
-				messageId: replyToMessageId,
-				chatId: chatId
+				messageId: new(replyToMessageId),
+				chatId: new(chatId)
 			) is AIResponseMessage) {
 				if (!AIFollowUpMessage.TryCreate(
 					message: update.Message,
-					commandPriority: _commandPriorityCategorizer.Categorize(
-						message: update.Message
-					),
 					thread: _telegramMessageCache.GetThread(
-						messageId: replyToMessageId,
-						chatId: chatId
+						messageId: new(replyToMessageId),
+						chatId: new(chatId)
 					),
 					out AIFollowUpMessage? aiFollowUpMessage
 				)) {

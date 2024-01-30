@@ -32,7 +32,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					} catch (Exception exc) {
 						_logger.LogError(exc, "Could not generate image");
 						await _telegramBotClient.EditMessageTextAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							text: "<code>Failed to generate image.</code>",
 							parseMode: ParseMode.Html,
@@ -44,7 +44,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					// Delete busy message
 					try {
 						await _telegramBotClient.DeleteMessageAsync(
-							chatId: command.ChatId,
+							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							cancellationToken: cancellationToken
 						);
@@ -54,7 +54,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 					// Send generated image
 					Message responseMessage = await _telegramBotClient.SendPhotoAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						photo: new InputFileUrl(generatedImageUrl),
 						replyToMessageId: command.PromptMessageId,
 						cancellationToken: cancellationToken

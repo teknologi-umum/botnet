@@ -1,31 +1,21 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
-using BotNet.Commands.CommandPrioritization;
 
 namespace BotNet.Commands.AI.OpenAI {
 	public sealed record OpenAITextPrompt : ICommand {
 		public string CallSign { get; }
 		public string Prompt { get; }
-		public int PromptMessageId { get; }
-		public long ChatId { get; }
-		public long SenderId { get; }
-		public CommandPriority CommandPriority { get; }
+		public HumanMessageBase Command { get; }
 		public IEnumerable<MessageBase> Thread { get; }
 
 		private OpenAITextPrompt(
 			string callSign,
 			string prompt,
-			int promptMessageId,
-			long chatId,
-			long senderId,
-			CommandPriority commandPriority,
+			HumanMessageBase command,
 			IEnumerable<MessageBase> thread
 		) {
 			CallSign = callSign;
 			Prompt = prompt;
-			PromptMessageId = promptMessageId;
-			ChatId = chatId;
-			SenderId = senderId;
-			CommandPriority = commandPriority;
+			Command = command;
 			Thread = thread;
 		}
 
@@ -43,10 +33,10 @@ namespace BotNet.Commands.AI.OpenAI {
 			// Non-empty thread must begin with reply to message
 			if (thread.FirstOrDefault() is {
 				MessageId: { } firstMessageId,
-				ChatId: { } firstChatId
+				Chat.Id: { } firstChatId
 			}) {
-				if (firstMessageId != aiCallCommand.ReplyToMessageId
-					|| firstChatId != aiCallCommand.ChatId) {
+				if (firstMessageId != aiCallCommand.ReplyToMessage?.MessageId
+					|| firstChatId != aiCallCommand.Chat.Id) {
 					throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
 				}
 			}
@@ -54,10 +44,7 @@ namespace BotNet.Commands.AI.OpenAI {
 			return new(
 				callSign: aiCallCommand.CallSign,
 				prompt: aiCallCommand.Text,
-				promptMessageId: aiCallCommand.MessageId,
-				chatId: aiCallCommand.ChatId,
-				senderId: aiCallCommand.SenderId,
-				commandPriority: aiCallCommand.CommandPriority,
+				command: aiCallCommand,
 				thread: thread
 			);
 		}
@@ -76,10 +63,10 @@ namespace BotNet.Commands.AI.OpenAI {
 			// Non-empty thread must begin with reply to message
 			if (thread.FirstOrDefault() is {
 				MessageId: { } firstMessageId,
-				ChatId: { } firstChatId
+				Chat.Id: { } firstChatId
 			}) {
-				if (firstMessageId != aiFollowUpMessage.ReplyToMessageId
-					|| firstChatId != aiFollowUpMessage.ChatId) {
+				if (firstMessageId != aiFollowUpMessage.ReplyToMessage.MessageId
+					|| firstChatId != aiFollowUpMessage.Chat.Id) {
 					throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
 				}
 			}
@@ -87,10 +74,7 @@ namespace BotNet.Commands.AI.OpenAI {
 			return new(
 				callSign: aiFollowUpMessage.CallSign,
 				prompt: aiFollowUpMessage.Text,
-				promptMessageId: aiFollowUpMessage.MessageId,
-				chatId: aiFollowUpMessage.ChatId,
-				senderId: aiFollowUpMessage.SenderId,
-				commandPriority: aiFollowUpMessage.CommandPriority,
+				command: aiFollowUpMessage,
 				thread: thread
 			);
 		}

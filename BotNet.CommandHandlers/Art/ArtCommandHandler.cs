@@ -2,7 +2,8 @@
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.Art;
-using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
 using Telegram.Bot;
@@ -21,10 +22,10 @@ namespace BotNet.CommandHandlers.Art {
 
 		public Task Handle(ArtCommand command, CancellationToken cancellationToken) {
 			try {
-				IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.PromptMessageId,
@@ -35,10 +36,10 @@ namespace BotNet.CommandHandlers.Art {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					switch (command.CommandPriority) {
-						case CommandPriority.VIPChat: {
+					switch (command) {
+						case { Sender: VIPSender }: {
 								Message busyMessage = await _telegramBotClient.SendTextMessageAsync(
-									chatId: command.ChatId,
+									chatId: command.Chat.Id,
 									text: "Generating image… ⏳",
 									parseMode: ParseMode.Markdown,
 									replyToMessageId: command.PromptMessageId,
@@ -50,17 +51,16 @@ namespace BotNet.CommandHandlers.Art {
 										callSign: "AI",
 										prompt: command.Prompt,
 										promptMessageId: command.PromptMessageId,
-										responseMessageId: busyMessage.MessageId,
-										chatId: command.ChatId,
-										senderId: command.SenderId,
-										commandPriority: command.CommandPriority
+										responseMessageId: new(busyMessage.MessageId),
+										chat: command.Chat,
+										sender: command.Sender
 									)
 								);
 							}
 							break;
-						case CommandPriority.HomeGroupChat: {
+						case { Chat: HomeGroupChat }: {
 								Message busyMessage = await _telegramBotClient.SendTextMessageAsync(
-									chatId: command.ChatId,
+									chatId: command.Chat.Id,
 									text: "Generating image… ⏳",
 									parseMode: ParseMode.Markdown,
 									replyToMessageId: command.PromptMessageId,
@@ -72,17 +72,16 @@ namespace BotNet.CommandHandlers.Art {
 										callSign: "AI",
 										prompt: command.Prompt,
 										promptMessageId: command.PromptMessageId,
-										responseMessageId: busyMessage.MessageId,
-										chatId: command.ChatId,
-										senderId: command.SenderId,
-										commandPriority: command.CommandPriority
+										responseMessageId: new(busyMessage.MessageId),
+										chat: command.Chat,
+										sender: command.Sender
 									)
 								);
 							}
 							break;
 						default:
 							await _telegramBotClient.SendTextMessageAsync(
-								chatId: command.ChatId,
+								chatId: command.Chat.Id,
 								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
 								parseMode: ParseMode.MarkdownV2,
 								replyToMessageId: command.PromptMessageId,

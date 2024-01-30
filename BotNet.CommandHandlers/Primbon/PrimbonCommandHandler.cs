@@ -18,7 +18,7 @@ namespace BotNet.CommandHandlers.Primbon {
 
 		public async Task Handle(PrimbonCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 
 				(string javaneseDate, string sangar, string restriction) = await _primbonScraper.GetTaliwangkeAsync(
 					date: command.Date,
@@ -42,7 +42,7 @@ namespace BotNet.CommandHandlers.Primbon {
 				);
 
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $$"""
 						<b>{{javaneseDate}}</b>
 
@@ -66,7 +66,7 @@ namespace BotNet.CommandHandlers.Primbon {
 				);
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $"Coba lagi {cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CommandMessageId,

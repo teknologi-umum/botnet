@@ -1,35 +1,26 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.BotUpdate.Message {
-	public sealed record SlashCommand : MessageBase, ICommand {
+	public sealed record SlashCommand : HumanMessageBase, ICommand {
 		public string Command { get; }
 
 		private SlashCommand(
-			int messageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
-			CommandPriority commandPriority,
+			MessageId messageId,
+			ChatBase chat,
+			HumanSender sender,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId,
 			MessageBase? replyToMessage,
 			string command
 		) : base(
 			messageId: messageId,
-			chatId: chatId,
-			chatType: chatType,
-			chatTitle: chatTitle,
-			senderId: senderId,
-			senderName: senderName,
-			commandPriority: commandPriority,
+			chat: chat,
+			sender: sender,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId,
 			replyToMessage: replyToMessage
 		) {
 			ArgumentNullException.ThrowIfNull(command);
@@ -42,7 +33,6 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
 			string botUsername,
-			CommandPriority commandPriority,
 			[NotNullWhen(true)] out SlashCommand? slashCommand
 		) {
 			// Message must start with a slash command
@@ -51,6 +41,19 @@ namespace BotNet.Commands.BotUpdate.Message {
 				Offset: 0,
 				Length: int commandLength and > 1
 			}) {
+				slashCommand = null;
+				return false;
+			}
+
+			// Chat must be private or group
+			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+				slashCommand = null;
+				return false;
+			}
+
+			// Sender must be a user
+			if (message.From is not { } from
+				|| !HumanSender.TryCreate(from, out HumanSender? sender)) {
 				slashCommand = null;
 				return false;
 			}
@@ -77,32 +80,12 @@ namespace BotNet.Commands.BotUpdate.Message {
 				commandText = commandText[..ampersandPos];
 			}
 
-			// Sender must be a user
-			if (message.From is not {
-				IsBot: false,
-				Id: long senderId,
-				FirstName: string senderFirstName,
-				LastName: var senderLastName
-			}) {
-				slashCommand = null;
-				return false;
-			}
-
-			string senderFullName = senderLastName is null
-				? senderFirstName
-				: $"{senderFirstName} {senderLastName}";
-
 			slashCommand = new(
-				messageId: message.MessageId,
-				chatId: message.Chat.Id,
-				chatType: message.Chat.Type,
-				chatTitle: message.Chat.Title,
-				senderId: senderId,
-				senderName: senderFullName,
-				commandPriority: commandPriority,
+				messageId: new(message.MessageId),
+				chat: chat,
+				sender: sender,
 				text: arg,
 				imageFileId: message.Photo?.LastOrDefault()?.FileId,
-				replyToMessageId: message.ReplyToMessage?.MessageId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
 					: NormalMessage.FromMessage(message.ReplyToMessage),

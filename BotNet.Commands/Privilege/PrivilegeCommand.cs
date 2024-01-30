@@ -1,44 +1,28 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
-using BotNet.Commands.CommandPrioritization;
-using Telegram.Bot.Types.Enums;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.Privilege {
 	public sealed record PrivilegeCommand : ICommand {
-		public int CommandMessageId { get; }
-		public long ChatId { get; }
-		public ChatType ChatType { get; }
-		public string? ChatTitle { get; }
-		public long SenderId { get; }
-		public string SenderName { get; }
-		public CommandPriority CommandPriority { get; }
+		public MessageId CommandMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		private PrivilegeCommand(
-			int commandMessageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
-			CommandPriority commandPriority
+			MessageId commandMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
 			CommandMessageId = commandMessageId;
-			ChatId = chatId;
-			ChatType = chatType;
-			ChatTitle = chatTitle;
-			SenderId = senderId;
-			SenderName = senderName;
-			CommandPriority = commandPriority;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static PrivilegeCommand FromSlashCommand(SlashCommand command) {
 			return new(
 				commandMessageId: command.MessageId,
-				chatId: command.ChatId,
-				chatType: command.ChatType,
-				chatTitle: command.ChatTitle,
-				senderId: command.SenderId,
-				senderName: command.SenderName,
-				commandPriority: command.CommandPriority
+				chat: command.Chat,
+				sender: command.Sender
 			);
 		}
 	}
