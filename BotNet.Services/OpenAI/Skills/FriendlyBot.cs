@@ -14,7 +14,7 @@ namespace BotNet.Services.OpenAI.Skills {
 		private readonly OpenAIStreamingClient _openAIStreamingClient = openAIStreamingClient;
 
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
-			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
+			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point.\n\n"
 				+ $"{name}: Hello, how are you?\n"
 				+ $"{callSign}: I am an AI created by TEKNUM. How can I help you today?\n\n"
 				+ $"{name}: {question}\n"
@@ -33,7 +33,7 @@ namespace BotNet.Services.OpenAI.Skills {
 		}
 
 		public Task<string> RespondToThreadAsync(string callSign, string name, string question, ImmutableList<(string Sender, string Text)> thread, CancellationToken cancellationToken) {
-			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
+			string prompt = $"The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point.\n\n"
 				+ $"{name}: Hello, how are you?\n"
 				+ $"{callSign}: I am an AI created by TEKNUM. How can I help you today?\n\n";
 			foreach ((string sender, string text) in thread) {
@@ -58,7 +58,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 		public Task<string> ChatAsync(string message, CancellationToken cancellationToken) {
 			List<ChatMessage> messages = [
-				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
 				ChatMessage.FromText("user", message)
 			];
 
@@ -72,7 +72,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 		public async Task StreamChatAsync(string message, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = [
-				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
 				ChatMessage.FromText("user", message)
 			];
 
@@ -88,7 +88,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 		public Task<string> ChatAsync(string message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, CancellationToken cancellationToken) {
 			List<ChatMessage> messages = new() {
-				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
 
 				from tuple in thread
 				let role = tuple.Sender switch {
@@ -115,7 +115,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 		public async Task StreamChatAsync(string message, ImmutableList<(string Sender, string? Text, string? ImageBase64)> thread, long chatId, int replyToMessageId) {
 			List<ChatMessage> messages = new() {
-				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly."),
+				ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
 
 				from tuple in thread
 				let role = tuple.Sender switch {
