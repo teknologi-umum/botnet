@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.Extensions.Options;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.CommandPrioritization {
 	public sealed class CommandPriorityCategorizer {
@@ -28,37 +26,12 @@ namespace BotNet.Commands.CommandPrioritization {
 				.ToImmutableHashSet();
 		}
 
-		public CommandPriority Categorize(Message message) {
-			if (message.From is null) {
-				return CommandPriority.Void;
-			}
-
-			if (message.From.IsBot) {
-				return CommandPriority.Void;
-			}
-
-			if (_vipUserIds.Contains(message.From.Id)) {
-				return CommandPriority.VIPChat;
-			}
-
-			if (_homeGroupChatIds.Contains(message.Chat.Id)) {
-				return CommandPriority.HomeGroupChat;
-			}
-
-			switch (message.Chat.Type) {
-				case ChatType.Private:
-					return CommandPriority.PrivateChat;
-				case ChatType.Group:
-				case ChatType.Channel:
-				case ChatType.Supergroup:
-					return CommandPriority.GroupChat;
-				default:
-					return CommandPriority.Void;
-			}
-		}
-
 		public bool IsHomeGroup(long ChatId) {
 			return _homeGroupChatIds.Contains(ChatId);
+		}
+
+		public bool IsVIPUser(long UserId) {
+			return _vipUserIds.Contains(UserId);
 		}
 	}
 }

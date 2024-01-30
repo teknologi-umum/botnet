@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 using Telegram.Bot.Types.Enums;
 
@@ -33,6 +34,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
 			string botUsername,
+			CommandPriorityCategorizer commandPriorityCategorizer,
 			[NotNullWhen(true)] out SlashCommand? slashCommand
 		) {
 			// Message must start with a slash command
@@ -46,14 +48,14 @@ namespace BotNet.Commands.BotUpdate.Message {
 			}
 
 			// Chat must be private or group
-			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+			if (!ChatBase.TryCreate(message.Chat, commandPriorityCategorizer, out ChatBase? chat)) {
 				slashCommand = null;
 				return false;
 			}
 
 			// Sender must be a user
 			if (message.From is not { } from
-				|| !HumanSender.TryCreate(from, out HumanSender? sender)) {
+				|| !HumanSender.TryCreate(from, commandPriorityCategorizer, out HumanSender? sender)) {
 				slashCommand = null;
 				return false;
 			}
@@ -88,7 +90,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				imageFileId: message.Photo?.LastOrDefault()?.FileId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
-					: NormalMessage.FromMessage(message.ReplyToMessage),
+					: NormalMessage.FromMessage(message.ReplyToMessage, commandPriorityCategorizer),
 				command: commandText
 			);
 			return true;

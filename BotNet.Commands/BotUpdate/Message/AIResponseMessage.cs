@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
@@ -27,10 +28,11 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public static AIResponseMessage FromMessage(
 			Telegram.Bot.Types.Message message,
 			HumanMessageBase replyToMessage,
-			string callSign
+			string callSign,
+			CommandPriorityCategorizer commandPriorityCategorizer
 		) {
 			// Chat must be private or group
-			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+			if (!ChatBase.TryCreate(message.Chat, commandPriorityCategorizer, out ChatBase? chat)) {
 				throw new ArgumentException("Chat must be private or group.", nameof(message));
 			}
 

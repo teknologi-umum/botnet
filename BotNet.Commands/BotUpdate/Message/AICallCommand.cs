@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
@@ -36,17 +37,18 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
+			CommandPriorityCategorizer commandPriorityCategorizer,
 			[NotNullWhen(true)] out AICallCommand? aiCallCommand
 		) {
 			// Chat must be private or group
-			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+			if (!ChatBase.TryCreate(message.Chat, commandPriorityCategorizer, out ChatBase? chat)) {
 				aiCallCommand = null;
 				return false;
 			}
 
 			// Sender must be a user
 			if (message.From is not { } from
-				|| !HumanSender.TryCreate(from, out HumanSender? sender)) {
+				|| !HumanSender.TryCreate(from, commandPriorityCategorizer, out HumanSender? sender)) {
 				aiCallCommand = null;
 				return false;
 			}
@@ -72,7 +74,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 					?? message.ReplyToMessage?.Sticker?.FileId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
-					: NormalMessage.FromMessage(message.ReplyToMessage),
+					: NormalMessage.FromMessage(message.ReplyToMessage, commandPriorityCategorizer),
 				callSign: callSign
 			);
 			return true;

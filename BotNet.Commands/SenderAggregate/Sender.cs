@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using BotNet.Commands.CommandPrioritization;
 
 namespace BotNet.Commands.SenderAggregate {
 	public abstract record SenderBase(
@@ -16,23 +17,32 @@ namespace BotNet.Commands.SenderAggregate {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.User user,
+			CommandPriorityCategorizer commandPriorityCategorizer,
 			[NotNullWhen(true)] out HumanSender? humanSender
 		) {
-			if (user is {
+			if (user is not {
 				IsBot: false,
 				Id: long senderId,
 				FirstName: string senderFirstName,
 				LastName: var senderLastName
 			}) {
-				humanSender = new HumanSender(
+				humanSender = null;
+				return false;
+			}
+
+			if (commandPriorityCategorizer.IsVIPUser(senderId)) {
+				humanSender = new VIPSender(
 					Id: senderId,
 					Name: senderLastName is { } ? $"{senderFirstName} {senderLastName}" : senderFirstName
 				);
 				return true;
 			}
 
-			humanSender = null;
-			return false;
+			humanSender = new HumanSender(
+				Id: senderId,
+				Name: senderLastName is { } ? $"{senderFirstName} {senderLastName}" : senderFirstName
+			);
+			return true;
 		}
 	}
 

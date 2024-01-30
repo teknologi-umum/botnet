@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
 using RG.Ninja;
@@ -11,12 +12,14 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ITelegramBotClient telegramBotClient,
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
-		BotProfileAccessor botProfileAccessor
+		BotProfileAccessor botProfileAccessor,
+		CommandPriorityCategorizer commandPriorityCategorizer
 	) : ICommandHandler<MessageUpdate> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 		private readonly BotProfileAccessor _botProfileAccessor = botProfileAccessor;
+		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 
 		public async Task Handle(MessageUpdate update, CancellationToken cancellationToken) {
 			// Handle slash commands
@@ -27,6 +30,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				if (SlashCommand.TryCreate(
 					message: update.Message,
 					botUsername: (await _botProfileAccessor.GetBotProfileAsync(cancellationToken)).Username!,
+					commandPriorityCategorizer: _commandPriorityCategorizer,
 					out SlashCommand? slashCommand
 				)) {
 					await _commandQueue.DispatchAsync(
@@ -108,6 +112,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			// Handle AI calls
 			if (AICallCommand.TryCreate(
 				message: update.Message!,
+				commandPriorityCategorizer: _commandPriorityCategorizer,
 				out AICallCommand? aiCallCommand
 			)) {
 				// Cache both message and reply to message
@@ -140,6 +145,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						messageId: new(replyToMessageId),
 						chatId: new(chatId)
 					),
+					commandPriorityCategorizer: _commandPriorityCategorizer,
 					out AIFollowUpMessage? aiFollowUpMessage
 				)) {
 					return;

@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Services.OpenAI.Skills;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -12,11 +13,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		ITelegramBotClient telegramBotClient,
 		ImageGenerationBot imageGenerationBot,
 		ITelegramMessageCache telegramMessageCache,
+		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<OpenAIImageGenerationPromptHandler> logger
 	) : ICommandHandler<OpenAIImageGenerationPrompt> {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ImageGenerationBot _imageGenerationBot = imageGenerationBot;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
+		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
 		private readonly ILogger<OpenAIImageGenerationPromptHandler> _logger = logger;
 
 		public Task Handle(OpenAIImageGenerationPrompt command, CancellationToken cancellationToken) {
@@ -62,7 +65,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 					// Track thread
 					_telegramMessageCache.Add(
-						NormalMessage.FromMessage(responseMessage)
+						NormalMessage.FromMessage(responseMessage, _commandPriorityCategorizer)
 					);
 				} catch (OperationCanceledException) {
 					// Terminate gracefully

@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
@@ -19,9 +20,9 @@ namespace BotNet.Commands.BotUpdate.Message {
 			replyToMessage: replyToMessage
 		) { }
 
-		public static NormalMessage FromMessage(Telegram.Bot.Types.Message message) {
+		public static NormalMessage FromMessage(Telegram.Bot.Types.Message message, CommandPriorityCategorizer commandPriorityCategorizer) {
 			// Chat must be private or group
-			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+			if (!ChatBase.TryCreate(message.Chat, commandPriorityCategorizer, out ChatBase? chat)) {
 				throw new ArgumentException("Chat must be private or group.", nameof(message));
 			}
 
@@ -33,7 +34,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			return new(
 				messageId: new(message.MessageId),
 				chat: chat,
-				sender: HumanSender.TryCreate(from, out HumanSender? humanSender)
+				sender: HumanSender.TryCreate(from, commandPriorityCategorizer, out HumanSender? humanSender)
 					? humanSender
 					: BotSender.TryCreate(from, out BotSender? botSender)
 						? botSender
@@ -42,7 +43,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 				imageFileId: message.Photo?.LastOrDefault()?.FileId ?? message.Sticker?.FileId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
-					: NormalMessage.FromMessage(message.ReplyToMessage)
+					: NormalMessage.FromMessage(message.ReplyToMessage, commandPriorityCategorizer)
 			);
 		}
 	}
