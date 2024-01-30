@@ -15,7 +15,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 
 		public async Task Handle(AICallCommand command, CancellationToken cancellationToken) {
 			switch (command.CallSign) {
-				case "AI" or "Bot" or "GPT" when command.ImageFileId is null: {
+				case "AI" or "Bot" or "GPT" when command.ImageFileId is null && command.ReplyToMessage?.ImageFileId is null: {
 						await _commandQueue.DispatchAsync(
 							command: OpenAITextPrompt.FromAICallCommand(
 								aiCallCommand: command,
@@ -26,7 +26,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						);
 						break;
 					}
-				case "AI" or "Bot" or "GPT" when command.ImageFileId is { } imageFileId: {
+				case "AI" or "Bot" or "GPT" when command.ImageFileId is not null || command.ReplyToMessage?.ImageFileId is not null: {
 						await _commandQueue.DispatchAsync(
 							command: OpenAIImagePrompt.FromAICallCommand(
 								aiCallCommand: command,
