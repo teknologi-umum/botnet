@@ -34,7 +34,12 @@ namespace BotNet.Commands.AI.OpenAI {
 			}
 
 			// File ID must be non-empty
-			if (string.IsNullOrWhiteSpace(aiCallCommand.ImageFileId)) {
+			string imageFileId;
+			if (!string.IsNullOrWhiteSpace(aiCallCommand.ImageFileId)) {
+				imageFileId = aiCallCommand.ImageFileId;
+			} else if (!string.IsNullOrWhiteSpace(thread.FirstOrDefault()?.ImageFileId)) {
+				imageFileId = thread.First().ImageFileId!;
+			} else {
 				throw new ArgumentException("File ID must be non-empty.", nameof(aiCallCommand));
 			}
 
@@ -52,7 +57,7 @@ namespace BotNet.Commands.AI.OpenAI {
 			return new(
 				callSign: aiCallCommand.CallSign,
 				prompt: aiCallCommand.Text,
-				imageFileId: aiCallCommand.ImageFileId,
+				imageFileId: imageFileId,
 				command: aiCallCommand,
 				thread: thread
 			);
