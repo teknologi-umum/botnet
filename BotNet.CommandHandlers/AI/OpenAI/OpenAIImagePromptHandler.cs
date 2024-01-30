@@ -104,10 +104,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				);
 
 				string response = await _openAIClient.ChatAsync(
-					model: imagePrompt switch {
-						({ Command: { Sender: VIPSender } or { Chat: HomeGroupChat } }) => "gpt-4-1106-preview",
-						_ => "gpt-3.5-turbo"
-					},
+					model: "gpt-4-vision-preview",
 					messages: messages,
 					maxTokens: 512,
 					cancellationToken: cancellationToken
