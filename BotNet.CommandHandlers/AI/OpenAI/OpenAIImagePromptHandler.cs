@@ -26,6 +26,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		ILogger<OpenAIImageGenerationPromptHandler> logger
 	) : ICommandHandler<OpenAIImagePrompt> {
 		internal static readonly RateLimiter VISION_RATE_LIMITER = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(15));
+		internal static readonly RateLimiter VIP_VISION_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(5));
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ICommandQueue _commandQueue = commandQueue;
@@ -47,10 +48,17 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			}
 
 			try {
-				VISION_RATE_LIMITER.ValidateActionRate(
-					chatId: imagePrompt.Command.Chat.Id,
-					userId: imagePrompt.Command.Sender.Id
-				);
+				if (imagePrompt.Command.Sender is VIPSender) {
+					VIP_VISION_RATE_LIMITER.ValidateActionRate(
+						chatId: imagePrompt.Command.Chat.Id,
+						userId: imagePrompt.Command.Sender.Id
+					);
+				} else {
+					VISION_RATE_LIMITER.ValidateActionRate(
+						chatId: imagePrompt.Command.Chat.Id,
+						userId: imagePrompt.Command.Sender.Id
+					);
+				}
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
 					chatId: imagePrompt.Command.Chat.Id,
