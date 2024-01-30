@@ -1,24 +1,26 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Common;
+using BotNet.Commands.SenderAggregate;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.Primbon {
 	public sealed record PrimbonCommand : ICommand {
-		public long ChatId { get; }
-		public int CommandMessageId { get; }
-		public long SenderId { get; }
 		public DateOnly Date { get; }
+		public MessageId CommandMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		private PrimbonCommand(
-			long chatId,
-			int commandMessageId,
-			long senderId,
-			DateOnly date
+			DateOnly date,
+			MessageId commandMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
-			ChatId = chatId;
-			CommandMessageId = commandMessageId;
-			SenderId = senderId;
 			Date = date;
+			CommandMessageId = commandMessageId;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static PrimbonCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -59,10 +61,10 @@ namespace BotNet.Commands.Primbon {
 			}
 
 			return new(
-				chatId: slashCommand.ChatId,
+				date: date,
 				commandMessageId: slashCommand.MessageId,
-				senderId: slashCommand.SenderId,
-				date: date
+				chat: slashCommand.Chat,
+				sender: slashCommand.Sender
 			);
 		}
 	}

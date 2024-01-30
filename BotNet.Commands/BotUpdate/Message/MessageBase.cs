@@ -1,44 +1,69 @@
-﻿using BotNet.Commands.CommandPrioritization;
-using Telegram.Bot.Types.Enums;
+﻿using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public abstract record MessageBase {
-		public int MessageId { get; private set; }
-		public long ChatId { get; private set; }
-		public ChatType ChatType { get; private set; }
-		public string? ChatTitle { get; private set; }
-		public long SenderId { get; private set; }
-		public string SenderName { get; private set; }
-		public CommandPriority CommandPriority { get; private set; }
+		public MessageId MessageId { get; private set; }
+		public ChatBase Chat { get; private set; }
+		public virtual SenderBase Sender { get; private set; }
 		public string Text { get; private set; }
 		public string? ImageFileId { get; private set; }
-		public int? ReplyToMessageId { get; private set; }
-		public MessageBase? ReplyToMessage { get; private set; }
+		public virtual MessageBase? ReplyToMessage { get; private set; }
 
 		protected MessageBase(
-			int messageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
-			CommandPriority commandPriority,
+			MessageId messageId,
+			ChatBase chat,
+			SenderBase sender,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId,
 			MessageBase? replyToMessage
 		) {
 			MessageId = messageId;
-			ChatId = chatId;
-			ChatType = chatType;
-			ChatTitle = chatTitle;
-			SenderId = senderId;
-			SenderName = senderName;
-			CommandPriority = commandPriority;
+			Chat = chat;
+			Sender = sender;
 			Text = text;
 			ImageFileId = imageFileId;
-			ReplyToMessageId = replyToMessageId;
 			ReplyToMessage = replyToMessage;
 		}
+	}
+
+	public abstract record HumanMessageBase : MessageBase {
+		public override HumanSender Sender => (HumanSender)base.Sender;
+
+		protected HumanMessageBase(
+			MessageId messageId,
+			ChatBase chat,
+			HumanSender sender,
+			string text,
+			string? imageFileId,
+			MessageBase? replyToMessage
+		) : base(
+			messageId: messageId,
+			chat: chat,
+			sender: sender,
+			text: text,
+			imageFileId: imageFileId,
+			replyToMessage: replyToMessage
+		) { }
+	}
+
+	public abstract record BotMessageBase : MessageBase {
+		public override BotSender Sender => (BotSender)base.Sender;
+
+		protected BotMessageBase(
+			MessageId messageId,
+			ChatBase chat,
+			BotSender sender,
+			string text,
+			string? imageFileId,
+			MessageBase? replyToMessage
+		) : base(
+			messageId: messageId,
+			chat: chat,
+			sender: sender,
+			text: text,
+			imageFileId: imageFileId,
+			replyToMessage: replyToMessage
+		) { }
 	}
 }

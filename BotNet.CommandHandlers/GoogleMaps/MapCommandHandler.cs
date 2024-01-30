@@ -22,10 +22,10 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 
 		public Task Handle(MapCommand command, CancellationToken cancellationToken) {
 			try {
-				SEARCH_PLACE_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				SEARCH_PLACE_RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CommandMessageId,
@@ -40,7 +40,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 					string staticMapUrl = _staticMap.SearchPlace(command.PlaceName);
 
 					await _telegramBotClient.SendPhotoAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						photo: new InputFileUrl(staticMapUrl),
 						caption: $"<a href=\"https://www.google.com/maps/search/{lat},{lng}\">View in 🗺️ Google Maps</a>",
 						parseMode: ParseMode.Html,
@@ -52,7 +52,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 				} catch (Exception exc) {
 					_logger.LogError(exc, "Could not find place");
 					await telegramBotClient.SendTextMessageAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						text: "<code>Lokasi tidak dapat ditemukan</code>",
 						parseMode: ParseMode.Html,
 						replyToMessageId: command.CommandMessageId,

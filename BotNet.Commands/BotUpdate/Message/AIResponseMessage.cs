@@ -1,33 +1,24 @@
-﻿using BotNet.Commands.CommandPrioritization;
-using Telegram.Bot.Types.Enums;
+﻿using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record AIResponseMessage : MessageBase {
 		public string CallSign { get; }
 
 		private AIResponseMessage(
-			int messageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
+			MessageId messageId,
+			ChatBase chat,
+			BotSender sender,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId,
-			MessageBase? replyToMessage,
+			HumanMessageBase? replyToMessage,
 			string callSign
 		) : base(
 			messageId: messageId,
-			chatId: chatId,
-			chatType: chatType,
-			chatTitle: chatTitle,
-			senderId: senderId,
-			senderName: senderName,
-			commandPriority: CommandPriority.Void,
+			chat: chat,
+			sender: sender,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId,
 			replyToMessage: replyToMessage
 		) {
 			CallSign = callSign;
@@ -35,20 +26,27 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static AIResponseMessage FromMessage(
 			Telegram.Bot.Types.Message message,
-			int replyToMessageId,
+			HumanMessageBase replyToMessage,
 			string callSign
 		) {
+			// Chat must be private or group
+			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+				throw new ArgumentException("Chat must be private or group.", nameof(message));
+			}
+
+			// Sender must be a bot
+			if (message.From is not { } from
+				|| !BotSender.TryCreate(from, out BotSender? sender)) {
+				throw new ArgumentException("Sender must be bot.", nameof(message));
+			}
+
 			return new(
-				messageId: message.MessageId,
-				chatId: message.Chat.Id,
-				chatType: message.Chat.Type,
-				chatTitle: message.Chat.Title,
-				senderId: message.From!.Id,
-				senderName: callSign,
+				messageId: new(message.MessageId),
+				chat: chat,
+				sender: sender,
 				text: message.Text ?? message.Caption ?? "",
 				imageFileId: message.Photo?.FirstOrDefault()?.FileId,
-				replyToMessageId: replyToMessageId,
-				replyToMessage: null,
+				replyToMessage: replyToMessage,
 				callSign: callSign
 			);
 		}

@@ -1,21 +1,22 @@
 ﻿using BotNet.Commands.Common;
 using Telegram.Bot.Types.Enums;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 
 namespace BotNet.Commands.Fuck {
 	public sealed record FuckCommand : ICommand {
 		public string Code { get; }
-		public long ChatId { get; }
-		public int CodeMessageId { get; }
+		public MessageId CodeMessageId { get; }
+		public ChatBase Chat { get; }
 
 		private FuckCommand(
 			string code,
-			long chatId,
-			int codeMessageId
+			MessageId codeMessageId,
+			ChatBase chat
 		) {
 			Code = code;
-			ChatId = chatId;
 			CodeMessageId = codeMessageId;
+			Chat = chat;
 		}
 
 		public static FuckCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -46,8 +47,8 @@ namespace BotNet.Commands.Fuck {
 
 			return new(
 				code: code,
-				chatId: slashCommand.ChatId,
-				codeMessageId: codeMessageId
+				codeMessageId: new(codeMessageId),
+				chat: slashCommand.Chat
 			);
 		}
 	}

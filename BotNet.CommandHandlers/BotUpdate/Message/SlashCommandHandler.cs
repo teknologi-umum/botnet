@@ -109,7 +109,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				}
 			} catch (UsageException exc) {
 				await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: exc.Message,
 					parseMode: exc.ParseMode,
 					replyToMessageId: exc.CommandMessageId,

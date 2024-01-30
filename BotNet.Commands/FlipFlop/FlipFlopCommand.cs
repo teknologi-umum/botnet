@@ -1,24 +1,25 @@
 ﻿using BotNet.Commands.Common;
 using Telegram.Bot.Types.Enums;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 
 namespace BotNet.Commands.FlipFlop {
 	public sealed record FlipFlopCommand : ICommand {
 		public string Command { get; }
-		public long ChatId { get; }
-		public int ImageMessageId { get; }
 		public string ImageFileId { get; }
+		public MessageId ImageMessageId { get; }
+		public ChatBase Chat { get; }
 
 		private FlipFlopCommand(
 			string command,
-			long chatId,
-			int imageMessageId,
-			string imageFileId
+			string imageFileId,
+			MessageId imageMessageId,
+			ChatBase chat
 		) {
 			Command = command;
-			ChatId = chatId;
-			ImageMessageId = imageMessageId;
 			ImageFileId = imageFileId;
+			ImageMessageId = imageMessageId;
+			Chat = chat;
 		}
 
 		public static FlipFlopCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -50,9 +51,9 @@ namespace BotNet.Commands.FlipFlop {
 
 			return new(
 				command: slashCommand.Command,
-				chatId: slashCommand.ChatId,
+				imageFileId: slashCommand.ReplyToMessage.ImageFileId,
 				imageMessageId: slashCommand.ReplyToMessage.MessageId,
-				imageFileId: slashCommand.ReplyToMessage.ImageFileId
+				chat: slashCommand.Chat
 			);
 		}
 	}

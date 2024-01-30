@@ -3,7 +3,8 @@ using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
-using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
 using BotNet.Services.OpenAI.Models;
@@ -29,18 +30,18 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		private readonly OpenAIClient _openAIClient = openAIClient;
 		private readonly ILogger<OpenAITextPromptHandler> _logger = logger;
 
-		public Task Handle(OpenAITextPrompt command, CancellationToken cancellationToken) {
+		public Task Handle(OpenAITextPrompt textPrompt, CancellationToken cancellationToken) {
 			try {
 				CHAT_RATE_LIMITER.ValidateActionRate(
-					chatId: command.ChatId,
-					userId: command.SenderId
+					chatId: textPrompt.Command.Chat.Id,
+					userId: textPrompt.Command.Sender.Id
 				);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: textPrompt.Command.Chat.Id,
 					text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.PromptMessageId,
+					replyToMessageId: textPrompt.Command.MessageId,
 					cancellationToken: cancellationToken
 				);
 			}
@@ -52,30 +53,27 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				];
 
 				messages.AddRange(
-					from message in command.Thread.Take(10).Reverse()
+					from message in textPrompt.Thread.Take(10).Reverse()
 					select ChatMessage.FromText(
-						role: message.SenderName switch {
-							"AI" or "Bot" or "GPT" => "assistant",
-							_ => "user"
-						},
+						role: message.Sender.ChatGPTRole,
 						text: message.Text
 					)
 				);
 
 				messages.Add(
-					ChatMessage.FromText("user", command.Prompt)
+					ChatMessage.FromText("user", textPrompt.Prompt)
 				);
 
 				Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: textPrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("… ⏳"),
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: command.PromptMessageId
+					replyToMessageId: textPrompt.Command.MessageId
 				);
 
 				string response = await _openAIClient.ChatAsync(
-					model: command.CommandPriority switch {
-						CommandPriority.VIPChat or CommandPriority.HomeGroupChat => "gpt-4-1106-preview",
+					model: textPrompt switch {
+						({ Command: { Sender: VIPSender } or { Chat: HomeGroupChat } }) => "gpt-4-1106-preview",
 						_ => "gpt-3.5-turbo"
 					},
 					messages: messages,
@@ -85,15 +83,15 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 				// Handle image generation intent
 				if (response.StartsWith("ImageGeneration:")) {
-					if (command.CommandPriority != CommandPriority.VIPChat) {
+					if (textPrompt.Command.Sender is not VIPSender) {
 						try {
-							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(textPrompt.Command.Chat.Id, textPrompt.Command.Sender.Id);
 						} catch (RateLimitExceededException exc) {
 							await _telegramBotClient.SendTextMessageAsync(
-								chatId: command.ChatId,
+								chatId: textPrompt.Command.Chat.Id,
 								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 								parseMode: ParseMode.Html,
-								replyToMessageId: command.PromptMessageId,
+								replyToMessageId: textPrompt.Command.MessageId,
 								cancellationToken: cancellationToken
 							);
 							return;
@@ -101,36 +99,34 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					}
 
 					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
-					switch (command.CommandPriority) {
-						case CommandPriority.VIPChat:
+					switch (textPrompt.Command) {
+						case { Sender: VIPSender }:
 							await _commandQueue.DispatchAsync(
 								command: new OpenAIImageGenerationPrompt(
-									callSign: command.CallSign,
+									callSign: textPrompt.CallSign,
 									prompt: imageGenerationPrompt,
-									promptMessageId: command.PromptMessageId,
-									responseMessageId: responseMessage.MessageId,
-									chatId: command.ChatId,
-									senderId: command.SenderId,
-									commandPriority: command.CommandPriority
+									promptMessageId: textPrompt.Command.MessageId,
+									responseMessageId: new(responseMessage.MessageId),
+									chat: textPrompt.Command.Chat,
+									sender: textPrompt.Command.Sender
 								)
 							);
 							break;
-						case CommandPriority.HomeGroupChat:
+						case { Chat: HomeGroupChat }:
 							await _commandQueue.DispatchAsync(
 								command: new StabilityTextToImagePrompt(
-									callSign: command.CallSign,
+									callSign: textPrompt.CallSign,
 									prompt: imageGenerationPrompt,
-									promptMessageId: command.PromptMessageId,
-									responseMessageId: responseMessage.MessageId,
-									chatId: command.ChatId,
-									senderId: command.SenderId,
-									commandPriority: command.CommandPriority
+									promptMessageId: textPrompt.Command.MessageId,
+									responseMessageId: new(responseMessage.MessageId),
+									chat: textPrompt.Command.Chat,
+									sender: textPrompt.Command.Sender
 								)
 							);
 							break;
 						default:
 							await _telegramBotClient.EditMessageTextAsync(
-								chatId: command.ChatId,
+								chatId: textPrompt.Command.Chat.Id,
 								messageId: responseMessage.MessageId,
 								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
 								parseMode: ParseMode.MarkdownV2,
@@ -144,7 +140,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				// Finalize message
 				try {
 					responseMessage = await telegramBotClient.EditMessageTextAsync(
-						chatId: command.ChatId,
+						chatId: textPrompt.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
 						text: MarkdownV2Sanitizer.Sanitize(response),
 						parseMode: ParseMode.MarkdownV2,
@@ -159,8 +155,8 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				_telegramMessageCache.Add(
 					message: AIResponseMessage.FromMessage(
 						message: responseMessage,
-						replyToMessageId: command.PromptMessageId,
-						callSign: command.CallSign
+						replyToMessage: textPrompt.Command,
+						callSign: textPrompt.CallSign
 					)
 				);
 			});

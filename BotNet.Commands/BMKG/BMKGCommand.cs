@@ -1,30 +1,33 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BMKG {
 	public sealed record BMKGCommand : ICommand {
-		public long ChatId { get; }
-		public int CommandMessageId { get; }
-		public long SenderId { get; }
+		public MessageId CommandMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		private BMKGCommand(
-			long chatId,
-			int commandMessageId,
-			long senderId
+			MessageId commandMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
-			ChatId = chatId;
 			CommandMessageId = commandMessageId;
-			SenderId = senderId;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static BMKGCommand FromSlashCommand(SlashCommand slashCommand) {
+			// Must be /bmkg
 			if (slashCommand.Command != "/bmkg") {
 				throw new ArgumentException("Command must be /bmkg.", nameof(slashCommand));
 			}
 
 			return new(
-				chatId: slashCommand.ChatId,
 				commandMessageId: slashCommand.MessageId,
-				senderId: slashCommand.SenderId
+				chat: slashCommand.Chat,
+				sender: slashCommand.Sender
 			);
 		}
 	}

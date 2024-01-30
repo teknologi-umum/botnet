@@ -1,11 +1,12 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 
 namespace BotNet.Commands.Pop {
 	public sealed record PopCommand : ICommand {
-		public long ChatId { get; }
+		public ChatBase Chat { get; }
 
-		private PopCommand(long chatId) {
-			ChatId = chatId;
+		private PopCommand(ChatBase chat) {
+			Chat = chat;
 		}
 
 		public static PopCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -14,7 +15,7 @@ namespace BotNet.Commands.Pop {
 			}
 
 			return new(
-				chatId: slashCommand.ChatId
+				chat: slashCommand.Chat
 			);
 		}
 	}

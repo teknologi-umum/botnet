@@ -1,24 +1,25 @@
 ﻿using BotNet.Commands.Common;
 using Telegram.Bot.Types.Enums;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 
 namespace BotNet.Commands.Eval {
 	public sealed record EvalCommand : ICommand {
 		public string Command { get; }
 		public string Code { get; }
-		public long ChatId { get; }
-		public int CodeMessageId { get; }
+		public MessageId CodeMessageId { get; }
+		public ChatBase Chat { get; }
 
 		private EvalCommand(
 			string command,
 			string code,
-			long chatId,
-			int codeMessageId
+			MessageId codeMessageId,
+			ChatBase chat
 		) {
 			Command = command;
 			Code = code;
-			ChatId = chatId;
 			CodeMessageId = codeMessageId;
+			Chat = chat;
 		}
 
 		public static EvalCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -52,8 +53,8 @@ namespace BotNet.Commands.Eval {
 			return new(
 				command: slashCommand.Command,
 				code: code,
-				chatId: slashCommand.ChatId,
-				codeMessageId: codeMessageId
+				codeMessageId: new(codeMessageId),
+				chat: slashCommand.Chat
 			);
 		}
 	}

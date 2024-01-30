@@ -1,24 +1,26 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Common;
+using BotNet.Commands.SenderAggregate;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.Weather {
 	public sealed record WeatherCommand : ICommand {
 		public string CityName { get; }
-		public int CommandMessageId { get; }
-		public long ChatId { get; }
-		public long SenderId { get; }
+		public MessageId CommandMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		public WeatherCommand(
 			string cityName,
-			int commandMessageId,
-			long chatId,
-			long senderId
+			MessageId commandMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
 			CityName = cityName;
 			CommandMessageId = commandMessageId;
-			ChatId = chatId;
-			SenderId = senderId;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static WeatherCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -39,8 +41,8 @@ namespace BotNet.Commands.Weather {
 			return new(
 				cityName: slashCommand.Text,
 				commandMessageId: slashCommand.MessageId,
-				chatId: slashCommand.ChatId,
-				senderId: slashCommand.SenderId
+				chat: slashCommand.Chat,
+				sender: slashCommand.Sender
 			);
 		}
 	}

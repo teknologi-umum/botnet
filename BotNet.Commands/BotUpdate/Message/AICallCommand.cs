@@ -1,10 +1,10 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using BotNet.Commands.CommandPrioritization;
-using Telegram.Bot.Types.Enums;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
-	public sealed record AICallCommand : MessageBase, ICommand {
+	public sealed record AICallCommand : HumanMessageBase, ICommand {
 		public static readonly ImmutableHashSet<string> CALL_SIGNS = [
 			"AI",
 			"Bot",
@@ -16,29 +16,19 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public string CallSign { get; }
 
 		private AICallCommand(
-			int messageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
-			CommandPriority commandPriority,
+			MessageId messageId,
+			ChatBase chat,
+			HumanSender sender,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId,
 			MessageBase? replyToMessage,
 			string callSign
 		) : base(
 			messageId: messageId,
-			chatId: chatId,
-			chatType: chatType,
-			chatTitle: chatTitle,
-			senderId: senderId,
-			senderName: senderName,
-			commandPriority: commandPriority,
+			chat: chat,
+			sender: sender,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId,
 			replyToMessage: replyToMessage
 		) {
 			CallSign = callSign;
@@ -46,9 +36,21 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
-			CommandPriority commandPriority,
 			[NotNullWhen(true)] out AICallCommand? aiCallCommand
 		) {
+			// Chat must be private or group
+			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+				aiCallCommand = null;
+				return false;
+			}
+
+			// Sender must be a user
+			if (message.From is not { } from
+				|| !HumanSender.TryCreate(from, out HumanSender? sender)) {
+				aiCallCommand = null;
+				return false;
+			}
+
 			// Message must contain text or caption
 			if ((message.Text ?? message.Caption) is not { } text) {
 				aiCallCommand = null;
@@ -61,33 +63,13 @@ namespace BotNet.Commands.BotUpdate.Message {
 				return false;
 			}
 
-			// Sender must be a user
-			if (message.From is not {
-				IsBot: false,
-				Id: long senderId,
-				FirstName: string senderFirstName,
-				LastName: var senderLastName
-			}) {
-				aiCallCommand = null;
-				return false;
-			}
-
-			string senderFullName = senderLastName is null
-				? senderFirstName
-				: $"{senderFirstName} {senderLastName}";
-
 			aiCallCommand = new(
-				messageId: message.MessageId,
-				chatId: message.Chat.Id,
-				chatType: message.Chat.Type,
-				chatTitle: message.Chat.Title,
-				senderId: senderId,
-				senderName: senderFullName,
-				commandPriority: commandPriority,
+				messageId: new(message.MessageId),
+				chat: chat,
+				sender: sender,
 				text: text[(callSign.Length + 1)..].Trim(),
 				imageFileId: message.Photo?.LastOrDefault()?.FileId
 					?? message.ReplyToMessage?.Sticker?.FileId,
-				replyToMessageId: message.ReplyToMessage?.MessageId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
 					: NormalMessage.FromMessage(message.ReplyToMessage),

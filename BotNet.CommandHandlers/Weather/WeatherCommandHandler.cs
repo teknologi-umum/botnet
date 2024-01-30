@@ -20,10 +20,10 @@ namespace BotNet.CommandHandlers.Weather {
 
 		public Task Handle(WeatherCommand command, CancellationToken cancellationToken) {
 			try {
-				GET_WEATHER_RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				GET_WEATHER_RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
-					chatId: command.ChatId,
+					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyToMessageId: command.CommandMessageId,
@@ -40,7 +40,7 @@ namespace BotNet.CommandHandlers.Weather {
 					);
 
 					await _telegramBotClient.SendPhotoAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						photo: new InputFileUrl(icon),
 						caption: title,
 						parseMode: ParseMode.Html,
@@ -52,7 +52,7 @@ namespace BotNet.CommandHandlers.Weather {
 				} catch (Exception exc) {
 					_logger.LogError(exc, "Could not get weather");
 					await _telegramBotClient.SendTextMessageAsync(
-						chatId: command.ChatId,
+						chatId: command.Chat.Id,
 						text: "<code>Lokasi tidak dapat ditemukan</code>",
 						parseMode: ParseMode.Html,
 						replyToMessageId: command.CommandMessageId,

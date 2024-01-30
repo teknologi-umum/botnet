@@ -1,57 +1,45 @@
-﻿using BotNet.Commands.CommandPrioritization;
-using Telegram.Bot.Types.Enums;
+﻿using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
 	public sealed record NormalMessage : MessageBase {
 		private NormalMessage(
-			int messageId,
-			long chatId,
-			ChatType chatType,
-			string? chatTitle,
-			long senderId,
-			string senderName,
+			MessageId messageId,
+			ChatBase chat,
+			SenderBase sender,
 			string text,
 			string? imageFileId,
-			int? replyToMessageId,
 			MessageBase? replyToMessage
 		) : base(
 			messageId: messageId,
-			chatId: chatId,
-			chatType: chatType,
-			chatTitle: chatTitle,
-			senderId: senderId,
-			senderName: senderName,
-			commandPriority: CommandPriority.Void,
+			chat: chat,
+			sender: sender,
 			text: text,
 			imageFileId: imageFileId,
-			replyToMessageId: replyToMessageId,
 			replyToMessage: replyToMessage
 		) { }
 
 		public static NormalMessage FromMessage(Telegram.Bot.Types.Message message) {
+			// Chat must be private or group
+			if (!ChatBase.TryCreate(message.Chat, out ChatBase? chat)) {
+				throw new ArgumentException("Chat must be private or group.", nameof(message));
+			}
+
 			// Sender must not be null
-			if (message.From is not {
-				Id: long senderId,
-				FirstName: string senderFirstName,
-				LastName: var senderLastName
-			}) {
+			if (message.From is not { } from) {
 				throw new ArgumentException("Message must have a sender.", nameof(message));
 			}
 
-			string senderFullName = message.From is null
-				? senderFirstName
-				: $"{senderFirstName} {senderLastName}";
-
 			return new(
-				messageId: message.MessageId,
-				chatId: message.Chat.Id,
-				chatType: message.Chat.Type,
-				chatTitle: message.Chat.Title,
-				senderId: senderId,
-				senderName: senderFullName,
+				messageId: new(message.MessageId),
+				chat: chat,
+				sender: HumanSender.TryCreate(from, out HumanSender? humanSender)
+					? humanSender
+					: BotSender.TryCreate(from, out BotSender? botSender)
+						? botSender
+						: throw new ArgumentException("Unknown sender type.", nameof(message)),
 				text: message.Text ?? "",
 				imageFileId: message.Photo?.LastOrDefault()?.FileId ?? message.Sticker?.FileId,
-				replyToMessageId: message.ReplyToMessage?.MessageId,
 				replyToMessage: message.ReplyToMessage is null
 					? null
 					: NormalMessage.FromMessage(message.ReplyToMessage)

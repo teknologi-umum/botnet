@@ -1,28 +1,26 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
-using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Common;
+using BotNet.Commands.SenderAggregate;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.Art {
 	public sealed record ArtCommand : ICommand {
 		public string Prompt { get; }
-		public int PromptMessageId { get; }
-		public long ChatId { get; }
-		public long SenderId { get; }
-		public CommandPriority CommandPriority { get; }
+		public MessageId PromptMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		private ArtCommand(
 			string prompt,
-			int promptMessageId,
-			long chatId,
-			long senderId,
-			CommandPriority commandPriority
+			MessageId promptMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
 			Prompt = prompt;
 			PromptMessageId = promptMessageId;
-			ChatId = chatId;
-			SenderId = senderId;
-			CommandPriority = commandPriority;
+			Chat = chat;
+			Sender = sender;
 		}
 
 		public static ArtCommand FromSlashCommand(SlashCommand slashCommand) {
@@ -43,9 +41,8 @@ namespace BotNet.Commands.Art {
 			return new(
 				prompt: slashCommand.Text,
 				promptMessageId: slashCommand.MessageId,
-				chatId: slashCommand.ChatId,
-				senderId: slashCommand.SenderId,
-				commandPriority: slashCommand.CommandPriority
+				chat: slashCommand.Chat,
+				sender: slashCommand.Sender
 			);
 		}
 	}

@@ -1,23 +1,23 @@
-﻿using BotNet.Commands.CommandPrioritization;
+﻿using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.AI.Stability {
 	public sealed record StabilityTextToImagePrompt : ICommand {
 		public string CallSign { get; }
 		public string Prompt { get; }
-		public int PromptMessageId { get; }
-		public int ResponseMessageId { get; }
-		public long ChatId { get; }
-		public long SenderId { get; }
-		public CommandPriority CommandPriority { get; }
+		public MessageId PromptMessageId { get; }
+		public MessageId ResponseMessageId { get; }
+		public ChatBase Chat { get; }
+		public HumanSender Sender { get; }
 
 		public StabilityTextToImagePrompt(
 			string callSign,
 			string prompt,
-			int promptMessageId,
-			int responseMessageId,
-			long chatId,
-			long senderId,
-			CommandPriority commandPriority
+			MessageId promptMessageId,
+			MessageId responseMessageId,
+			ChatBase chat,
+			HumanSender sender
 		) {
 			if (string.IsNullOrWhiteSpace(prompt)) throw new ArgumentException($"'{nameof(prompt)}' cannot be null or whitespace.", nameof(prompt));
 
@@ -25,9 +25,8 @@ namespace BotNet.Commands.AI.Stability {
 			Prompt = prompt;
 			PromptMessageId = promptMessageId;
 			ResponseMessageId = responseMessageId;
-			ChatId = chatId;
-			SenderId = senderId;
-			CommandPriority = commandPriority;
+			Chat = chat;
+			Sender = sender;
 		}
 	}
 }

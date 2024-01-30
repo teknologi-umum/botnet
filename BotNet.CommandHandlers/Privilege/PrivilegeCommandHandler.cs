@@ -1,5 +1,7 @@
-﻿using BotNet.Commands.CommandPrioritization;
+﻿using BotNet.Commands.ChatAggregate;
+using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.Privilege;
+using BotNet.Commands.SenderAggregate;
 using BotNet.Services.RateLimit;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -16,7 +18,7 @@ namespace BotNet.CommandHandlers.Privilege {
 
 		public Task Handle(PrivilegeCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.ChatId, command.SenderId);
+				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException) {
 				// Silently reject commands after rate limit exceeded
 				return Task.CompletedTask;
@@ -25,44 +27,40 @@ namespace BotNet.CommandHandlers.Privilege {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					switch (command.ChatType) {
-						case ChatType.Private:
-							if (command.CommandPriority == CommandPriority.VIPChat) {
-								await _telegramBotClient.SendTextMessageAsync(
-									chatId: command.ChatId,
-									text: $$"""
-									👑 Anda adalah user VIP (ID: {{command.SenderId}})
+					switch (command) {
+						case { Chat: PrivateChat, Sender: VIPSender }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+									👑 Anda adalah user VIP (ID: {{command.Sender.Id}})
 									👑 GPT-4 tersedia
 									👑 GPT-4 Vision tersedia
 									👑 DALL-E 3 tersedia
 									""",
-									replyToMessageId: command.CommandMessageId,
-									parseMode: ParseMode.Markdown,
-									cancellationToken: cancellationToken
-								);
-							} else {
-								await _telegramBotClient.SendTextMessageAsync(
-									chatId: command.ChatId,
-									text: $$"""
-									❌ Feature bot dibatasi di dalam private chat (ID: {{command.SenderId}})
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
+							break;
+						case { Chat: PrivateChat }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+									❌ Feature bot dibatasi di dalam private chat (ID: {{command.Sender.Id}})
 									✅ GPT-3.5 tersedia
 									❌ Vision tidak tersedia
 									❌ Image generation tidak tersedia
 									""",
-									replyToMessageId: command.CommandMessageId,
-									parseMode: ParseMode.Markdown,
-									cancellationToken: cancellationToken
-								);
-							}
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
 							break;
-						case ChatType.Group:
-						case ChatType.Supergroup:
-							if (command.CommandPriority == CommandPriority.VIPChat) {
-								if (_commandPriorityCategorizer.IsHomeGroup(command.ChatId)) {
-									await _telegramBotClient.SendTextMessageAsync(
-										chatId: command.ChatId,
-										text: $$"""
-										👑 Group {{command.ChatTitle}} (ID: {{command.ChatId}}) adalah home group
+						case { Chat: HomeGroupChat, Sender: VIPSender }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+										👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
 										👑 GPT-4 tersedia
 										👑 GPT-4 Vision tersedia
 										✅ SDXL tersedia
@@ -70,15 +68,16 @@ namespace BotNet.CommandHandlers.Privilege {
 										👑 Anda adalah user VIP
 										👑 DALL-E 3 tersedia untuk Anda
 										""",
-										replyToMessageId: command.CommandMessageId,
-										parseMode: ParseMode.Markdown,
-										cancellationToken: cancellationToken
-									);
-								} else {
-									await _telegramBotClient.SendTextMessageAsync(
-										chatId: command.ChatId,
-										text: $$"""
-										⚠️ Bot dipakai di group selain home group (ID: {{command.ChatId}})
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
+							break;
+						case { Chat: GroupChat, Sender: VIPSender }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+										⚠️ Bot dipakai di group selain home group (ID: {{command.Chat.Id}})
 										✅ GPT-3.5 tersedia
 										❌ Vision tidak tersedia
 										❌ Image generation tidak tersedia
@@ -88,38 +87,38 @@ namespace BotNet.CommandHandlers.Privilege {
 										👑 GPT-4 Vision tersedia untuk Anda
 										👑 DALL-E 3 tersedia untuk Anda
 										""",
-										replyToMessageId: command.CommandMessageId,
-										parseMode: ParseMode.Markdown,
-										cancellationToken: cancellationToken
-									);
-								}
-							} else if (command.CommandPriority == CommandPriority.HomeGroupChat) {
-								await _telegramBotClient.SendTextMessageAsync(
-									chatId: command.ChatId,
-									text: $$"""
-									👑 Group {{command.ChatTitle}} (ID: {{command.ChatId}}) adalah home group
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
+							break;
+						case { Chat: HomeGroupChat }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+									👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
 									👑 GPT-4 tersedia
 									👑 GPT-4 Vision tersedia
 									✅ SDXL tersedia
 									""",
-									replyToMessageId: command.CommandMessageId,
-									parseMode: ParseMode.Markdown,
-									cancellationToken: cancellationToken
-								);
-							} else {
-								await _telegramBotClient.SendTextMessageAsync(
-									chatId: command.ChatId,
-									text: $$"""
-									⚠️ Bot dipakai di group selain home group (ID: {{command.ChatId}})
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
+							break;
+						case { Chat: GroupChat }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+									⚠️ Bot dipakai di group selain home group (ID: {{command.Chat.Id}})
 									✅ GPT-3.5 tersedia
 									❌ Vision tidak tersedia
 									❌ Image generation tidak tersedia
 									""",
-									replyToMessageId: command.CommandMessageId,
-									parseMode: ParseMode.Markdown,
-									cancellationToken: cancellationToken
-								);
-							}
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
 							break;
 					}
 				} catch (OperationCanceledException) {
