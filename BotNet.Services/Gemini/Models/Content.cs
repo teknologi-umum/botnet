@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace BotNet.Services.Gemini.Models {
@@ -12,5 +13,10 @@ namespace BotNet.Services.Gemini.Models {
 				new(Text: text)
 			]
 		);
+
+		public void Add(Content content) {
+			if (content.Role != Role) throw new InvalidOperationException();
+			Parts!.AddRange(content.Parts!);
+		}
 	}
 }
