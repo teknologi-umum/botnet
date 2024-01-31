@@ -73,6 +73,20 @@ namespace BotNet.CommandHandlers.Privilege {
 								cancellationToken: cancellationToken
 							);
 							break;
+						case { Chat: HomeGroupChat }:
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: command.Chat.Id,
+								text: $$"""
+									👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
+									👑 GPT-4 tersedia
+									👑 GPT-4 Vision tersedia
+									✅ SDXL tersedia
+									""",
+								replyToMessageId: command.CommandMessageId,
+								parseMode: ParseMode.Markdown,
+								cancellationToken: cancellationToken
+							);
+							break;
 						case { Chat: GroupChat, Sender: VIPSender }:
 							await _telegramBotClient.SendTextMessageAsync(
 								chatId: command.Chat.Id,
@@ -87,20 +101,6 @@ namespace BotNet.CommandHandlers.Privilege {
 										👑 GPT-4 Vision tersedia untuk Anda
 										👑 DALL-E 3 tersedia untuk Anda
 										""",
-								replyToMessageId: command.CommandMessageId,
-								parseMode: ParseMode.Markdown,
-								cancellationToken: cancellationToken
-							);
-							break;
-						case { Chat: HomeGroupChat }:
-							await _telegramBotClient.SendTextMessageAsync(
-								chatId: command.Chat.Id,
-								text: $$"""
-									👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
-									👑 GPT-4 tersedia
-									👑 GPT-4 Vision tersedia
-									✅ SDXL tersedia
-									""",
 								replyToMessageId: command.CommandMessageId,
 								parseMode: ParseMode.Markdown,
 								cancellationToken: cancellationToken

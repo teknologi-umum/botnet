@@ -76,8 +76,27 @@ namespace BotNet.Commands.ChatAggregate {
 		}
 	}
 
-	public sealed record HomeGroupChat(
-		ChatId Id,
-		string Title
-	) : GroupChat(Id, Title);
+	public sealed record HomeGroupChat : GroupChat {
+		private HomeGroupChat(
+			ChatId id,
+			string title
+		) : base(id, title) { }
+
+		public static new HomeGroupChat FromTelegramChat(
+			Telegram.Bot.Types.Chat telegramChat
+		) {
+			if (telegramChat is not {
+				Id: long chatId,
+				Title: string chatTitle,
+				Type: ChatType.Group or ChatType.Supergroup
+			}) {
+				throw new ArgumentException("Telegram chat must be either a group or a supergroup.");
+			}
+
+			return new(
+				id: new ChatId(chatId),
+				title: chatTitle
+			);
+		}
+	}
 }

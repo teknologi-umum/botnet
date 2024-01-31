@@ -26,12 +26,12 @@ namespace BotNet.Commands.CommandPrioritization {
 				.ToImmutableHashSet();
 		}
 
-		public bool IsHomeGroup(long ChatId) {
-			return _homeGroupChatIds.Contains(ChatId);
+		public bool IsHomeGroup(long chatId) {
+			return _homeGroupChatIds.Contains(chatId);
 		}
 
-		public bool IsVIPUser(long UserId) {
-			return _vipUserIds.Contains(UserId);
+		public bool IsVIPUser(long userId) {
+			return _vipUserIds.Contains(userId);
 		}
 	}
 }
