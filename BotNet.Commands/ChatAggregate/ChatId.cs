@@ -10,5 +10,6 @@
 		}
 
 		public static implicit operator Telegram.Bot.Types.ChatId(ChatId chatId) => new(chatId.Value);
+		public override string ToString() => Value.ToString();
 	}
 }
