@@ -7,6 +7,7 @@ namespace BotNet.Commands.SenderAggregate {
 		string Name
 	) {
 		public abstract string ChatGPTRole { get; }
+		public abstract string GeminiRole { get; }
 	}
 
 	public record HumanSender(
@@ -14,6 +15,7 @@ namespace BotNet.Commands.SenderAggregate {
 		string Name
 	) : SenderBase(Id, Name) {
 		public override string ChatGPTRole => "user";
+		public override string GeminiRole => "user";
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.User user,
@@ -51,6 +53,7 @@ namespace BotNet.Commands.SenderAggregate {
 		string Name
 	) : SenderBase(Id, Name) {
 		public override string ChatGPTRole => "assistant";
+		public override string GeminiRole => "model";
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.User user,

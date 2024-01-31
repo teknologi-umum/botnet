@@ -13,6 +13,7 @@ using BotNet.Services.ClearScript;
 using BotNet.Services.ColorCard;
 using BotNet.Services.Craiyon;
 using BotNet.Services.DynamicExpresso;
+using BotNet.Services.Gemini;
 using BotNet.Services.GoogleMap;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
@@ -57,6 +58,7 @@ builder.Services.Configure<StabilityOptions>(builder.Configuration.GetSection("S
 builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("GoogleMapOptions"));
 builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
 builder.Services.Configure<CommandPrioritizationOptions>(builder.Configuration.GetSection("CommandPrioritizationOptions"));
+builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("GeminiOptions"));
 builder.Services.AddHttpClient();
 builder.Services.AddFontService();
 builder.Services.AddColorCardRenderer();
@@ -84,6 +86,7 @@ builder.Services.AddChineseCalendarScraper();
 builder.Services.AddCommandHandlers();
 builder.Services.AddCommandPriorityCategorizer();
 builder.Services.AddBotProfileAccessor();
+builder.Services.AddGeminiClient();
 
 // MediatR
 builder.Services.AddMediatR(config => {

@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using BotNet.Commands.AI.Gemini;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 
@@ -17,6 +18,18 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					await _commandQueue.DispatchAsync(
 						command: OpenAITextPrompt.FromAIFollowUpMessage(
 							aiFollowUpMessage: command,
+							thread: command.ReplyToMessage is null
+								? Enumerable.Empty<MessageBase>()
+								: _telegramMessageCache.GetThread(
+									firstMessage: command.ReplyToMessage
+								)
+						)
+					);
+					break;
+				case "Gemini":
+					await _commandQueue.DispatchAsync(
+						command: GeminiTextPrompt.FromAIFollowUpMessage(
+							aIFollowUpMessage: command,
 							thread: command.ReplyToMessage is null
 								? Enumerable.Empty<MessageBase>()
 								: _telegramMessageCache.GetThread(
