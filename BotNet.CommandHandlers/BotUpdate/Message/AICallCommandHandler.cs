@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using BotNet.Commands.AI.Gemini;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Services.OpenAI;
@@ -29,6 +30,17 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				case "AI" or "Bot" or "GPT" when command.ImageFileId is not null || command.ReplyToMessage?.ImageFileId is not null: {
 						await _commandQueue.DispatchAsync(
 							command: OpenAIImagePrompt.FromAICallCommand(
+								aiCallCommand: command,
+								thread: command.ReplyToMessage is { } replyToMessage
+									? _telegramMessageCache.GetThread(replyToMessage)
+									: Enumerable.Empty<MessageBase>()
+							)
+						);
+						break;
+					}
+				case "Gemini" when command.ImageFileId is null && command.ReplyToMessage?.ImageFileId is null: {
+						await _commandQueue.DispatchAsync(
+							command: GeminiTextPrompt.FromAICallCommand(
 								aiCallCommand: command,
 								thread: command.ReplyToMessage is { } replyToMessage
 									? _telegramMessageCache.GetThread(replyToMessage)
