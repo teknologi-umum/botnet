@@ -3,6 +3,7 @@ using BotNet.Commands.AI.Gemini;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.SenderAggregate;
 using BotNet.Services.Gemini;
 using BotNet.Services.Gemini.Models;
 using BotNet.Services.MarkdownV2;
@@ -29,7 +30,8 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		private readonly ILogger<GeminiTextPromptHandler> _logger = logger;
 
 		public Task Handle(GeminiTextPrompt textPrompt, CancellationToken cancellationToken) {
-			if (textPrompt.Command.Chat is not HomeGroupChat) {
+			if (textPrompt.Command.Chat is not HomeGroupChat
+				&& textPrompt.Command.Sender is not VIPSender) {
 				return _telegramBotClient.SendTextMessageAsync(
 					chatId: textPrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("Gemini tidak bisa dipakai di sini."),

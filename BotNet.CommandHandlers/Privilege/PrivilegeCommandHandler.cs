@@ -33,7 +33,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 									👑 Anda adalah user VIP (ID: {{command.Sender.Id}})
-									👑 GPT-4 tersedia
+									👑 GPT-4, Gemini tersedia
 									👑 GPT-4 Vision tersedia
 									👑 DALL-E 3 tersedia
 									""",
@@ -61,7 +61,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 										👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
-										👑 GPT-4 tersedia
+										👑 GPT-4, Gemini tersedia
 										👑 GPT-4 Vision tersedia
 										✅ SDXL tersedia
 
@@ -78,7 +78,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 									👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
-									👑 GPT-4 tersedia
+									👑 GPT-4, Gemini tersedia
 									👑 GPT-4 Vision tersedia
 									✅ SDXL tersedia
 									""",
@@ -97,7 +97,7 @@ namespace BotNet.CommandHandlers.Privilege {
 										❌ Image generation tidak tersedia
 
 										👑 Anda adalah user VIP
-										👑 GPT-4 tersedia untuk Anda
+										👑 GPT-4, Gemini tersedia untuk Anda
 										👑 GPT-4 Vision tersedia untuk Anda
 										👑 DALL-E 3 tersedia untuk Anda
 										""",
