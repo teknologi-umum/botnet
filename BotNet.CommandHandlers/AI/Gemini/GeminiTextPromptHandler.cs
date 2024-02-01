@@ -28,7 +28,8 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		ICommandQueue commandQueue,
 		ILogger<GeminiTextPromptHandler> logger
 	) : ICommandHandler<GeminiTextPrompt> {
-		internal static readonly RateLimiter CHAT_RATE_LIMITER = RateLimiter.PerChat(60, TimeSpan.FromMinutes(1));
+		internal static readonly RateLimiter CHAT_RATE_LIMITER = RateLimiter.PerChat(5, TimeSpan.FromMinutes(5));
+		internal static readonly RateLimiter VIP_CHAT_RATE_LIMITER = RateLimiter.PerChat(60, TimeSpan.FromMinutes(1));
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly GeminiClient _geminiClient = geminiClient;
@@ -38,22 +39,19 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		private readonly ILogger<GeminiTextPromptHandler> _logger = logger;
 
 		public Task Handle(GeminiTextPrompt textPrompt, CancellationToken cancellationToken) {
-			if (textPrompt.Command.Chat is not HomeGroupChat
-				&& textPrompt.Command.Sender is not VIPSender) {
-				return _telegramBotClient.SendTextMessageAsync(
-					chatId: textPrompt.Command.Chat.Id,
-					text: MarkdownV2Sanitizer.Sanitize("Gemini tidak bisa dipakai di sini."),
-					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: textPrompt.Command.MessageId,
-					cancellationToken: cancellationToken
-				);
-			}
-
 			try {
-				CHAT_RATE_LIMITER.ValidateActionRate(
-					chatId: textPrompt.Command.Chat.Id,
-					userId: textPrompt.Command.Sender.Id
-				);
+				if (textPrompt.Command.Chat is HomeGroupChat
+					|| textPrompt.Command.Sender is VIPSender) {
+					VIP_CHAT_RATE_LIMITER.ValidateActionRate(
+						chatId: textPrompt.Command.Chat.Id,
+						userId: textPrompt.Command.Sender.Id
+					);
+				} else {
+					CHAT_RATE_LIMITER.ValidateActionRate(
+						chatId: textPrompt.Command.Chat.Id,
+						userId: textPrompt.Command.Sender.Id
+					);
+				}
 			} catch (RateLimitExceededException exc) {
 				return _telegramBotClient.SendTextMessageAsync(
 					chatId: textPrompt.Command.Chat.Id,
