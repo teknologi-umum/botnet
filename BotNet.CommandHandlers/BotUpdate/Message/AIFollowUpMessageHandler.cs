@@ -14,7 +14,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		public async Task Handle(AIFollowUpMessage command, CancellationToken cancellationToken) {
 			switch (command.CallSign) {
 				// OpenAI GPT-4 Chat
-				case "AI" or "Bot" or "GPT":
+				case "GPT":
 					await _commandQueue.DispatchAsync(
 						command: OpenAITextPrompt.FromAIFollowUpMessage(
 							aiFollowUpMessage: command,
@@ -26,7 +26,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						)
 					);
 					break;
-				case "Gemini":
+
+				// Google Gemini Chat
+				case "AI" or "Bot" or "Gemini":
 					await _commandQueue.DispatchAsync(
 						command: GeminiTextPrompt.FromAIFollowUpMessage(
 							aIFollowUpMessage: command,

@@ -48,7 +48,7 @@ namespace BotNet.CommandHandlers.Art {
 
 								await _commandQueue.DispatchAsync(
 									new OpenAIImageGenerationPrompt(
-										callSign: "AI",
+										callSign: "GPT",
 										prompt: command.Prompt,
 										promptMessageId: command.PromptMessageId,
 										responseMessageId: new(busyMessage.MessageId),
@@ -69,7 +69,7 @@ namespace BotNet.CommandHandlers.Art {
 
 								await _commandQueue.DispatchAsync(
 									new StabilityTextToImagePrompt(
-										callSign: "AI",
+										callSign: "GPT",
 										prompt: command.Prompt,
 										promptMessageId: command.PromptMessageId,
 										responseMessageId: new(busyMessage.MessageId),

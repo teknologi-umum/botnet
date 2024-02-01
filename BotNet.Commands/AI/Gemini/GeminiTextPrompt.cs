@@ -17,9 +17,9 @@ namespace BotNet.Commands.AI.Gemini {
 		}
 
 		public static GeminiTextPrompt FromAICallCommand(AICallCommand aiCallCommand, IEnumerable<MessageBase> thread) {
-			// Call sign must be Gemini
-			if (aiCallCommand.CallSign != "Gemini") {
-				throw new ArgumentException("Call sign must be Gemini", nameof(aiCallCommand));
+			// Call sign must be Gemini, AI, or Bot
+			if (aiCallCommand.CallSign is not "Gemini" and not "AI" and not "Bot") {
+				throw new ArgumentException("Call sign must be Gemini, AI, or Bot", nameof(aiCallCommand));
 			}
 
 			// Prompt must be non-empty
@@ -46,9 +46,9 @@ namespace BotNet.Commands.AI.Gemini {
 		}
 
 		public static GeminiTextPrompt FromAIFollowUpMessage(AIFollowUpMessage aIFollowUpMessage, IEnumerable<MessageBase> thread) {
-			// Call sign must be Gemini
-			if (aIFollowUpMessage.CallSign != "Gemini") {
-				throw new ArgumentException("Call sign must be Gemini", nameof(aIFollowUpMessage));
+			// Call sign must be Gemini, AI, or Bot
+			if (aIFollowUpMessage.CallSign is not "Gemini" and not "AI" and not "Bot") {
+				throw new ArgumentException("Call sign must be Gemini, AI, or Bot", nameof(aIFollowUpMessage));
 			}
 
 			// Prompt must be non-empty

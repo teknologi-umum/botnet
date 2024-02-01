@@ -45,7 +45,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				+ $"{callSign}: Entahlah. Nanti coba saya tanya ke teman saya Google.\n\n";
 			foreach ((string sender, string? text, string? imageBase64) in thread) {
 				prompt += $"{sender}: {text}\n";
-				if (sender is "AI" or "Pakde") prompt += "\n";
+				if (sender is "GPT" or "Pakde") prompt += "\n";
 			}
 			prompt +=
 				$"{name}: {question}\n"

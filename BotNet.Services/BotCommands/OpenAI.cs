@@ -285,7 +285,7 @@ namespace BotNet.Services.BotCommands {
 									// Track generated image for continuation
 									serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
 										messageId: generatedImageMessage.MessageId,
-										sender: "AI",
+										sender: "GPT",
 										text: null,
 										imageBase64: Convert.ToBase64String(generatedImage),
 										replyToMessageId: message.MessageId
@@ -411,7 +411,7 @@ namespace BotNet.Services.BotCommands {
 								// Track generated image for continuation
 								serviceProvider.GetRequiredService<ThreadTracker>().TrackMessage(
 									messageId: modifiedImageMessage.MessageId,
-									sender: "AI",
+									sender: "GPT",
 									text: null,
 									imageBase64: Convert.ToBase64String(modifiedImage),
 									replyToMessageId: message.MessageId

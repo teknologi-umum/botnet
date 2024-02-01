@@ -25,7 +25,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				model: "gpt-4-vision-preview",
 				messages: messages,
 				maxTokens: 512,
-				callSign: "AI",
+				callSign: "GPT",
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);
@@ -43,7 +43,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 				from tuple in thread
 				let role = tuple.Sender switch {
-					"AI" => "assistant",
+					"GPT" => "assistant",
 					_ => "user"
 				}
 				select tuple switch {
@@ -60,7 +60,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				model: "gpt-4-vision-preview",
 				messages: messages,
 				maxTokens: 512,
-				callSign: "AI",
+				callSign: "GPT",
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);

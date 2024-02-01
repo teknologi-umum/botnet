@@ -105,7 +105,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					message: AIResponseMessage.FromMessage(
 						message: responseMessage,
 						replyToMessage: askCommand.Command,
-						callSign: "AI",
+						callSign: "GPT",
 						commandPriorityCategorizer: _commandPriorityCategorizer
 					)
 				);
