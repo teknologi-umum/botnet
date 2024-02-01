@@ -11,6 +11,7 @@ using BotNet.Services.Gemini;
 using BotNet.Services.Gemini.Models;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
+using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -95,9 +96,13 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 					messages.RemoveAt(0);
 				}
 
-				messages.Add(
-					Content.FromText("user", textPrompt.Prompt)
-				);
+				// Merge user message with replied to message if thread is initiated by replying to another user
+				if (messages.Count > 0
+					&& messages[^1].Role == "user") {
+					messages[^1].Add(Content.FromText("user", textPrompt.Prompt));
+				} else {
+					messages.Add(Content.FromText("user", textPrompt.Prompt));
+				}
 
 				Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
 					chatId: textPrompt.Command.Chat.Id,
