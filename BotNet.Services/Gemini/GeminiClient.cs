@@ -23,7 +23,12 @@ namespace BotNet.Services.Gemini {
 		public async Task<string> ChatAsync(IEnumerable<Content> messages, int maxTokens, CancellationToken cancellationToken) {
 			GeminiRequest geminiRequest = new(
 				Contents: messages.ToImmutableList(),
-				SafetySettings: null,
+				SafetySettings: [
+					new SafetySettings("HARM_CATEGORY_HARASSMENT", "BLOCK_NONE"),
+					new SafetySettings("HARM_CATEGORY_HATE_SPEECH", "BLOCK_NONE"),
+					new SafetySettings("HARM_CATEGORY_SEXUALLY_EXPLICIT", "BLOCK_NONE"),
+					new SafetySettings("HARM_CATEGORY_DANGEROUS_CONTENT", "BLOCK_NONE")
+				],
 				GenerationConfig: new(
 					MaxOutputTokens: maxTokens
 				)
