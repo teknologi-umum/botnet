@@ -1,5 +1,8 @@
-﻿using BotNet.Commands;
+﻿using BotNet.CommandHandlers.Art;
+using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
+using BotNet.Commands.AI.OpenAI;
+using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.CommandPrioritization;
@@ -19,6 +22,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		GeminiClient geminiClient,
 		ITelegramMessageCache telegramMessageCache,
 		CommandPriorityCategorizer commandPriorityCategorizer,
+		ICommandQueue commandQueue,
 		ILogger<GeminiTextPromptHandler> logger
 	) : ICommandHandler<GeminiTextPrompt> {
 		internal static readonly RateLimiter CHAT_RATE_LIMITER = RateLimiter.PerChat(60, TimeSpan.FromMinutes(1));
@@ -27,6 +31,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		private readonly GeminiClient _geminiClient = geminiClient;
 		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
 		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
+		private readonly ICommandQueue _commandQueue = commandQueue;
 		private readonly ILogger<GeminiTextPromptHandler> _logger = logger;
 
 		public Task Handle(GeminiTextPrompt textPrompt, CancellationToken cancellationToken) {
@@ -58,7 +63,10 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 
 			// Fire and forget
 			Task.Run(async () => {
-				List<Content> messages = [];
+				List<Content> messages = [
+					Content.FromText("user", "Act as an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image."),
+					Content.FromText("model", "Sure.")
+				];
 
 				// Merge adjacent messages from same role
 				foreach (MessageBase message in textPrompt.Thread.Reverse()) {
@@ -102,6 +110,62 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 					maxTokens: 512,
 					cancellationToken: cancellationToken
 				);
+
+				// Handle image generation intent
+				if (response.StartsWith("ImageGeneration:")) {
+					if (textPrompt.Command.Sender is not VIPSender) {
+						try {
+							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(textPrompt.Command.Chat.Id, textPrompt.Command.Sender.Id);
+						} catch (RateLimitExceededException exc) {
+							await _telegramBotClient.SendTextMessageAsync(
+								chatId: textPrompt.Command.Chat.Id,
+								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
+								parseMode: ParseMode.Html,
+								replyToMessageId: textPrompt.Command.MessageId,
+								cancellationToken: cancellationToken
+							);
+							return;
+						}
+					}
+
+					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
+					switch (textPrompt.Command) {
+						case { Sender: VIPSender }:
+							await _commandQueue.DispatchAsync(
+								command: new OpenAIImageGenerationPrompt(
+									callSign: "Gemini",
+									prompt: imageGenerationPrompt,
+									promptMessageId: textPrompt.Command.MessageId,
+									responseMessageId: new(responseMessage.MessageId),
+									chat: textPrompt.Command.Chat,
+									sender: textPrompt.Command.Sender
+								)
+							);
+							break;
+						case { Chat: HomeGroupChat }:
+							await _commandQueue.DispatchAsync(
+								command: new StabilityTextToImagePrompt(
+									callSign: "Gemini",
+									prompt: imageGenerationPrompt,
+									promptMessageId: textPrompt.Command.MessageId,
+									responseMessageId: new(responseMessage.MessageId),
+									chat: textPrompt.Command.Chat,
+									sender: textPrompt.Command.Sender
+								)
+							);
+							break;
+						default:
+							await _telegramBotClient.EditMessageTextAsync(
+								chatId: textPrompt.Command.Chat.Id,
+								messageId: responseMessage.MessageId,
+								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
+								parseMode: ParseMode.MarkdownV2,
+								cancellationToken: cancellationToken
+							);
+							break;
+					}
+					return;
+				}
 
 				// Finalize message
 				try {
