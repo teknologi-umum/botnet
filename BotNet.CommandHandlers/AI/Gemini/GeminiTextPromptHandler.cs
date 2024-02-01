@@ -117,6 +117,9 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 					cancellationToken: cancellationToken
 				);
 
+				// Trim response
+				response = response.Trim();
+
 				// Handle image generation intent
 				if (response.StartsWith("ImageGeneration:")) {
 					if (textPrompt.Command.Sender is not VIPSender) {
