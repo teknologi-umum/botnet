@@ -8,6 +8,7 @@ using BotNet.Services.MarkdownV2;
 using BotNet.Services.OpenAI;
 using BotNet.Services.OpenAI.Models;
 using BotNet.Services.RateLimit;
+using BotNet.Services.TelegramClient;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -82,8 +83,8 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					responseMessage = await telegramBotClient.EditMessageTextAsync(
 						chatId: askCommand.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
-						text: MarkdownV2Sanitizer.Sanitize(response),
-						parseMode: ParseMode.MarkdownV2,
+						text: response,
+						parseModes: [ParseMode.MarkdownV2, ParseMode.Markdown, ParseMode.Html],
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl(
 								text: askCommand switch {
@@ -97,6 +98,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 				} catch (Exception exc) {
 					_logger.LogError(exc, null);
+					await telegramBotClient.EditMessageTextAsync(
+						chatId: askCommand.Command.Chat.Id,
+						messageId: responseMessage.MessageId,
+						text: "😵",
+						parseMode: ParseMode.Html,
+						cancellationToken: cancellationToken
+					);
 					throw;
 				}
 

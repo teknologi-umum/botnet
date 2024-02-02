@@ -1,8 +1,5 @@
-﻿using BotNet.CommandHandlers.Art;
-using BotNet.Commands;
+﻿using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
-using BotNet.Commands.AI.OpenAI;
-using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.CommandPrioritization;
@@ -14,7 +11,6 @@ using BotNet.Services.RateLimit;
 using BotNet.Services.TelegramClient;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -121,7 +117,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 					responseMessage = await telegramBotClient.EditMessageTextAsync(
 						chatId: textPrompt.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
-						text: MarkdownV2Sanitizer.Sanitize(response),
+						text: response,
 						parseModes: [ParseMode.Markdown, ParseMode.MarkdownV2, ParseMode.Html],
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl(
