@@ -65,7 +65,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 			// Fire and forget
 			Task.Run(async () => {
 				List<Content> messages = [
-					Content.FromText("user", "Act as an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image."),
+					Content.FromText("user", "Act as an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
 					Content.FromText("model", "Sure.")
 				];
 
@@ -115,65 +115,6 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 					maxTokens: 512,
 					cancellationToken: cancellationToken
 				);
-
-				// Trim response
-				response = response.Trim();
-
-				// Handle image generation intent
-				if (response.StartsWith("ImageGeneration:")) {
-					if (textPrompt.Command.Sender is not VIPSender) {
-						try {
-							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(textPrompt.Command.Chat.Id, textPrompt.Command.Sender.Id);
-						} catch (RateLimitExceededException exc) {
-							await _telegramBotClient.SendTextMessageAsync(
-								chatId: textPrompt.Command.Chat.Id,
-								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
-								parseMode: ParseMode.Html,
-								replyToMessageId: textPrompt.Command.MessageId,
-								cancellationToken: cancellationToken
-							);
-							return;
-						}
-					}
-
-					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
-					switch (textPrompt.Command) {
-						case { Sender: VIPSender }:
-							await _commandQueue.DispatchAsync(
-								command: new OpenAIImageGenerationPrompt(
-									callSign: "Gemini",
-									prompt: imageGenerationPrompt,
-									promptMessageId: textPrompt.Command.MessageId,
-									responseMessageId: new(responseMessage.MessageId),
-									chat: textPrompt.Command.Chat,
-									sender: textPrompt.Command.Sender
-								)
-							);
-							break;
-						case { Chat: HomeGroupChat }:
-							await _commandQueue.DispatchAsync(
-								command: new StabilityTextToImagePrompt(
-									callSign: "Gemini",
-									prompt: imageGenerationPrompt,
-									promptMessageId: textPrompt.Command.MessageId,
-									responseMessageId: new(responseMessage.MessageId),
-									chat: textPrompt.Command.Chat,
-									sender: textPrompt.Command.Sender
-								)
-							);
-							break;
-						default:
-							await _telegramBotClient.EditMessageTextAsync(
-								chatId: textPrompt.Command.Chat.Id,
-								messageId: responseMessage.MessageId,
-								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
-								parseMode: ParseMode.MarkdownV2,
-								cancellationToken: cancellationToken
-							);
-							break;
-					}
-					return;
-				}
 
 				// Finalize message
 				try {
