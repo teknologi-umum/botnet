@@ -10,6 +10,36 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.Services.TelegramClient {
 	public static class TelegramBotClientResilienceExtensions {
+		public static async Task<Message> SendTextMessageAsync(
+			this ITelegramBotClient telegramBotClient,
+			ChatId chatId,
+			string text,
+			ParseMode[] parseModes,
+			int? replyToMessageId = null,
+			InlineKeyboardMarkup? replyMarkup = null,
+			CancellationToken cancellationToken = default
+		) {
+			if (parseModes.Length == 0) throw new ArgumentException("At least one parse mode must be provided.", nameof(parseModes));
+
+			foreach (ParseMode parseMode in parseModes) {
+				try {
+					return await telegramBotClient.SendTextMessageAsync(
+						chatId: chatId,
+						text: parseMode == ParseMode.MarkdownV2
+							? MarkdownV2Sanitizer.Sanitize(text)
+							: text,
+						parseMode: parseMode,
+						replyToMessageId: replyToMessageId,
+						replyMarkup: replyMarkup,
+						cancellationToken: cancellationToken
+					);
+				} catch (ApiRequestException) {
+					continue;
+				}
+			}
+			throw new ApiRequestException("Text could not be parsed.");
+		}
+
 		public static async Task<Message> EditMessageTextAsync(
 			this ITelegramBotClient telegramBotClient,
 			ChatId chatId,
