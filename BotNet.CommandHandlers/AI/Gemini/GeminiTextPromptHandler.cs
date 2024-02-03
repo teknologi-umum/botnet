@@ -129,7 +129,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 						replyToMessageId: textPrompt.Command.MessageId,
 						cancellationToken: cancellationToken
 					);
-					throw;
+					return;
 				}
 
 				// Track thread

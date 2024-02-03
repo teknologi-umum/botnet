@@ -105,7 +105,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken
 					);
-					throw;
+					return;
 				}
 
 				// Track thread

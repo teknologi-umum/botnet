@@ -77,6 +77,8 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
 					// TODO: tie up loose ends
+				} catch (Exception exc) {
+					_logger.LogError(exc, "Could not handle command");
 				}
 			});
 
