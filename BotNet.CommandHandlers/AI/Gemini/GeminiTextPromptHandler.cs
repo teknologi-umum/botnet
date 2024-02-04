@@ -23,8 +23,8 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		ICommandQueue commandQueue,
 		ILogger<GeminiTextPromptHandler> logger
 	) : ICommandHandler<GeminiTextPrompt> {
-		internal static readonly RateLimiter CHAT_RATE_LIMITER = RateLimiter.PerChat(5, TimeSpan.FromMinutes(5));
-		internal static readonly RateLimiter VIP_CHAT_RATE_LIMITER = RateLimiter.PerChat(5, TimeSpan.FromMinutes(2));
+		internal static readonly RateLimiter CHAT_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(5));
+		internal static readonly RateLimiter VIP_CHAT_RATE_LIMITER = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(2));
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly GeminiClient _geminiClient = geminiClient;
