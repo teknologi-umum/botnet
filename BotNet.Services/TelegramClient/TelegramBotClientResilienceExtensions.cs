@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
@@ -37,7 +38,16 @@ namespace BotNet.Services.TelegramClient {
 					continue;
 				}
 			}
-			throw new ApiRequestException("Text could not be parsed.");
+
+			// Last resort: escape everything
+			return await telegramBotClient.SendTextMessageAsync(
+				chatId: chatId,
+				text: WebUtility.HtmlEncode(text),
+				parseMode: ParseMode.Html,
+				replyToMessageId: replyToMessageId,
+				replyMarkup: replyMarkup,
+				cancellationToken: cancellationToken
+			);
 		}
 
 		public static async Task<Message> EditMessageTextAsync(
@@ -67,7 +77,16 @@ namespace BotNet.Services.TelegramClient {
 					continue;
 				}
 			}
-			throw new ApiRequestException("Text could not be parsed.");
+			
+			// Last resort: escape everything
+			return await telegramBotClient.EditMessageTextAsync(
+				chatId: chatId,
+				messageId: messageId,
+				text: WebUtility.HtmlEncode(text),
+				parseMode: ParseMode.Html,
+				replyMarkup: replyMarkup,
+				cancellationToken: cancellationToken
+			);
 		}
 	}
 }
