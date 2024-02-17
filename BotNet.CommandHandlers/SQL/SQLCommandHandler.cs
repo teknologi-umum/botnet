@@ -57,7 +57,8 @@ namespace BotNet.CommandHandlers.SQL {
 						chatId: command.Chat.Id,
 						text: $$"""
 						<code>Table '{{table}}' not found. Available tables are:
-						- pileg_dpr
+						- pileg_dpr_dapil
+						- pileg_dpr_provinsi
 						- pilpres
 						- vps
 						</code>

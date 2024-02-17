@@ -6,7 +6,7 @@ using BotNet.Services.SQL;
 using BotNet.Services.Sqlite;
 
 namespace BotNet.Services.Pemilu2024 {
-	public sealed class PilegDPRDataSource(
+	public sealed class PilegDPRPerProvinsiDataSource(
 		ScopedDatabase scopedDatabase,
 		SirekapClient sirekapClient
 	) : IScopedDataSource {
@@ -39,7 +39,7 @@ namespace BotNet.Services.Pemilu2024 {
 
 		public async Task LoadTableAsync(CancellationToken cancellationToken) {
 			_scopedDatabase.ExecuteNonQuery("""
-			CREATE TABLE pileg_dpr (
+			CREATE TABLE pileg_dpr_provinsi (
 				provinsi VARCHAR(50) PRIMARY KEY,
 				progress REAL,
 				pkb INTEGER,
@@ -75,9 +75,9 @@ namespace BotNet.Services.Pemilu2024 {
 				keySelector: provinsi => provinsi.Kode
 			);
 
-			ReportPilegDPR report = await _sirekapClient.GetReportPilegDPRAsync(cancellationToken);
+			ReportPilegDPRByWilayah report = await _sirekapClient.GetReportPilegDPRByProvinsiAsync(cancellationToken);
 
-			foreach ((string kodeWilayah, ReportPilegDPR.Row row) in report.RowByKodeWilayah.OrderBy(pair => pair.Key)) {
+			foreach ((string kodeWilayah, ReportPilegDPRByWilayah.Row row) in report.RowByKodeWilayah.OrderBy(pair => pair.Key)) {
 				int? pkb = row.VotesByKodePartai!.TryGetValue(PKB, out int p) ? p : null;
 				int? gerindra = row.VotesByKodePartai!.TryGetValue(GERINDRA, out int g) ? g : null;
 				int? pdip = row.VotesByKodePartai!.TryGetValue(PDIP, out int pd) ? pd : null;
@@ -104,7 +104,7 @@ namespace BotNet.Services.Pemilu2024 {
 				int? partai_ummat = row.VotesByKodePartai!.TryGetValue(PARTAI_UMMAT, out int u) ? u: null;
 				int total = (pkb ?? 0) + (gerindra ?? 0) + (pdip ?? 0) + (golkar ?? 0) + (nasdem ?? 0) + (partai_buruh ?? 0) + (gelora ?? 0) + (pks ?? 0) + (pkn ?? 0) + (hanura ?? 0) + (garuda ?? 0) + (pan ?? 0) + (pbb ?? 0) + (demokrat ?? 0) + (psi ?? 0) + (perindo ?? 0) + (ppp ?? 0) + (pna ?? 0) + (gabthat ?? 0) + (pda ?? 0) + (partai_aceh ?? 0) + (pas_aceh ?? 0) + (partai_sira ?? 0) + (partai_ummat ?? 0);
 				_scopedDatabase.ExecuteNonQuery("""
-				INSERT INTO pileg_dpr (provinsi, progress, pkb, gerindra, pdip, golkar, nasdem, partai_buruh, gelora, pks, pkn, hanura, garuda, pan, pbb, demokrat, psi, perindo, ppp, pna, gabthat, pda, partai_aceh, pas_aceh, partai_sira, partai_ummat, total)
+				INSERT INTO pileg_dpr_provinsi (provinsi, progress, pkb, gerindra, pdip, golkar, nasdem, partai_buruh, gelora, pks, pkn, hanura, garuda, pan, pbb, demokrat, psi, perindo, ppp, pna, gabthat, pda, partai_aceh, pas_aceh, partai_sira, partai_ummat, total)
 				VALUES (@provinsi, @progress, @pkb, @gerindra, @pdip, @golkar, @nasdem, @partai_buruh, @gelora, @pks, @pkn, @hanura, @garuda, @pan, @pbb, @demokrat, @psi, @perindo, @ppp, @pna, @gabthat, @pda, @partai_aceh, @pas_aceh, @partai_sira, @partai_ummat, @total)
 				""",
 					[

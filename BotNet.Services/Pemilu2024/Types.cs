@@ -68,13 +68,13 @@ namespace BotNet.Services.Pemilu2024 {
 		);
 	}
 
-	public sealed record ReportPilegDPR(
+	public sealed record ReportPilegDPRByWilayah(
 		[property: JsonPropertyName("ts")] string Timestamp,
 		string Psu,
 		string Mode,
 		IDictionary<string, decimal> Chart,
-		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDPR.Row> RowByKodeWilayah,
-		ReportPilegDPR.Progress Progres
+		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDPRByWilayah.Row> RowByKodeWilayah,
+		ReportPilegDPRByWilayah.Progress Progres
 	) {
 		public sealed record Row {
 			public string? Psu { get; set; }
@@ -91,14 +91,52 @@ namespace BotNet.Services.Pemilu2024 {
 						return null;
 					}
 
-					Dictionary<string, int> votesByKodeCalon = [];
+					Dictionary<string, int> votesByKodePartai = [];
 					foreach (KeyValuePair<string, JsonElement> kvp in VotesByKodePartaiJson) {
 						if (kvp.Value.ValueKind == JsonValueKind.Number
 							&& kvp.Value.TryGetInt32(out int votes)) {
-							votesByKodeCalon[kvp.Key] = votes;
+							votesByKodePartai[kvp.Key] = votes;
 						}
 					}
-					return votesByKodeCalon;
+					return votesByKodePartai;
+				}
+			}
+		}
+
+		public sealed record Progress(
+			int Total,
+			int Progres
+		);
+	}
+
+	public sealed record ReportPilegDPRByDapil(
+		[property: JsonPropertyName("ts")] string Timestamp,
+		string Mode,
+		IDictionary<string, decimal> Chart,
+		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDPRByDapil.Row?> RowByKodeDapil,
+		ReportPilegDPRByDapil.Progress Progres
+	) {
+		public sealed record Row {
+			public decimal Persen { get; set; }
+
+			[JsonExtensionData]
+			public IDictionary<string, JsonElement>? VotesByKodePartaiJson { get; set; }
+
+			[JsonIgnore]
+			public IDictionary<string, int>? VotesByKodePartai {
+				get {
+					if (VotesByKodePartaiJson is null) {
+						return null;
+					}
+
+					Dictionary<string, int> votesByKodePartai = [];
+					foreach (KeyValuePair<string, JsonElement> kvp in VotesByKodePartaiJson) {
+						if (kvp.Value.ValueKind == JsonValueKind.Number
+							&& kvp.Value.TryGetInt32(out int votes)) {
+							votesByKodePartai[kvp.Key] = votes;
+						}
+					}
+					return votesByKodePartai;
 				}
 			}
 		}
