@@ -19,11 +19,13 @@ using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.Meme;
 using BotNet.Services.OpenAI;
+using BotNet.Services.Pemilu2024;
 using BotNet.Services.Pesto;
 using BotNet.Services.Piston;
 using BotNet.Services.Preview;
 using BotNet.Services.Primbon;
 using BotNet.Services.ProgrammerHumor;
+using BotNet.Services.Sqlite;
 using BotNet.Services.Stability;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
@@ -87,6 +89,8 @@ builder.Services.AddCommandHandlers();
 builder.Services.AddCommandPriorityCategorizer();
 builder.Services.AddBotProfileAccessor();
 builder.Services.AddGeminiClient();
+builder.Services.AddSqliteDatabases();
+builder.Services.AddPemilu2024();
 
 // MediatR
 builder.Services.AddMediatR(config => {

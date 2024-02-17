@@ -1,9 +1,12 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
 using RG.Ninja;
+using SqlParser;
+using SqlParser.Ast;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -157,6 +160,61 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				);
 
 				await _commandQueue.DispatchAsync(aiFollowUpMessage);
+				return;
+			}
+			
+			// Handle SQL
+			if (update.Message is {
+				ReplyToMessage: null,
+				Text: { } text
+			} && text.StartsWith("select", StringComparison.OrdinalIgnoreCase)) {
+				try {
+					Sequence<Statement> ast = new SqlParser.Parser().ParseSql(text);
+					if (ast.Count > 1) {
+						// Fire and forget
+						Task _ = Task.Run(async () => {
+							try {
+								await _telegramBotClient.SendTextMessageAsync(
+									chatId: update.Message.Chat.Id,
+									text: $"Your SQL contains more than one statement.",
+									replyToMessageId: update.Message.MessageId,
+									cancellationToken: cancellationToken
+								);
+							} catch (OperationCanceledException) {
+								// Terminate gracefully
+							}
+						});
+						return;
+					}
+					if (ast[0] is not Statement.Select selectStatement) {
+						// Fire and forget
+						Task _ = Task.Run(async () => {
+							try {
+								await _telegramBotClient.SendTextMessageAsync(
+									chatId: update.Message.Chat.Id,
+									text: $"Your SQL is not a SELECT statement.",
+									replyToMessageId: update.Message.MessageId,
+									cancellationToken: cancellationToken
+								);
+							} catch (OperationCanceledException) {
+								// Terminate gracefully
+							}
+						});
+						return;
+					}
+					if (SQLCommand.TryCreate(
+						message: update.Message,
+						commandPriorityCategorizer: _commandPriorityCategorizer,
+						sqlCommand: out SQLCommand? sqlCommand
+					)) {
+						await _commandQueue.DispatchAsync(
+							command: sqlCommand
+						);
+						return;
+					}
+				} catch {
+					// Suppress
+				}
 			}
 		}
 	}
