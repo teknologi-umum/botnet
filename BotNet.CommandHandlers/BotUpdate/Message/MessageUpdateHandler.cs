@@ -176,7 +176,8 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 							try {
 								await _telegramBotClient.SendTextMessageAsync(
 									chatId: update.Message.Chat.Id,
-									text: $"Your SQL contains more than one statement.",
+									text: $"<code>Your SQL contains more than one statement.</code>",
+									parseMode: ParseMode.Html,
 									replyToMessageId: update.Message.MessageId,
 									cancellationToken: cancellationToken
 								);
@@ -192,7 +193,8 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 							try {
 								await _telegramBotClient.SendTextMessageAsync(
 									chatId: update.Message.Chat.Id,
-									text: $"Your SQL is not a SELECT statement.",
+									text: $"<code>Your SQL is not a SELECT statement.</code>",
+									parseMode: ParseMode.Html,
 									replyToMessageId: update.Message.MessageId,
 									cancellationToken: cancellationToken
 								);

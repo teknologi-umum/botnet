@@ -2,6 +2,7 @@
 using BotNet.Commands.SQL;
 using BotNet.Services.SQL;
 using BotNet.Services.Sqlite;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using SqlParser.Ast;
 using Telegram.Bot;
@@ -20,7 +21,8 @@ namespace BotNet.CommandHandlers.SQL {
 				|| froms.Count == 0) {
 				await _telegramBotClient.SendTextMessageAsync(
 					chatId: command.Chat.Id,
-					text: "No FROM clause found.",
+					text: "<code>No FROM clause found.</code>",
+					parseMode: ParseMode.Html,
 					replyToMessageId: command.SQLMessageId,
 					cancellationToken: cancellationToken
 				);
@@ -53,9 +55,12 @@ namespace BotNet.CommandHandlers.SQL {
 					await _telegramBotClient.SendTextMessageAsync(
 						chatId: command.Chat.Id,
 						text: $$"""
-						Table '{{table}}' not found. Available tables are:
+						<code>Table '{{table}}' not found. Available tables are:
 						- pilpres
+						- vps
+						</code>
 						""",
+						parseMode: ParseMode.Html,
 						replyToMessageId: command.SQLMessageId,
 						cancellationToken: cancellationToken
 					);
@@ -68,52 +73,64 @@ namespace BotNet.CommandHandlers.SQL {
 			// Execute query
 			using ScopedDatabase scopedDatabase = serviceScope.ServiceProvider.GetRequiredService<ScopedDatabase>();
 			StringBuilder resultBuilder = new();
-			scopedDatabase.ExecuteReader(
-				commandText: command.RawStatement,
-				readAction: (reader) => {
-					string[] values = new string[reader.FieldCount];
 
-					// Get column names
-					for (int i = 0; i < reader.FieldCount; i++) {
-						values[i] = '"' + reader.GetName(i).Replace("\"", "\"\"") + '"';
-					}
-					resultBuilder.AppendLine(string.Join(',', values));
+			try {
+				scopedDatabase.ExecuteReader(
+					commandText: command.RawStatement,
+					readAction: (reader) => {
+						string[] values = new string[reader.FieldCount];
 
-					// Get rows
-					while (reader.Read()) {
+						// Get column names
 						for (int i = 0; i < reader.FieldCount; i++) {
-							if (reader.IsDBNull(i)) {
-								values[i] = "";
-								continue;
-							}
-
-							Type fieldType = reader.GetFieldType(i);
-							if (fieldType == typeof(string)) {
-								values[i] = '"' + reader.GetString(i).Replace("\"", "\"\"") + '"';
-							} else if (fieldType == typeof(int)) {
-								values[i] = reader.GetInt32(i).ToString();
-							} else if (fieldType == typeof(long)) {
-								values[i] = reader.GetInt64(i).ToString();
-							} else if (fieldType == typeof(float)) {
-								values[i] = reader.GetFloat(i).ToString();
-							} else if (fieldType == typeof(double)) {
-								values[i] = reader.GetDouble(i).ToString();
-							} else if (fieldType == typeof(decimal)) {
-								values[i] = reader.GetDecimal(i).ToString();
-							} else if (fieldType == typeof(bool)) {
-								values[i] = reader.GetBoolean(i).ToString();
-							} else if (fieldType == typeof(DateTime)) {
-								values[i] = reader.GetDateTime(i).ToString();
-							} else if (fieldType == typeof(byte[])) {
-								values[i] = BitConverter.ToString(reader.GetFieldValue<byte[]>(i)).Replace("-", "");
-							} else {
-								values[i] = reader[i].ToString();
-							}
+							values[i] = '"' + reader.GetName(i).Replace("\"", "\"\"") + '"';
 						}
 						resultBuilder.AppendLine(string.Join(',', values));
+
+						// Get rows
+						while (reader.Read()) {
+							for (int i = 0; i < reader.FieldCount; i++) {
+								if (reader.IsDBNull(i)) {
+									values[i] = "";
+									continue;
+								}
+
+								Type fieldType = reader.GetFieldType(i);
+								if (fieldType == typeof(string)) {
+									values[i] = '"' + reader.GetString(i).Replace("\"", "\"\"") + '"';
+								} else if (fieldType == typeof(int)) {
+									values[i] = reader.GetInt32(i).ToString();
+								} else if (fieldType == typeof(long)) {
+									values[i] = reader.GetInt64(i).ToString();
+								} else if (fieldType == typeof(float)) {
+									values[i] = reader.GetFloat(i).ToString();
+								} else if (fieldType == typeof(double)) {
+									values[i] = reader.GetDouble(i).ToString();
+								} else if (fieldType == typeof(decimal)) {
+									values[i] = reader.GetDecimal(i).ToString();
+								} else if (fieldType == typeof(bool)) {
+									values[i] = reader.GetBoolean(i).ToString();
+								} else if (fieldType == typeof(DateTime)) {
+									values[i] = reader.GetDateTime(i).ToString();
+								} else if (fieldType == typeof(byte[])) {
+									values[i] = BitConverter.ToString(reader.GetFieldValue<byte[]>(i)).Replace("-", "");
+								} else {
+									values[i] = reader[i].ToString();
+								}
+							}
+							resultBuilder.AppendLine(string.Join(',', values));
+						}
 					}
-				}
-			);
+				);
+			} catch (SqliteException exc) {
+				await _telegramBotClient.SendTextMessageAsync(
+					chatId: command.Chat.Id,
+					text: "<code>" + exc.Message.Replace("SQLite Error", "Error") + "</code>",
+					parseMode: ParseMode.Html,
+					replyToMessageId: command.SQLMessageId,
+					cancellationToken: cancellationToken
+				);
+				return;
+			}
 
 			// Send result
 			await _telegramBotClient.SendTextMessageAsync(
@@ -123,8 +140,6 @@ namespace BotNet.CommandHandlers.SQL {
 				replyToMessageId: command.SQLMessageId,
 				cancellationToken: cancellationToken
 			);
-
-			return;
 		}
 
 		private static void CollectTableNames(ref HashSet<string> tables, TableFactor tableFactor) {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using BotNet.Bot;
 using BotNet.CommandHandlers;
@@ -15,8 +15,11 @@ using BotNet.Services.Craiyon;
 using BotNet.Services.DynamicExpresso;
 using BotNet.Services.Gemini;
 using BotNet.Services.GoogleMap;
+using BotNet.Services.GoogleSheets;
+using BotNet.Services.GoogleSheets.Options;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
+using BotNet.Services.KokizzuVPSBenchmark;
 using BotNet.Services.Meme;
 using BotNet.Services.OpenAI;
 using BotNet.Services.Pemilu2024;
@@ -61,6 +64,7 @@ builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("G
 builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
 builder.Services.Configure<CommandPrioritizationOptions>(builder.Configuration.GetSection("CommandPrioritizationOptions"));
 builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("GeminiOptions"));
+builder.Services.Configure<GoogleSheetsOptions>(builder.Configuration.GetSection("GoogleSheetsOptions"));
 builder.Services.AddHttpClient();
 builder.Services.AddFontService();
 builder.Services.AddColorCardRenderer();
@@ -91,6 +95,8 @@ builder.Services.AddBotProfileAccessor();
 builder.Services.AddGeminiClient();
 builder.Services.AddSqliteDatabases();
 builder.Services.AddPemilu2024();
+builder.Services.AddGoogleSheets();
+builder.Services.AddKokizzuVPSBenchmarkDataSource();
 
 // MediatR
 builder.Services.AddMediatR(config => {

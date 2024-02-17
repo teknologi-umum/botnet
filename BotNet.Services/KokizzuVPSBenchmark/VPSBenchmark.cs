@@ -1,11 +1,10 @@
-﻿using System;
-using BotNet.Services.GoogleSheets;
+﻿using BotNet.Services.GoogleSheets;
 
-namespace BotNet.Services.VPS {
+namespace BotNet.Services.KokizzuVPSBenchmark {
 	public sealed record VPSBenchmark(
 		[property: FromColumn("A")] string Provider,
 		[property: FromColumn("B")] string Location,
-		[property: FromColumn("C")] DateOnly BenchmarkDate,
+		[property: FromColumn("C")] string BenchmarkDate,
 		[property: FromColumn("E")] string? VerdictCons,
 		[property: FromColumn("F")] decimal IdrMo,
 		[property: FromColumn("G")] int Core,
