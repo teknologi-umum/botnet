@@ -214,6 +214,14 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						);
 						return;
 					}
+				} catch (ParserException exc) {
+					await _telegramBotClient.SendTextMessageAsync(
+						chatId: update.Message.Chat.Id,
+						text: $"<code>{exc.Message}</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: update.Message.MessageId,
+						cancellationToken: cancellationToken
+					);
 				} catch {
 					// Suppress
 				}
