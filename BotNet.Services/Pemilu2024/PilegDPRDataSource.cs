@@ -65,7 +65,8 @@ namespace BotNet.Services.Pemilu2024 {
 				partai_aceh INTEGER,
 				pas_aceh INTEGER,
 				partai_sira INTEGER,
-				partai_ummat INTEGER
+				partai_ummat INTEGER,
+				total INTEGER
 			)
 			""");
 
@@ -77,37 +78,63 @@ namespace BotNet.Services.Pemilu2024 {
 			ReportPilegDPR report = await _sirekapClient.GetReportPilegDPRAsync(cancellationToken);
 
 			foreach ((string kodeWilayah, ReportPilegDPR.Row row) in report.RowByKodeWilayah.OrderBy(pair => pair.Key)) {
+				int? pkb = row.VotesByKodePartai!.TryGetValue(PKB, out int p) ? p : null;
+				int? gerindra = row.VotesByKodePartai!.TryGetValue(GERINDRA, out int g) ? g : null;
+				int? pdip = row.VotesByKodePartai!.TryGetValue(PDIP, out int pd) ? pd : null;
+				int? golkar = row.VotesByKodePartai!.TryGetValue(GOLKAR, out int go) ? go : null;
+				int? nasdem = row.VotesByKodePartai!.TryGetValue(NASDEM, out int n) ? n : null;
+				int? partai_buruh = row.VotesByKodePartai!.TryGetValue(PARTAI_BURUH, out int pb) ? pb : null;
+				int? gelora = row.VotesByKodePartai!.TryGetValue(GELORA, out int ge) ? ge : null;
+				int? pks = row.VotesByKodePartai!.TryGetValue(PKS, out int pk) ? pk : null;
+				int? pkn = row.VotesByKodePartai!.TryGetValue(PKN, out int pn) ? pn : null;
+				int? hanura = row.VotesByKodePartai!.TryGetValue(HANURA, out int h) ? h : null;
+				int? garuda = row.VotesByKodePartai!.TryGetValue(GARUDA, out int ga) ? ga : null;
+				int? pan = row.VotesByKodePartai!.TryGetValue(PAN, out int pa) ? pa : null;
+				int? pbb = row.VotesByKodePartai!.TryGetValue(PBB, out int pb2) ? pb2 : null;
+				int? demokrat = row.VotesByKodePartai!.TryGetValue(DEMOKRAT, out int d) ? d : null;
+				int? psi = row.VotesByKodePartai!.TryGetValue(PSI, out int ps) ? ps : null;
+				int? perindo = row.VotesByKodePartai!.TryGetValue(PERINDO, out int pe) ? pe : null;
+				int? ppp = row.VotesByKodePartai!.TryGetValue(PPP, out int pp) ? pp : null;
+				int? pna = row.VotesByKodePartai!.TryGetValue(PNA, out int pn2) ? pn2 : null;
+				int? gabthat = row.VotesByKodePartai!.TryGetValue(GABTHAT, out int gab) ? gab : null;
+				int? pda = row.VotesByKodePartai!.TryGetValue(PDA, out int pd2) ? pd2 : null;
+				int? partai_aceh = row.VotesByKodePartai!.TryGetValue(PARTAI_ACEH, out int pa2) ? pa2 : null;
+				int? pas_aceh = row.VotesByKodePartai!.TryGetValue(PAS_ACEH, out int pas) ? pas : null;
+				int? partai_sira = row.VotesByKodePartai!.TryGetValue(PARTAI_SIRA, out int s) ? s : null;
+				int? partai_ummat = row.VotesByKodePartai!.TryGetValue(PARTAI_UMMAT, out int u) ? u: null;
+				int total = (pkb ?? 0) + (gerindra ?? 0) + (pdip ?? 0) + (golkar ?? 0) + (nasdem ?? 0) + (partai_buruh ?? 0) + (gelora ?? 0) + (pks ?? 0) + (pkn ?? 0) + (hanura ?? 0) + (garuda ?? 0) + (pan ?? 0) + (pbb ?? 0) + (demokrat ?? 0) + (psi ?? 0) + (perindo ?? 0) + (ppp ?? 0) + (pna ?? 0) + (gabthat ?? 0) + (pda ?? 0) + (partai_aceh ?? 0) + (pas_aceh ?? 0) + (partai_sira ?? 0) + (partai_ummat ?? 0);
 				_scopedDatabase.ExecuteNonQuery("""
-				INSERT INTO pileg_dpr (provinsi, progress, pkb, gerindra, pdip, golkar, nasdem, partai_buruh, gelora, pks, pkn, hanura, garuda, pan, pbb, demokrat, psi, perindo, ppp, pna, gabthat, pda, partai_aceh, pas_aceh, partai_sira, partai_ummat)
-				VALUES (@provinsi, @progress, @pkb, @gerindra, @pdip, @golkar, @nasdem, @partai_buruh, @gelora, @pks, @pkn, @hanura, @garuda, @pan, @pbb, @demokrat, @psi, @perindo, @ppp, @pna, @gabthat, @pda, @partai_aceh, @pas_aceh, @partai_sira, @partai_ummat)
+				INSERT INTO pileg_dpr (provinsi, progress, pkb, gerindra, pdip, golkar, nasdem, partai_buruh, gelora, pks, pkn, hanura, garuda, pan, pbb, demokrat, psi, perindo, ppp, pna, gabthat, pda, partai_aceh, pas_aceh, partai_sira, partai_ummat, total)
+				VALUES (@provinsi, @progress, @pkb, @gerindra, @pdip, @golkar, @nasdem, @partai_buruh, @gelora, @pks, @pkn, @hanura, @garuda, @pan, @pbb, @demokrat, @psi, @perindo, @ppp, @pna, @gabthat, @pda, @partai_aceh, @pas_aceh, @partai_sira, @partai_ummat, @total)
 				""",
 					[
 						( "@provinsi", provinsiByKode[kodeWilayah].Nama ),
 						( "@progress", row.Persen ),
-						( "@pkb", row.VotesByKodePartai!.TryGetValue(PKB, out int pkb) ? pkb : null),
-						( "@gerindra", row.VotesByKodePartai!.TryGetValue(GERINDRA, out int gerindra) ? gerindra : null),
-						( "@pdip", row.VotesByKodePartai!.TryGetValue(PDIP, out int pdip) ? pdip : null),
-						( "@golkar", row.VotesByKodePartai!.TryGetValue(GOLKAR, out int golkar) ? golkar : null),
-						( "@nasdem", row.VotesByKodePartai!.TryGetValue(NASDEM, out int nasdem) ? nasdem : null),
-						( "@partai_buruh", row.VotesByKodePartai!.TryGetValue(PARTAI_BURUH, out int partai_buruh) ? partai_buruh : null),
-						( "@gelora", row.VotesByKodePartai!.TryGetValue(GELORA, out int gelora) ? gelora : null),
-						( "@pks", row.VotesByKodePartai!.TryGetValue(PKS, out int pks) ? pks : null),
-						( "@pkn", row.VotesByKodePartai!.TryGetValue(PKN, out int pkn) ? pkn : null),
-						( "@hanura", row.VotesByKodePartai!.TryGetValue(HANURA, out int hanura) ? hanura : null),
-						( "@garuda", row.VotesByKodePartai!.TryGetValue(GARUDA, out int garuda) ? garuda : null),
-						( "@pan", row.VotesByKodePartai!.TryGetValue(PAN, out int pan) ? pan : null),
-						( "@pbb", row.VotesByKodePartai!.TryGetValue(PBB, out int pbb) ? pbb : null),
-						( "@demokrat", row.VotesByKodePartai!.TryGetValue(DEMOKRAT, out int demokrat) ? demokrat : null),
-						( "@psi", row.VotesByKodePartai!.TryGetValue(PSI, out int psi) ? psi : null),
-						( "@perindo", row.VotesByKodePartai!.TryGetValue(PERINDO, out int perindo) ? perindo : null),
-						( "@ppp", row.VotesByKodePartai!.TryGetValue(PPP, out int ppp) ? ppp : null),
-						( "@pna", row.VotesByKodePartai!.TryGetValue(PNA, out int pna) ? pna : null),
-						( "@gabthat", row.VotesByKodePartai!.TryGetValue(GABTHAT, out int gabthat) ? gabthat : null),
-						( "@pda", row.VotesByKodePartai!.TryGetValue(PDA, out int pda) ? pda : null),
-						( "@partai_aceh", row.VotesByKodePartai!.TryGetValue(PARTAI_ACEH, out int partai_aceh) ? partai_aceh : null),
-						( "@pas_aceh", row.VotesByKodePartai!.TryGetValue(PAS_ACEH, out int pas_aceh) ? pas_aceh : null),
-						( "@partai_sira", row.VotesByKodePartai!.TryGetValue(PARTAI_SIRA, out int partai_sira) ? partai_sira : null),
-						( "@partai_ummat", row.VotesByKodePartai!.TryGetValue(PARTAI_UMMAT, out int partai_ummat) ? partai_ummat : null)
+						( "@pkb", pkb),
+						( "@gerindra", gerindra),
+						( "@pdip", pdip),
+						( "@golkar", golkar),
+						( "@nasdem", nasdem),
+						( "@partai_buruh", partai_buruh),
+						( "@gelora", gelora),
+						( "@pks", pks),
+						( "@pkn", pkn),
+						( "@hanura", hanura),
+						( "@garuda", garuda),
+						( "@pan", pan),
+						( "@pbb", pbb),
+						( "@demokrat", demokrat),
+						( "@psi", psi),
+						( "@perindo", perindo),
+						( "@ppp", ppp),
+						( "@pna", pna),
+						( "@gabthat", gabthat),
+						( "@pda", pda),
+						( "@partai_aceh", partai_aceh),
+						( "@pas_aceh", pas_aceh),
+						( "@partai_sira", partai_sira),
+						( "@partai_ummat", partai_ummat),
+						( "@total", total)
 					]
 				);
 			}

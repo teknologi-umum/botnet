@@ -23,7 +23,8 @@ namespace BotNet.Services.Pemilu2024 {
 				progress REAL,
 				anies INTEGER,
 				prabowo INTEGER,
-				ganjar INTEGER
+				ganjar INTEGER,
+				total INTEGER
 			)
 			""");
 
@@ -35,16 +36,22 @@ namespace BotNet.Services.Pemilu2024 {
 			ReportPilpres report = await _sirekapClient.GetReportPilpresAsync(cancellationToken);
 
 			foreach ((string kodeWilayah, ReportPilpres.Row row) in report.RowByKodeWilayah.OrderBy(pair => pair.Key)) {
+				int? anies = row.VotesByKodeCalon!.TryGetValue(ANIES, out int a) ? a : null;
+				int? prabowo = row.VotesByKodeCalon!.TryGetValue(PRABOWO, out int p) ? p : null;
+				int? ganjar = row.VotesByKodeCalon!.TryGetValue(GANJAR, out int g) ? g : null;
+				int total = (anies ?? 0) + (prabowo ?? 0) + (ganjar ?? 0);
+
 				_scopedDatabase.ExecuteNonQuery("""
-				INSERT INTO pilpres (provinsi, progress, anies, prabowo, ganjar)
-				VALUES (@provinsi, @progress, @anies, @prabowo, @ganjar)
+				INSERT INTO pilpres (provinsi, progress, anies, prabowo, ganjar, total)
+				VALUES (@provinsi, @progress, @anies, @prabowo, @ganjar, @total)
 				""",
 					[
 						( "@provinsi", provinsiByKode[kodeWilayah].Nama ),
 						( "@progress", row.Persen ),
-						( "@anies", row.VotesByKodeCalon!.TryGetValue(ANIES, out int anies) ? anies : null),
-						( "@prabowo", row.VotesByKodeCalon!.TryGetValue(PRABOWO, out int prabowo) ? prabowo : null),
-						( "@ganjar", row.VotesByKodeCalon!.TryGetValue(GANJAR, out int ganjar) ? ganjar : null)
+						( "@anies", anies),
+						( "@prabowo", prabowo),
+						( "@ganjar", ganjar),
+						( "@total", total)
 					]
 				);
 			}
