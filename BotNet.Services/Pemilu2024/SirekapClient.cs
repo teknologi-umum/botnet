@@ -22,6 +22,13 @@ namespace BotNet.Services.Pemilu2024 {
 			) ?? throw new JsonException("Unexpected response");
 		}
 
+		public async Task<IDictionary<string, IDictionary<string, Caleg>>> GetCalegByKodeByKodePartaiAsync(string kodeDapil, CancellationToken cancellationToken) {
+			return await _httpClient.GetFromJsonAsync<IDictionary<string, IDictionary<string, Caleg>>>(
+				requestUri: $"https://sirekap-obj-data.kpu.go.id/pemilu/caleg/partai/{kodeDapil}.json",
+				cancellationToken: cancellationToken
+			) ?? throw new JsonException("Unexpected response");
+		}
+
 		public async Task<IDictionary<string, Partai>> GetPartaiByKodeAsync(CancellationToken cancellationToken) {
 			return await _httpClient.GetFromJsonAsync<IDictionary<string, Partai>>(
 				requestUri: "https://sirekap-obj-data.kpu.go.id/pemilu/partai.json",
@@ -74,6 +81,13 @@ namespace BotNet.Services.Pemilu2024 {
 		public async Task<ReportPilegDPRByDapil> GetReportPilegDPRByDapilAsync(CancellationToken cancellationToken) {
 			return await _httpClient.GetFromJsonAsync<ReportPilegDPRByDapil>(
 				requestUri: "https://sirekap-obj-data.kpu.go.id/pemilu/hhcd/pdpr/0.json",
+				cancellationToken: cancellationToken
+			) ?? throw new JsonException("Unexpected response");
+		}
+
+		public async Task<ReportCalegDPR> GetReportCalegDPRAsync(string kodeDapil, CancellationToken cancellationToken) {
+			return await _httpClient.GetFromJsonAsync<ReportCalegDPR>(
+				requestUri: $"https://sirekap-obj-data.kpu.go.id/pemilu/hhcd/pdpr/{kodeDapil}.json",
 				cancellationToken: cancellationToken
 			) ?? throw new JsonException("Unexpected response");
 		}

@@ -58,6 +58,7 @@ namespace BotNet.CommandHandlers.SQL {
 						text: $$"""
 						<code>Table '{{table}}' not found. Available tables are:
 						- pileg_dpr_dapil
+						- pileg_dpr_<kodedapil>
 						- pileg_dpr_provinsi
 						- pilpres
 						- vps

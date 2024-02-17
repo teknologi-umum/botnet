@@ -28,6 +28,13 @@ namespace BotNet.Services.Pemilu2024 {
 		int Tingkat
 	);
 
+	public sealed record Caleg(
+		string Nama,
+		int NomorUrut,
+		string JenisKelamin,
+		string TempatTinggal
+	);
+
 	public sealed record ReportPilpres(
 		[property: JsonPropertyName("ts")] string Timestamp,
 		string Psu,
@@ -141,6 +148,19 @@ namespace BotNet.Services.Pemilu2024 {
 			}
 		}
 
+		public sealed record Progress(
+			int Total,
+			int Progres
+		);
+	}
+
+	public sealed record ReportCalegDPR(
+		[property: JsonPropertyName("ts")] string Timestamp,
+		string Mode,
+		IDictionary<string, decimal> Chart,
+		[property: JsonPropertyName("table")] IDictionary<string, IDictionary<string, int>> VotesByKodeCalegByKodePartai,
+		ReportCalegDPR.Progress Progres
+	) {
 		public sealed record Progress(
 			int Total,
 			int Progres
