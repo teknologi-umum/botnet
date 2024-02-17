@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using SqlParser.Ast;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.SQL {
@@ -56,6 +57,7 @@ namespace BotNet.CommandHandlers.SQL {
 						chatId: command.Chat.Id,
 						text: $$"""
 						<code>Table '{{table}}' not found. Available tables are:
+						- pileg_dpr
 						- pilpres
 						- vps
 						</code>
@@ -73,6 +75,7 @@ namespace BotNet.CommandHandlers.SQL {
 			// Execute query
 			using ScopedDatabase scopedDatabase = serviceScope.ServiceProvider.GetRequiredService<ScopedDatabase>();
 			StringBuilder resultBuilder = new();
+			int rows = 0;
 
 			try {
 				scopedDatabase.ExecuteReader(
@@ -118,6 +121,7 @@ namespace BotNet.CommandHandlers.SQL {
 								}
 							}
 							resultBuilder.AppendLine(string.Join(',', values));
+							rows++;
 						}
 					}
 				);
@@ -133,13 +137,24 @@ namespace BotNet.CommandHandlers.SQL {
 			}
 
 			// Send result
-			await _telegramBotClient.SendTextMessageAsync(
-				chatId: command.Chat.Id,
-				text: "```csv\n" + resultBuilder.ToString() + "```",
-				parseMode: ParseMode.MarkdownV2,
-				replyToMessageId: command.SQLMessageId,
-				cancellationToken: cancellationToken
-			);
+			string csvResult = resultBuilder.ToString();
+			if (csvResult.Length > 4000) {
+				await _telegramBotClient.SendDocumentAsync(
+					chatId: command.Chat.Id,
+					caption: $"{rows} rows affected",
+					document: new InputFileStream(new MemoryStream(Encoding.UTF8.GetBytes(csvResult)), "result.csv"),
+					replyToMessageId: command.SQLMessageId,
+					cancellationToken: cancellationToken
+				);
+			} else {
+				await _telegramBotClient.SendTextMessageAsync(
+					chatId: command.Chat.Id,
+					text: "```csv\n" + resultBuilder.ToString() + $"```\n{rows} rows affected",
+					parseMode: ParseMode.MarkdownV2,
+					replyToMessageId: command.SQLMessageId,
+					cancellationToken: cancellationToken
+				);
+			}
 		}
 
 		private static void CollectTableNames(ref HashSet<string> tables, TableFactor tableFactor) {

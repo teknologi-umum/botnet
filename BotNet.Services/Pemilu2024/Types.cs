@@ -67,4 +67,45 @@ namespace BotNet.Services.Pemilu2024 {
 			int Progres
 		);
 	}
+
+	public sealed record ReportPilegDPR(
+		[property: JsonPropertyName("ts")] string Timestamp,
+		string Psu,
+		string Mode,
+		IDictionary<string, decimal> Chart,
+		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDPR.Row> RowByKodeWilayah,
+		ReportPilegDPR.Progress Progres
+	) {
+		public sealed record Row {
+			public string? Psu { get; set; }
+			public decimal Persen { get; set; }
+			public bool StatusProgress { get; set; }
+
+			[JsonExtensionData]
+			public IDictionary<string, JsonElement>? VotesByKodePartaiJson { get; set; }
+
+			[JsonIgnore]
+			public IDictionary<string, int>? VotesByKodePartai {
+				get {
+					if (VotesByKodePartaiJson is null) {
+						return null;
+					}
+
+					Dictionary<string, int> votesByKodeCalon = [];
+					foreach (KeyValuePair<string, JsonElement> kvp in VotesByKodePartaiJson) {
+						if (kvp.Value.ValueKind == JsonValueKind.Number
+							&& kvp.Value.TryGetInt32(out int votes)) {
+							votesByKodeCalon[kvp.Key] = votes;
+						}
+					}
+					return votesByKodeCalon;
+				}
+			}
+		}
+
+		public sealed record Progress(
+			int Total,
+			int Progres
+		);
+	}
 }

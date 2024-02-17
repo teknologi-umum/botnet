@@ -63,5 +63,12 @@ namespace BotNet.Services.Pemilu2024 {
 				cancellationToken: cancellationToken
 			) ?? throw new JsonException("Unexpected response");
 		}
+
+		public async Task<ReportPilegDPR> GetReportPilegDPRAsync(CancellationToken cancellationToken) {
+			return await _httpClient.GetFromJsonAsync<ReportPilegDPR>(
+				requestUri: "https://sirekap-obj-data.kpu.go.id/pemilu/hhcw/pdpr.json",
+				cancellationToken: cancellationToken
+			) ?? throw new JsonException("Unexpected response");
+		}
 	}
 }
