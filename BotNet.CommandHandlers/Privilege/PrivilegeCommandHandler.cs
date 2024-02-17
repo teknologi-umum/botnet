@@ -33,6 +33,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 									👑 Anda adalah user VIP (ID: {{command.Sender.Id}})
+									👑 Gemini Pro tersedia
 									👑 GPT-4 tersedia
 									👑 GPT-4 Vision tersedia
 									👑 DALL-E 3 tersedia
@@ -47,6 +48,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 									❌ Feature bot dibatasi di dalam private chat (ID: {{command.Sender.Id}})
+									✅ Gemini Pro tersedia
 									✅ GPT-3.5 tersedia
 									❌ Vision tidak tersedia
 									❌ Image generation tidak tersedia
@@ -61,6 +63,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 										👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
+										👑 Gemini Pro tersedia
 										👑 GPT-4 tersedia
 										👑 GPT-4 Vision tersedia
 										✅ SDXL tersedia
@@ -78,6 +81,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 									👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
+									👑 Gemini Pro tersedia
 									👑 GPT-4 tersedia
 									👑 GPT-4 Vision tersedia
 									✅ SDXL tersedia
@@ -92,6 +96,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 										⚠️ Bot dipakai di group selain home group (ID: {{command.Chat.Id}})
+										✅ Gemini Pro tersedia
 										✅ GPT-3.5 tersedia
 										❌ Vision tidak tersedia
 										❌ Image generation tidak tersedia
@@ -111,6 +116,7 @@ namespace BotNet.CommandHandlers.Privilege {
 								chatId: command.Chat.Id,
 								text: $$"""
 									⚠️ Bot dipakai di group selain home group (ID: {{command.Chat.Id}})
+									✅ Gemini Pro tersedia
 									✅ GPT-3.5 tersedia
 									❌ Vision tidak tersedia
 									❌ Image generation tidak tersedia

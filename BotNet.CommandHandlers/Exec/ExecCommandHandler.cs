@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Exec;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.Piston;
@@ -18,6 +19,12 @@ namespace BotNet.CommandHandlers.Exec {
 		private readonly ILogger<ExecCommandHandler> _logger = logger;
 
 		public Task Handle(ExecCommand command, CancellationToken cancellationToken) {
+			// Ignore non-mentioned commands in home group
+			if (command.Chat is HomeGroupChat
+				&& !command.IsMentioned) {
+				return Task.CompletedTask;
+			}
+
 			// Fire and forget
 			Task.Run(async () => {
 				try {

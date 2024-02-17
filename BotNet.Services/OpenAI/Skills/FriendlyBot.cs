@@ -38,7 +38,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				+ $"{callSign}: I am an AI created by TEKNUM. How can I help you today?\n\n";
 			foreach ((string sender, string text) in thread) {
 				prompt += $"{sender}: {text}\n";
-				if (sender is "AI" or "Pakde") prompt += "\n";
+				if (sender is "GPT" or "Pakde") prompt += "\n";
 			}
 			prompt +=
 				$"{name}: {question}\n"
@@ -80,7 +80,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
-				callSign: "AI",
+				callSign: "GPT",
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);
@@ -92,7 +92,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 				from tuple in thread
 				let role = tuple.Sender switch {
-					"AI" => "assistant",
+					"GPT" => "assistant",
 					_ => "user"
 				}
 				select tuple switch {
@@ -119,7 +119,7 @@ namespace BotNet.Services.OpenAI.Skills {
 
 				from tuple in thread
 				let role = tuple.Sender switch {
-					"AI" => "assistant",
+					"GPT" => "assistant",
 					_ => "user"
 				}
 				select tuple switch {
@@ -136,7 +136,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				model: "gpt-4-1106-preview",
 				messages: messages,
 				maxTokens: 512,
-				callSign: "AI",
+				callSign: "GPT",
 				chatId: chatId,
 				replyToMessageId: replyToMessageId
 			);

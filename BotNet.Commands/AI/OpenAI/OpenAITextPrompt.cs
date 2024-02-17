@@ -20,9 +20,9 @@ namespace BotNet.Commands.AI.OpenAI {
 		}
 
 		public static OpenAITextPrompt FromAICallCommand(AICallCommand aiCallCommand, IEnumerable<MessageBase> thread) {
-			// Call sign must be AI, Bot, or GPT
-			if (aiCallCommand.CallSign is not "AI" and not "Bot" and not "GPT") {
-				throw new ArgumentException("Call sign must be AI, Bot, or GPT.", nameof(aiCallCommand));
+			// Call sign must be GPT
+			if (aiCallCommand.CallSign is not "GPT") {
+				throw new ArgumentException("Call sign must be GPT.", nameof(aiCallCommand));
 			}
 
 			// Prompt must be non-empty
@@ -50,9 +50,9 @@ namespace BotNet.Commands.AI.OpenAI {
 		}
 
 		public static OpenAITextPrompt FromAIFollowUpMessage(AIFollowUpMessage aiFollowUpMessage, IEnumerable<MessageBase> thread) {
-			// Call sign must be AI, Bot, or GPT
-			if (aiFollowUpMessage.CallSign is not "AI" and not "Bot" and not "GPT") {
-				throw new ArgumentException("Call sign must be AI, Bot, or GPT.", nameof(aiFollowUpMessage));
+			// Call sign must be GPT
+			if (aiFollowUpMessage.CallSign is not "GPT") {
+				throw new ArgumentException("Call sign must be GPT.", nameof(aiFollowUpMessage));
 			}
 
 			// Prompt must be non-empty

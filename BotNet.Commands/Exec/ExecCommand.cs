@@ -8,6 +8,7 @@ namespace BotNet.Commands.Exec {
 		public string PistonLanguageIdentifier { get; }
 		public string HighlightLanguageIdentifier { get; }
 		public string Code { get; }
+		public bool IsMentioned { get; }
 		public MessageId CodeMessageId { get; }
 		public ChatBase Chat { get; }
 
@@ -15,12 +16,14 @@ namespace BotNet.Commands.Exec {
 			string pistonLanguageIdentifier,
 			string highlightLanguageIdentifier,
 			string code,
+			bool isMentioned,
 			MessageId codeMessageId,
 			ChatBase chat
 		) {
 			PistonLanguageIdentifier = pistonLanguageIdentifier;
 			HighlightLanguageIdentifier = highlightLanguageIdentifier;
 			Code = code;
+			IsMentioned = isMentioned;
 			CodeMessageId = codeMessageId;
 			Chat = chat;
 		}
@@ -108,6 +111,7 @@ namespace BotNet.Commands.Exec {
 				pistonLanguageIdentifier: pistonLanguageIdentifier,
 				highlightLanguageIdentifier: highlightLanguageIdentifier,
 				code: code,
+				isMentioned: slashCommand.IsMentioned,
 				codeMessageId: new(codeMessageId),
 				chat: slashCommand.Chat
 			);
