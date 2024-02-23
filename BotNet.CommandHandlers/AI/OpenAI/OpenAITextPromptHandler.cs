@@ -1,4 +1,5 @@
-﻿using BotNet.CommandHandlers.Art;
+﻿using BotNet.CommandHandlers.AI.RateLimit;
+using BotNet.CommandHandlers.Art;
 using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
@@ -36,19 +37,39 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		private readonly ILogger<OpenAITextPromptHandler> _logger = logger;
 
 		public Task Handle(OpenAITextPrompt textPrompt, CancellationToken cancellationToken) {
-			try {
-				CHAT_RATE_LIMITER.ValidateActionRate(
-					chatId: textPrompt.Command.Chat.Id,
-					userId: textPrompt.Command.Sender.Id
-				);
-			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendTextMessageAsync(
-					chatId: textPrompt.Command.Chat.Id,
-					text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
-					parseMode: ParseMode.Html,
-					replyToMessageId: textPrompt.Command.MessageId,
-					cancellationToken: cancellationToken
-				);
+			if (textPrompt.Command.Chat is GroupChat) {
+				try {
+					AIRateLimiters.GROUP_CHAT_RATE_LIMITER.ValidateActionRate(
+						chatId: textPrompt.Command.Chat.Id,
+						userId: textPrompt.Command.Sender.Id
+					);
+				} catch (RateLimitExceededException exc) {
+					return _telegramBotClient.SendTextMessageAsync(
+						chatId: textPrompt.Command.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: textPrompt.Command.MessageId,
+						replyMarkup: new InlineKeyboardMarkup(
+							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+						),
+						cancellationToken: cancellationToken
+					);
+				}
+			} else {
+				try {
+					CHAT_RATE_LIMITER.ValidateActionRate(
+						chatId: textPrompt.Command.Chat.Id,
+						userId: textPrompt.Command.Sender.Id
+					);
+				} catch (RateLimitExceededException exc) {
+					return _telegramBotClient.SendTextMessageAsync(
+						chatId: textPrompt.Command.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: textPrompt.Command.MessageId,
+						cancellationToken: cancellationToken
+					);
+				}
 			}
 
 			// Fire and forget

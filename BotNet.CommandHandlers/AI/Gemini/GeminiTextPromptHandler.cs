@@ -1,4 +1,5 @@
-﻿using BotNet.Commands;
+﻿using BotNet.CommandHandlers.AI.RateLimit;
+using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
@@ -34,27 +35,46 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 		private readonly ILogger<GeminiTextPromptHandler> _logger = logger;
 
 		public Task Handle(GeminiTextPrompt textPrompt, CancellationToken cancellationToken) {
-			try {
-				if (textPrompt.Command.Chat is HomeGroupChat
-					|| textPrompt.Command.Sender is VIPSender) {
-					VIP_CHAT_RATE_LIMITER.ValidateActionRate(
+			if (textPrompt.Command.Chat is GroupChat) {
+				try {
+					AIRateLimiters.GROUP_CHAT_RATE_LIMITER.ValidateActionRate(
 						chatId: textPrompt.Command.Chat.Id,
 						userId: textPrompt.Command.Sender.Id
 					);
-				} else {
-					CHAT_RATE_LIMITER.ValidateActionRate(
+				} catch (RateLimitExceededException exc) {
+					return _telegramBotClient.SendTextMessageAsync(
 						chatId: textPrompt.Command.Chat.Id,
-						userId: textPrompt.Command.Sender.Id
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: textPrompt.Command.MessageId,
+						replyMarkup: new InlineKeyboardMarkup(
+							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
+						),
+						cancellationToken: cancellationToken
 					);
 				}
-			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendTextMessageAsync(
-					chatId: textPrompt.Command.Chat.Id,
-					text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
-					parseMode: ParseMode.Html,
-					replyToMessageId: textPrompt.Command.MessageId,
-					cancellationToken: cancellationToken
-				);
+			} else {
+				try {
+					if (textPrompt.Command.Sender is VIPSender) {
+						VIP_CHAT_RATE_LIMITER.ValidateActionRate(
+							chatId: textPrompt.Command.Chat.Id,
+							userId: textPrompt.Command.Sender.Id
+						);
+					} else {
+						CHAT_RATE_LIMITER.ValidateActionRate(
+							chatId: textPrompt.Command.Chat.Id,
+							userId: textPrompt.Command.Sender.Id
+						);
+					}
+				} catch (RateLimitExceededException exc) {
+					return _telegramBotClient.SendTextMessageAsync(
+						chatId: textPrompt.Command.Chat.Id,
+						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
+						parseMode: ParseMode.Html,
+						replyToMessageId: textPrompt.Command.MessageId,
+						cancellationToken: cancellationToken
+					);
+				}
 			}
 
 			// Fire and forget
