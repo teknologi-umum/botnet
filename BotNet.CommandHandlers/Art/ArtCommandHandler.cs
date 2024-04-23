@@ -15,7 +15,7 @@ namespace BotNet.CommandHandlers.Art {
 		ITelegramBotClient telegramBotClient,
 		ICommandQueue commandQueue
 	) : ICommandHandler<ArtCommand> {
-		internal static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(1, TimeSpan.FromMinutes(5));
+		internal static readonly RateLimiter IMAGE_GENERATION_RATE_LIMITER = RateLimiter.PerUser(2, TimeSpan.FromMinutes(3));
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 		private readonly ICommandQueue _commandQueue = commandQueue;
