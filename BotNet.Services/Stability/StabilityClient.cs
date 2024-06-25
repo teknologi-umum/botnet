@@ -18,6 +18,7 @@ namespace BotNet.Services.Stability {
 	) {
 		private const string TEXT_TO_IMAGE_URL_TEMPLATE = "https://api.stability.ai/v1/generation/{0}/text-to-image";
 		private const string IMAGE_TO_IMAGE_URL_TEMPLATE = "https://api.stability.ai/v1/generation/{0}/image-to-image";
+		private const string
 
 		private static readonly JsonSerializerOptions SNAKE_CASE_SERIALIZER_OPTIONS = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()

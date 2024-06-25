@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Threading;
 using BotNet.Bot;
 using BotNet.CommandHandlers;
 using BotNet.CommandHandlers.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
+using BotNet.Services.Antutu;
 using BotNet.Services.BMKG;
 using BotNet.Services.BotProfile;
 using BotNet.Services.Brainfuck;
@@ -97,6 +98,7 @@ builder.Services.AddSqliteDatabases();
 builder.Services.AddPemilu2024();
 builder.Services.AddGoogleSheets();
 builder.Services.AddKokizzuVPSBenchmarkDataSource();
+builder.Services.AddAntutuDataSources();
 
 // MediatR
 builder.Services.AddMediatR(config => {
