@@ -10,6 +10,7 @@ using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Fuck;
 using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
+using BotNet.Commands.Khodam;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
@@ -105,6 +106,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/privilege":
 					case "/start":
 						await _commandQueue.DispatchAsync(PrivilegeCommand.FromSlashCommand(command));
+						break;
+					case "/khodam":
+						await _commandQueue.DispatchAsync(KhodamCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
