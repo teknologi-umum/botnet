@@ -91,12 +91,12 @@ namespace BotNet.Services.Khodam {
 			);
 
 			// Kosong vs isi
-			if (hashCode % 9679 < 2000) {
+			if (hashCode % 9679 < 700) {
 				return "Kosong";
 			}
 
 			// Rare
-			if (hashCode % 631 > 600) {
+			if (hashCode % 631 > 580) {
 				return RARES[hashCode % RARES.Length];
 			}
 
