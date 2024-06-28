@@ -91,7 +91,7 @@ namespace BotNet.Services.Khodam {
 			);
 
 			// Kosong vs isi
-			if (hashCode % 9679 < 700) {
+			if (hashCode % 20 == 13) {
 				return "Kosong";
 			}
 
