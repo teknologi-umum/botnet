@@ -15,7 +15,7 @@ namespace BotNet.Services.Gemini {
 		IOptions<GeminiOptions> geminiOptionsAccessor,
 		ILogger<GeminiClient> logger
 	) {
-		private const string BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+		private const string BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 		private readonly HttpClient _httpClient = httpClient;
 		private readonly string _apiKey = geminiOptionsAccessor.Value.ApiKey!;
 		private readonly ILogger<GeminiClient> _logger = logger;
