@@ -1,9 +1,11 @@
-﻿using BotNet.Commands;
+﻿using System.Text.RegularExpressions;
+using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
+using BotNet.Services.UrlCleaner;
 using RG.Ninja;
 using SqlParser;
 using SqlParser.Ast;
@@ -43,16 +45,17 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				return;
 			}
 
-			// Handle Social Link (better preview)
 			if ((update.Message.Text ?? update.Message.Caption) is { } textOrCaption) {
-				IEnumerable<Uri> possibleUrls = SocialLinkEmbedFixer.GetPossibleUrls(textOrCaption);
 
-				if (possibleUrls.Any()) {
+				// Handle Social Link (better preview)
+				IEnumerable<Uri> possibleSocialUrls = SocialLinkEmbedFixer.GetPossibleUrls(textOrCaption);
+				if (possibleSocialUrls.Any()) {
 					// Fire and forget
 					Task _ = Task.Run(async () => {
 						try {
-							foreach (Uri url in possibleUrls) {
-								Uri fixedUrl = SocialLinkEmbedFixer.Fix(url);
+							foreach (Uri url in possibleSocialUrls) {
+								Uri cleanedUrl = UrlCleaner.Clean(url);
+								Uri fixedUrl = SocialLinkEmbedFixer.Fix(cleanedUrl);
 								await _telegramBotClient.SendTextMessageAsync(
 									chatId: update.Message.Chat.Id,
 									text: $"Preview: {fixedUrl.OriginalString}",
@@ -66,6 +69,39 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					});
 					return;
 				}
+				
+				// get list of urls from message (start with http or https or www)
+				string pattern = @"(?i)\b((?:https?://|www\.)\S+)\b";
+				MatchCollection matches = Regex.Matches(textOrCaption, pattern);
+				List<string> urls = matches.Select(m => m.Value).ToList();
+
+				// Clean the url
+				if (urls.Count > 0) {
+					// Fire and forget
+					Task _ = Task.Run(async () => {
+						try {
+							foreach (string url in urls) {
+								Uri cleanedUrl = UrlCleaner.Clean(new Uri(url));
+
+								// if the url is same, don't send the message
+								if (cleanedUrl.OriginalString == new Uri(url).OriginalString) {
+									continue;
+								}
+
+								await _telegramBotClient.SendTextMessageAsync(
+									chatId: update.Message.Chat.Id,
+									text: $"Cleaned URL: {cleanedUrl.OriginalString}",
+									replyToMessageId: update.Message.MessageId,
+									cancellationToken: cancellationToken
+								);
+							}
+						} catch (OperationCanceledException) {
+							// Terminate gracefully
+						}
+					});
+					return;
+				}
+
 			}
 
 			// Handle reddit mirroring
@@ -75,7 +111,8 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				Offset: var offset,
 				Length: var length
 			} && update.Message.Text?.Substring(offset, length) is { } url
-			&& url.StartsWith("https://www.reddit.com/", out string? remainingUrl)) {
+			&& UrlCleaner.Clean(new Uri(url)) is { } cleanedUrl
+			&& cleanedUrl.ToString().StartsWith("https://www.reddit.com/", out string? remainingUrl)) {
 				// Fire and forget
 				Task _ = Task.Run(async () => {
 					try {
@@ -94,7 +131,8 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			} else if (update.Message?.Entities?.FirstOrDefault(entity => entity is {
 				Type: MessageEntityType.TextLink
 			}) is { Url: { } textUrl }
-			&& textUrl.StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
+			&& UrlCleaner.Clean(new Uri(textUrl)) is { } cleanedTextUrl
+			&& cleanedTextUrl.ToString().StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
 				// Fire and forget
 				Task _ = Task.Run(async () => {
 					try {
