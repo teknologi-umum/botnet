@@ -5,6 +5,7 @@ using BotNet.Services.ClearScript;
 using BotNet.Services.DynamicExpresso;
 using Microsoft.ClearScript;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Eval {
@@ -29,29 +30,29 @@ namespace BotNet.CommandHandlers.Eval {
 							cancellationToken: cancellationToken
 						);
 					} catch (ScriptEngineException exc) {
-						await _telegramBotClient.SendTextMessageAsync(
+						await _telegramBotClient.SendMessage(
 							chatId: command.Chat.Id,
 							text: "<code>" + WebUtility.HtmlEncode(exc.Message) + "</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: command.CodeMessageId,
+							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
 						return;
 					} catch (OperationCanceledException) {
-						await _telegramBotClient.SendTextMessageAsync(
+						await _telegramBotClient.SendMessage(
 							chatId: command.Chat.Id,
 							text: "<code>Timeout exceeded.</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: command.CodeMessageId,
+							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
 						return;
 					} catch (JsonException exc) when (exc.Message.Contains("A possible object cycle was detected.")) {
-						await _telegramBotClient.SendTextMessageAsync(
+						await _telegramBotClient.SendMessage(
 							chatId: command.Chat.Id,
 							text: "<code>A possible object cycle was detected.</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: command.CodeMessageId,
+							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
 						return;
@@ -66,11 +67,11 @@ namespace BotNet.CommandHandlers.Eval {
 						// Prettify result
 						result = JsonSerializer.Serialize(resultObject, JSON_SERIALIZER_OPTIONS);
 					} catch (Exception exc) {
-						await _telegramBotClient.SendTextMessageAsync(
+						await _telegramBotClient.SendMessage(
 							chatId: command.Chat.Id,
 							text: "<code>" + WebUtility.HtmlEncode(exc.Message) + "</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: command.CodeMessageId,
+							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
 						return;
@@ -81,21 +82,21 @@ namespace BotNet.CommandHandlers.Eval {
 			}
 
 			if (result.Length > 1000) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>Result is too long.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CodeMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
 			} else {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: result.Length >= 2 && result[0] == '"' && result[^1] == '"'
 						? $"Expression:\n<code>{WebUtility.HtmlEncode(command.Code)}</code>\n\nString Result:\n<code>{WebUtility.HtmlEncode(result[1..^1].Replace("\\n", "\n"))}</code>"
 						: $"Expression:\n<code>{WebUtility.HtmlEncode(command.Code)}</code>\n\nResult:\n<code>{WebUtility.HtmlEncode(result)}</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CodeMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
 			}

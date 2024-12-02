@@ -84,11 +84,11 @@ namespace BotNet.Services.Khodam {
 		];
 
 		public static string CalculateKhodam(string name, long userId) {
-			int hashCode = HashCode.Combine(
+			int hashCode = Math.Abs(HashCode.Combine(
 				value1: DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).Date,
 				value2: name,
 				value3: userId
-			);
+			));
 
 			// Kosong vs isi
 			if (hashCode % 20 == 13) {

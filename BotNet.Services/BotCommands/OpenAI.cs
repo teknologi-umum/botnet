@@ -46,7 +46,9 @@ namespace BotNet.Services.BotCommands {
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 					} else if (attachments.Count == 1) {
 						return await botClient.SendPhotoAsync(
@@ -54,14 +56,18 @@ namespace BotNet.Services.BotCommands {
 							photo: new InputFileUrl(attachments[0]),
 							caption: WebUtility.HtmlEncode(result),
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 					} else {
 						Message sentMessage = await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: WebUtility.HtmlEncode(result),
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 						await botClient.SendMediaGroupAsync(
 							chatId: message.Chat.Id,
@@ -76,14 +82,18 @@ namespace BotNet.Services.BotCommands {
 							chatId: message.Chat.Id,
 							text: $"<code>Anda terlalu banyak memanggil Pakde. Coba lagi {cooldown}.</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 					} else {
 						await botClient.SendTextMessageAsync(
 							chatId: message.Chat.Id,
 							text: $"<code>Anda terlalu banyak memanggil Pakde di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							replyMarkup: new InlineKeyboardMarkup(
 								InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 							),
@@ -94,7 +104,9 @@ namespace BotNet.Services.BotCommands {
 						chatId: message.Chat.Id,
 						text: "<code>Timeout exceeded.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 				}
 			}
@@ -120,7 +132,9 @@ namespace BotNet.Services.BotCommands {
 						chatId: message.Chat.Id,
 						text: WebUtility.HtmlEncode(result),
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 				} else if (attachments.Count == 1) {
 					return await botClient.SendPhotoAsync(
@@ -128,14 +142,18 @@ namespace BotNet.Services.BotCommands {
 						photo: new InputFileUrl(attachments[0]),
 						caption: WebUtility.HtmlEncode(result),
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 				} else {
 					Message sentMessage = await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: WebUtility.HtmlEncode(result),
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 					await botClient.SendMediaGroupAsync(
 						chatId: message.Chat.Id,
@@ -150,14 +168,18 @@ namespace BotNet.Services.BotCommands {
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil Pakde. Coba lagi {cooldown}.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil Pakde di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 						),
@@ -168,7 +190,9 @@ namespace BotNet.Services.BotCommands {
 					chatId: message.Chat.Id,
 					text: "<code>Timeout exceeded.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: message.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = message.MessageId
+					},
 					cancellationToken: cancellationToken);
 			}
 			return null;
@@ -213,7 +237,9 @@ namespace BotNet.Services.BotCommands {
 							chatId: message.Chat.Id,
 							text: $"<code>{error}</code>",
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 						return;
 					}
@@ -252,7 +278,7 @@ namespace BotNet.Services.BotCommands {
 									chatId: message.Chat.Id,
 									text: "Generating image… ⏳",
 									parseMode: ParseMode.Markdown,
-									replyToMessageId: message.MessageId,
+									messageThreadId: message.MessageId,
 									cancellationToken: cancellationToken
 								);
 								//Uri generatedImageUrl = await serviceProvider.GetRequiredService<ImageGenerationBot>().GenerateImageAsync(
@@ -278,7 +304,9 @@ namespace BotNet.Services.BotCommands {
 									Message generatedImageMessage = await botClient.SendPhotoAsync(
 										chatId: message.Chat.Id,
 										photo: new InputFileStream(generatedImageStream, "art.png"),
-										replyToMessageId: message.MessageId,
+										replyParameters: new ReplyParameters {
+											MessageId = message.MessageId
+										},
 										cancellationToken: cancellationToken
 									);
 
@@ -315,14 +343,18 @@ namespace BotNet.Services.BotCommands {
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 						),
@@ -333,21 +365,27 @@ namespace BotNet.Services.BotCommands {
 					chatId: message.Chat.Id,
 					text: "<code>Too many requests.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: message.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = message.MessageId
+					},
 					cancellationToken: cancellationToken);
-			} catch (HttpRequestException exc) {
+			} catch (HttpRequestException) {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
 					text: "<code>Unknown error.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: message.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = message.MessageId
+					},
 					cancellationToken: cancellationToken);
 			} catch (OperationCanceledException) {
 				await botClient.SendTextMessageAsync(
 					chatId: message.Chat.Id,
 					text: "<code>Timeout exceeded.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: message.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = message.MessageId
+					},
 					cancellationToken: cancellationToken);
 			}
 		}
@@ -380,7 +418,9 @@ namespace BotNet.Services.BotCommands {
 								chatId: message.Chat.Id,
 								text: "Modifying image… ⏳",
 								parseMode: ParseMode.Markdown,
-								replyToMessageId: message.MessageId,
+								replyParameters: new ReplyParameters {
+									MessageId = message.MessageId
+								},
 								cancellationToken: cancellationToken
 							);
 							try {
@@ -404,7 +444,9 @@ namespace BotNet.Services.BotCommands {
 								Message modifiedImageMessage = await botClient.SendPhotoAsync(
 									chatId: message.Chat.Id,
 									photo: new InputFileStream(modifiedImageStream, "art.png"),
-									replyToMessageId: message.MessageId,
+									replyParameters: new ReplyParameters {
+										MessageId = message.MessageId
+									},
 									cancellationToken: cancellationToken
 								);
 
@@ -455,14 +497,18 @@ namespace BotNet.Services.BotCommands {
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {cooldown}.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 				} else {
 					await botClient.SendTextMessageAsync(
 						chatId: message.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI di sini. Coba lagi {cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 						),
@@ -473,7 +519,9 @@ namespace BotNet.Services.BotCommands {
 					chatId: message.Chat.Id,
 					text: "<code>Timeout exceeded.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: message.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = message.MessageId
+					},
 					cancellationToken: cancellationToken);
 			}
 		}
@@ -481,7 +529,7 @@ namespace BotNet.Services.BotCommands {
 		private static async Task<(string? ImageBase64, string? Error)> GetImageBase64Async(ITelegramBotClient botClient, string fileId, CancellationToken cancellationToken) {
 			// Download photo
 			using MemoryStream originalImageStream = new();
-			await botClient.GetInfoAndDownloadFileAsync(
+			await botClient.GetInfoAndDownloadFile(
 				fileId: fileId,
 				destination: originalImageStream,
 				cancellationToken: cancellationToken);

@@ -10,7 +10,7 @@ namespace BotNet.CommandHandlers.Pop {
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 
 		public async Task Handle(PopCommand command, CancellationToken cancellationToken) {
-			await _telegramBotClient.SendTextMessageAsync(
+			await _telegramBotClient.SendMessage(
 				chatId: command.Chat.Id,
 				text: "Here's a bubble wrap. Enjoy!",
 				parseMode: ParseMode.Html,

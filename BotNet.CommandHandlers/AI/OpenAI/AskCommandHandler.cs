@@ -38,11 +38,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						userId: askCommand.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					await _telegramBotClient.SendTextMessageAsync(
+					await _telegramBotClient.SendMessage(
 						chatId: askCommand.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: askCommand.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = askCommand.Command.MessageId
+						},
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 						),
@@ -56,11 +58,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						userId: askCommand.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					await _telegramBotClient.SendTextMessageAsync(
+					await _telegramBotClient.SendMessage(
 						chatId: askCommand.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: askCommand.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = askCommand.Command.MessageId
+						},
 						cancellationToken: cancellationToken
 					);
 					return;
@@ -82,11 +86,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					)
 				);
 
-				Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
+				Message responseMessage = await _telegramBotClient.SendMessage(
 					chatId: askCommand.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("… ⏳"),
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: askCommand.Command.MessageId
+					replyParameters: new ReplyParameters {
+						MessageId = askCommand.Command.MessageId
+					}
 				);
 
 				string response = await _openAIClient.ChatAsync(
@@ -119,7 +125,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 				} catch (Exception exc) {
 					_logger.LogError(exc, null);
-					await telegramBotClient.EditMessageTextAsync(
+					await telegramBotClient.EditMessageText(
 						chatId: askCommand.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
 						text: "😵",

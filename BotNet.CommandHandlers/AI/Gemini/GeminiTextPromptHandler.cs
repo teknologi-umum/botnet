@@ -42,11 +42,13 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 						userId: textPrompt.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					return _telegramBotClient.SendTextMessageAsync(
+					return _telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: textPrompt.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = textPrompt.Command.MessageId
+						},
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 						),
@@ -67,11 +69,13 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 						);
 					}
 				} catch (RateLimitExceededException exc) {
-					return _telegramBotClient.SendTextMessageAsync(
+					return _telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: textPrompt.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = textPrompt.Command.MessageId
+						},
 						cancellationToken: cancellationToken
 					);
 				}
@@ -142,11 +146,13 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 					);
 				} catch (Exception exc) {
 					_logger.LogError(exc, null);
-					await telegramBotClient.SendTextMessageAsync(
+					await telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: "😵",
 						parseMode: ParseMode.Html,
-						replyToMessageId: textPrompt.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = textPrompt.Command.MessageId
+						},
 						cancellationToken: cancellationToken
 					);
 					return;

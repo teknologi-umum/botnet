@@ -2,6 +2,7 @@
 using BotNet.Commands.Fuck;
 using BotNet.Services.Brainfuck;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Fuck {
@@ -15,35 +16,35 @@ namespace BotNet.CommandHandlers.Fuck {
 				string stdout = BrainfuckInterpreter.RunBrainfuck(
 					code: command.Code
 				);
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: WebUtility.HtmlEncode(stdout),
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CodeMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
 			} catch (InvalidProgramException exc) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>" + WebUtility.HtmlEncode(exc.Message) + "</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CodeMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
 			} catch (IndexOutOfRangeException) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>Memory access violation</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CodeMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
 			} catch (TimeoutException) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>Operation timed out</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CodeMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
 			}

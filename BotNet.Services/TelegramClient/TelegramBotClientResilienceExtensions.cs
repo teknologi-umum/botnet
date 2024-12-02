@@ -24,13 +24,17 @@ namespace BotNet.Services.TelegramClient {
 
 			foreach (ParseMode parseMode in parseModes) {
 				try {
-					return await telegramBotClient.SendTextMessageAsync(
+					return await telegramBotClient.SendMessage(
 						chatId: chatId,
 						text: parseMode == ParseMode.MarkdownV2
 							? MarkdownV2Sanitizer.Sanitize(text)
 							: text,
 						parseMode: parseMode,
-						replyToMessageId: replyToMessageId,
+						replyParameters: replyToMessageId.HasValue
+							? new ReplyParameters {
+								MessageId = replyToMessageId.Value
+							}
+							: null,
 						replyMarkup: replyMarkup,
 						cancellationToken: cancellationToken
 					);
@@ -40,11 +44,15 @@ namespace BotNet.Services.TelegramClient {
 			}
 
 			// Last resort: escape everything
-			return await telegramBotClient.SendTextMessageAsync(
+			return await telegramBotClient.SendMessage(
 				chatId: chatId,
 				text: WebUtility.HtmlEncode(text),
 				parseMode: ParseMode.Html,
-				replyToMessageId: replyToMessageId,
+				replyParameters: replyToMessageId.HasValue
+					? new ReplyParameters {
+						MessageId = replyToMessageId.Value
+					}
+					: null,
 				replyMarkup: replyMarkup,
 				cancellationToken: cancellationToken
 			);
@@ -63,7 +71,7 @@ namespace BotNet.Services.TelegramClient {
 
 			foreach (ParseMode parseMode in parseModes) {
 				try {
-					return await telegramBotClient.EditMessageTextAsync(
+					return await telegramBotClient.EditMessageText(
 						chatId: chatId,
 						messageId: messageId,
 						text: parseMode == ParseMode.MarkdownV2
@@ -79,7 +87,7 @@ namespace BotNet.Services.TelegramClient {
 			}
 			
 			// Last resort: escape everything
-			return await telegramBotClient.EditMessageTextAsync(
+			return await telegramBotClient.EditMessageText(
 				chatId: chatId,
 				messageId: messageId,
 				text: WebUtility.HtmlEncode(text),

@@ -16,6 +16,7 @@ using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
 using BotNet.Commands.Weather;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
 	public sealed class SlashCommandHandler(
@@ -112,11 +113,11 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 				}
 			} catch (UsageException exc) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: exc.Message,
 					parseMode: exc.ParseMode,
-					replyToMessageId: exc.CommandMessageId,
+					replyParameters: new ReplyParameters { MessageId = exc.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
 			}

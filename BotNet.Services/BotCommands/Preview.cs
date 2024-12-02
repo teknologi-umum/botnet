@@ -20,7 +20,9 @@ namespace BotNet.Services.BotCommands {
 						chatId: message.Chat.Id,
 						text: "Gunakan <code>/preview youtoube link </code> atau reply message dengan command <code>/preview</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						cancellationToken: cancellationToken);
 
 					return;
@@ -36,7 +38,9 @@ namespace BotNet.Services.BotCommands {
 							chatId: message.Chat.Id,
 							text: "Youtube link tidak valid",
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 
 						return;
@@ -47,7 +51,9 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
 						photo: new InputFileUrl(previewYoutubeStoryboard),
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken);
 				} else if (commandArgument.Length >= 0) {
@@ -57,7 +63,9 @@ namespace BotNet.Services.BotCommands {
 							chatId: message.Chat.Id,
 							text: "Youtube link tidak valid",
 							parseMode: ParseMode.Html,
-							replyToMessageId: message.MessageId,
+							replyParameters: new ReplyParameters {
+								MessageId = message.MessageId
+							},
 							cancellationToken: cancellationToken);
 
 						return;
@@ -68,7 +76,9 @@ namespace BotNet.Services.BotCommands {
 					await botClient.SendPhotoAsync(
 						chatId: message.Chat.Id,
 						photo: new InputFileUrl(previewYoutubeStoryboard),
-						replyToMessageId: message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = message.MessageId
+						},
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken);
 				}

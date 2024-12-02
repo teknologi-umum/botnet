@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.MarkdownV2;
@@ -15,11 +14,12 @@ namespace BotNet.Services.OpenAI {
 	public sealed class OpenAIStreamingClient(
 		IServiceProvider serviceProvider,
 		ILogger<OpenAIStreamingClient> logger
-	) {
+	) : IDisposable {
 		private readonly IServiceProvider _serviceProvider = serviceProvider;
 		private readonly ILogger<OpenAIStreamingClient> _logger = logger;
+		private IServiceScope? _danglingServiceScope;
+		private bool _disposedValue;
 
-		[SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Manually managed")]
 		public async Task StreamChatAsync(
 			string model,
 			IEnumerable<ChatMessage> messages,
@@ -29,6 +29,7 @@ namespace BotNet.Services.OpenAI {
 			int replyToMessageId
 		) {
 			IServiceScope serviceScope = _serviceProvider.CreateScope();
+			_danglingServiceScope = serviceScope;
 			OpenAIClient openAIClient = serviceScope.ServiceProvider.GetRequiredService<OpenAIClient>();
 			ITelegramBotClient telegramBotClient = serviceScope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
@@ -66,11 +67,13 @@ namespace BotNet.Services.OpenAI {
 			if (downstreamTask.IsCompletedSuccessfully) {
 				if (lastResult is null) return;
 
-				Message completeMessage = await telegramBotClient.SendTextMessageAsync(
+				Message completeMessage = await telegramBotClient.SendMessage(
 					chatId: chatId,
 					text: MarkdownV2Sanitizer.Sanitize(lastResult),
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: replyToMessageId
+					replyParameters: new ReplyParameters {
+						MessageId = replyToMessageId
+					}
 				);
 
 				// Track thread
@@ -89,11 +92,13 @@ namespace BotNet.Services.OpenAI {
 
 			// Otherwise, send incomplete result and continue streaming
 			string lastSent = lastResult ?? "";
-			Message incompleteMessage = await telegramBotClient.SendTextMessageAsync(
+			Message incompleteMessage = await telegramBotClient.SendMessage(
 				chatId: chatId,
 				text: MarkdownV2Sanitizer.Sanitize(lastResult ?? "") + "… ⏳", // ellipsis, nbsp, hourglass emoji
 				parseMode: ParseMode.MarkdownV2,
-				replyToMessageId: replyToMessageId
+				replyParameters: new ReplyParameters {
+					MessageId = replyToMessageId
+				}
 			);
 
 			// Continue streaming in the background
@@ -108,7 +113,7 @@ namespace BotNet.Services.OpenAI {
 							if (lastSent != lastResult) {
 								lastSent = lastResult!;
 								try {
-									await telegramBotClient.EditMessageTextAsync(
+									await telegramBotClient.EditMessageText(
 										chatId: chatId,
 										messageId: incompleteMessage.MessageId,
 										text: MarkdownV2Sanitizer.Sanitize(lastResult ?? "") + "… ⏳", // ellipsis, nbsp, hourglass emoji
@@ -132,7 +137,7 @@ namespace BotNet.Services.OpenAI {
 				try {
 					// Finalize message
 					try {
-						await telegramBotClient.EditMessageTextAsync(
+						await telegramBotClient.EditMessageText(
 							chatId: chatId,
 							messageId: incompleteMessage.MessageId,
 							text: MarkdownV2Sanitizer.Sanitize(lastResult ?? ""),
@@ -160,6 +165,24 @@ namespace BotNet.Services.OpenAI {
 				cts.Cancel();
 				serviceScope.Dispose();
 			});
+		}
+
+		private void Dispose(bool disposing) {
+			if (!_disposedValue) {
+				if (disposing) {
+					// dispose managed state (managed objects)
+					_danglingServiceScope?.Dispose();
+				}
+
+				// set large fields to null
+				_danglingServiceScope = null;
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose() {
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
 		}
 	}
 }

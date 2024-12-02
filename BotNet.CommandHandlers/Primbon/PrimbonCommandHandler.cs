@@ -3,6 +3,7 @@ using BotNet.Services.ChineseCalendar;
 using BotNet.Services.Primbon;
 using BotNet.Services.RateLimit;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Primbon {
@@ -41,7 +42,7 @@ namespace BotNet.CommandHandlers.Primbon {
 					cancellationToken: cancellationToken
 				);
 
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $$"""
 						<b>{{javaneseDate}}</b>
@@ -61,15 +62,15 @@ namespace BotNet.CommandHandlers.Primbon {
 						Inauspicious Activities: {{string.Join(", ", inauspiciousActivities)}}
 						""",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CommandMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
 			} catch (RateLimitExceededException exc) when (exc is { Cooldown: var cooldown }) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Coba lagi {cooldown}.",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CommandMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
 			}

@@ -2,6 +2,7 @@
 using BotNet.Commands.Khodam;
 using BotNet.Services.Khodam;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Khodam {
@@ -16,14 +17,14 @@ namespace BotNet.CommandHandlers.Khodam {
 				userId: command.UserId
 			);
 
-			await _telegramBotClient.SendTextMessageAsync(
+			await _telegramBotClient.SendMessage(
 				chatId: command.Chat.Id,
 				text: $$"""
 					Khodam <b>{{WebUtility.HtmlEncode(command.Name)}}</b> hari ini adalah...
 					<b>{{khodam}}</b>
 					""",
 				parseMode: ParseMode.Html,
-				replyToMessageId: command.TargetMessageId,
+				replyParameters: new ReplyParameters { MessageId = command.TargetMessageId },
 				cancellationToken: cancellationToken
 			);
 		}

@@ -20,7 +20,7 @@ namespace BotNet.CommandHandlers.Pop {
 
 			// Fire and forget
 			Task.Run(async () => {
-				await _telegramBotClient.EditMessageReplyMarkupAsync(
+				await _telegramBotClient.EditMessageReplyMarkup(
 					chatId: command.ChatId,
 					messageId: command.MessageId,
 					replyMarkup: poppedKeyboardMarkup,

@@ -20,11 +20,11 @@ namespace BotNet.CommandHandlers.SQL {
 		public async Task Handle(SQLCommand command, CancellationToken cancellationToken) {
 			if (command.SelectStatement.Query.Body.AsSelectExpression().Select.From is not { } froms
 				|| froms.Count == 0) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>No FROM clause found.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.SQLMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
 					cancellationToken: cancellationToken
 				);
 				return;
@@ -53,7 +53,7 @@ namespace BotNet.CommandHandlers.SQL {
 			foreach (string table in tables) {
 				IScopedDataSource? dataSource = serviceScope.ServiceProvider.GetKeyedService<IScopedDataSource>(table);
 				if (dataSource == null) {
-					await _telegramBotClient.SendTextMessageAsync(
+					await _telegramBotClient.SendMessage(
 						chatId: command.Chat.Id,
 						text: $$"""
 						<code>Table '{{table}}' not found. Available tables are:
@@ -65,7 +65,7 @@ namespace BotNet.CommandHandlers.SQL {
 						</code>
 						""",
 						parseMode: ParseMode.Html,
-						replyToMessageId: command.SQLMessageId,
+						replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
 						cancellationToken: cancellationToken
 					);
 					return;
@@ -119,7 +119,7 @@ namespace BotNet.CommandHandlers.SQL {
 								} else if (fieldType == typeof(byte[])) {
 									values[i] = BitConverter.ToString(reader.GetFieldValue<byte[]>(i)).Replace("-", "");
 								} else {
-									values[i] = reader[i].ToString();
+									values[i] = reader[i]?.ToString() ?? "";
 								}
 							}
 							resultBuilder.AppendLine(string.Join(',', values));
@@ -128,11 +128,11 @@ namespace BotNet.CommandHandlers.SQL {
 					}
 				);
 			} catch (SqliteException exc) {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>" + exc.Message.Replace("SQLite Error", "Error") + "</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.SQLMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
 					cancellationToken: cancellationToken
 				);
 				return;
@@ -141,19 +141,19 @@ namespace BotNet.CommandHandlers.SQL {
 			// Send result
 			string csvResult = resultBuilder.ToString();
 			if (csvResult.Length > 4000) {
-				await _telegramBotClient.SendDocumentAsync(
+				await _telegramBotClient.SendDocument(
 					chatId: command.Chat.Id,
 					caption: $"{rows} rows affected",
 					document: new InputFileStream(new MemoryStream(Encoding.UTF8.GetBytes(csvResult)), "result.csv"),
-					replyToMessageId: command.SQLMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
 					cancellationToken: cancellationToken
 				);
 			} else {
-				await _telegramBotClient.SendTextMessageAsync(
+				await _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "```csv\n" + resultBuilder.ToString() + $"```\n{rows} rows affected",
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: command.SQLMessageId,
+					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
 					cancellationToken: cancellationToken
 				);
 			}

@@ -61,7 +61,7 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 					));
 
 					// Send results
-					await _telegramBotClient.AnswerInlineQueryAsync(
+					await _telegramBotClient.AnswerInlineQuery(
 						inlineQueryId: command.InlineQuery.Id,
 						results: results,
 						cancellationToken: cancellationToken

@@ -13,7 +13,7 @@ namespace BotNet.CommandHandlers.FlipFlop {
 		public async Task Handle(FlipFlopCommand command, CancellationToken cancellationToken) {
 			// Download original image
 			using MemoryStream originalImageStream = new();
-			File fileInfo = await _telegramBotClient.GetInfoAndDownloadFileAsync(
+			File fileInfo = await _telegramBotClient.GetInfoAndDownloadFile(
 				fileId: command.ImageFileId,
 				destination: originalImageStream,
 				cancellationToken: cancellationToken
@@ -40,10 +40,10 @@ namespace BotNet.CommandHandlers.FlipFlop {
 
 			// Send result image
 			using MemoryStream resultImageStream = new(resultImage);
-			await _telegramBotClient.SendPhotoAsync(
+			await _telegramBotClient.SendPhoto(
 				chatId: command.Chat.Id,
 				photo: new InputFileStream(resultImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
-				replyToMessageId: command.ImageMessageId,
+				replyParameters: new ReplyParameters { MessageId = command.ImageMessageId },
 				cancellationToken: cancellationToken
 			);
 		}

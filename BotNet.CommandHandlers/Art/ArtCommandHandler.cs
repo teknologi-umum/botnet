@@ -24,11 +24,13 @@ namespace BotNet.CommandHandlers.Art {
 			try {
 				IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendTextMessageAsync(
+				return _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.PromptMessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = command.PromptMessageId
+					},
 					cancellationToken: cancellationToken
 				);
 			}
@@ -38,11 +40,13 @@ namespace BotNet.CommandHandlers.Art {
 				try {
 					switch (command) {
 						case { Sender: VIPSender }: {
-								Message busyMessage = await _telegramBotClient.SendTextMessageAsync(
+								Message busyMessage = await _telegramBotClient.SendMessage(
 									chatId: command.Chat.Id,
 									text: "Generating image… ⏳",
 									parseMode: ParseMode.Markdown,
-									replyToMessageId: command.PromptMessageId,
+									replyParameters: new ReplyParameters {
+										MessageId = command.PromptMessageId
+									},
 									cancellationToken: cancellationToken
 								);
 
@@ -59,11 +63,13 @@ namespace BotNet.CommandHandlers.Art {
 							}
 							break;
 						case { Chat: HomeGroupChat }: {
-								Message busyMessage = await _telegramBotClient.SendTextMessageAsync(
+								Message busyMessage = await _telegramBotClient.SendMessage(
 									chatId: command.Chat.Id,
 									text: "Generating image… ⏳",
 									parseMode: ParseMode.Markdown,
-									replyToMessageId: command.PromptMessageId,
+									replyParameters: new ReplyParameters {
+										MessageId = command.PromptMessageId
+									},
 									cancellationToken: cancellationToken
 								);
 
@@ -80,11 +86,13 @@ namespace BotNet.CommandHandlers.Art {
 							}
 							break;
 						default:
-							await _telegramBotClient.SendTextMessageAsync(
+							await _telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
 								parseMode: ParseMode.MarkdownV2,
-								replyToMessageId: command.PromptMessageId,
+								replyParameters: new ReplyParameters {
+									MessageId = command.PromptMessageId
+								},
 								cancellationToken: cancellationToken
 							);
 							break;

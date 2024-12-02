@@ -28,13 +28,13 @@ public class BotService(
 			return Task.CompletedTask;
 		} else {
 			string webhookAddress = $"https://{_hostName}/webhook/{_botToken.Split(':')[1]}";
-			return _telegramBotClient.SetWebhookAsync(
+			return _telegramBotClient.SetWebhook(
 				url: webhookAddress,
-				allowedUpdates: new[] {
+				allowedUpdates: [
 					UpdateType.CallbackQuery,
 					UpdateType.InlineQuery,
 					UpdateType.Message,
-				},
+				],
 				cancellationToken: cancellationToken
 			);
 		}
@@ -43,9 +43,9 @@ public class BotService(
 	public Task StopAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource?.Cancel();
 		if (_useLongPolling) {
-			return _telegramBotClient.CloseAsync(cancellationToken);
+			return _telegramBotClient.Close(cancellationToken);
 		} else {
-			return _telegramBotClient.DeleteWebhookAsync(cancellationToken: cancellationToken);
+			return _telegramBotClient.DeleteWebhook(cancellationToken: cancellationToken);
 		}
 	}
 }

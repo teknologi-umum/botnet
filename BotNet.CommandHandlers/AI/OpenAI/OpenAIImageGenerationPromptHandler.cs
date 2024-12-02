@@ -35,7 +35,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						);
 					} catch (Exception exc) {
 						_logger.LogError(exc, "Could not generate image");
-						await _telegramBotClient.EditMessageTextAsync(
+						await _telegramBotClient.EditMessageText(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							text: "<code>Failed to generate image.</code>",
@@ -47,7 +47,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 					// Delete busy message
 					try {
-						await _telegramBotClient.DeleteMessageAsync(
+						await _telegramBotClient.DeleteMessage(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							cancellationToken: cancellationToken
@@ -57,7 +57,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					}
 
 					// Send generated image
-					Message responseMessage = await _telegramBotClient.SendPhotoAsync(
+					Message responseMessage = await _telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileUrl(generatedImageUrl),
 						replyMarkup: new InlineKeyboardMarkup(
@@ -66,7 +66,9 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 								url: "https://openai.com/dall-e-3"
 							)
 						),
-						replyToMessageId: command.PromptMessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = command.PromptMessageId
+						},
 						cancellationToken: cancellationToken
 					);
 

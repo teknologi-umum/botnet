@@ -12,7 +12,7 @@ namespace BotNet.Services.BotProfile {
 		private User? _me;
 
 		public async Task<User> GetBotProfileAsync(CancellationToken cancellationToken) {
-			_me ??= await _telegramBotClient.GetMeAsync(cancellationToken);
+			_me ??= await _telegramBotClient.GetMe(cancellationToken);
 			return _me;
 		}
 	}

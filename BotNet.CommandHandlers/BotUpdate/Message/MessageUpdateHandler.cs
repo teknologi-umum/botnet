@@ -8,6 +8,7 @@ using RG.Ninja;
 using SqlParser;
 using SqlParser.Ast;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
@@ -53,10 +54,12 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						try {
 							foreach (Uri url in possibleUrls) {
 								Uri fixedUrl = SocialLinkEmbedFixer.Fix(url);
-								await _telegramBotClient.SendTextMessageAsync(
+								await _telegramBotClient.SendMessage(
 									chatId: update.Message.Chat.Id,
 									text: $"Preview: {fixedUrl.OriginalString}",
-									replyToMessageId: update.Message.MessageId,
+									replyParameters: new ReplyParameters {
+										MessageId = update.Message.MessageId
+									},
 									cancellationToken: cancellationToken
 								);
 							}
@@ -79,11 +82,15 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				// Fire and forget
 				Task _ = Task.Run(async () => {
 					try {
-						await _telegramBotClient.SendTextMessageAsync(
+						await _telegramBotClient.SendMessage(
 							chatId: update.Message.Chat.Id,
 							text: $"Mirror: https://libreddit.teknologiumum.com/{remainingUrl}",
-							replyToMessageId: update.Message.MessageId,
-							disableWebPagePreview: true,
+							replyParameters: new ReplyParameters {
+								MessageId = update.Message.MessageId
+							},
+							linkPreviewOptions: new LinkPreviewOptions {
+								IsDisabled = true
+							},
 							cancellationToken: cancellationToken
 						);
 					} catch (OperationCanceledException) {
@@ -98,11 +105,15 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				// Fire and forget
 				Task _ = Task.Run(async () => {
 					try {
-						await _telegramBotClient.SendTextMessageAsync(
+						await _telegramBotClient.SendMessage(
 							chatId: update.Message.Chat.Id,
 							text: $"Mirror: https://libreddit.teknologiumum.com/{remainingTextUrl}",
-							replyToMessageId: update.Message.MessageId,
-							disableWebPagePreview: true,
+							replyParameters: new ReplyParameters {
+								MessageId = update.Message.MessageId
+							},
+							linkPreviewOptions: new LinkPreviewOptions {
+								IsDisabled = true
+							},
 							cancellationToken: cancellationToken
 						);
 					} catch (OperationCanceledException) {
@@ -174,11 +185,13 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						// Fire and forget
 						Task _ = Task.Run(async () => {
 							try {
-								await _telegramBotClient.SendTextMessageAsync(
+								await _telegramBotClient.SendMessage(
 									chatId: update.Message.Chat.Id,
 									text: $"<code>Your SQL contains more than one statement.</code>",
 									parseMode: ParseMode.Html,
-									replyToMessageId: update.Message.MessageId,
+									replyParameters: new ReplyParameters {
+										MessageId = update.Message.MessageId
+									},
 									cancellationToken: cancellationToken
 								);
 							} catch (OperationCanceledException) {
@@ -191,11 +204,13 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						// Fire and forget
 						Task _ = Task.Run(async () => {
 							try {
-								await _telegramBotClient.SendTextMessageAsync(
+								await _telegramBotClient.SendMessage(
 									chatId: update.Message.Chat.Id,
 									text: $"<code>Your SQL is not a SELECT statement.</code>",
 									parseMode: ParseMode.Html,
-									replyToMessageId: update.Message.MessageId,
+									replyParameters: new ReplyParameters {
+										MessageId = update.Message.MessageId
+									},
 									cancellationToken: cancellationToken
 								);
 							} catch (OperationCanceledException) {
@@ -215,11 +230,13 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						return;
 					}
 				} catch (ParserException exc) {
-					await _telegramBotClient.SendTextMessageAsync(
+					await _telegramBotClient.SendMessage(
 						chatId: update.Message.Chat.Id,
 						text: $"<code>{exc.Message}</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: update.Message.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = update.Message.MessageId
+						},
 						cancellationToken: cancellationToken
 					);
 				} catch {

@@ -40,11 +40,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		public Task Handle(OpenAIImagePrompt imagePrompt, CancellationToken cancellationToken) {
 			if (imagePrompt.Command.Sender is not VIPSender
 				&& imagePrompt.Command.Chat is not HomeGroupChat) {
-				return _telegramBotClient.SendTextMessageAsync(
+				return _telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("Vision tidak bisa dipakai di sini."),
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: imagePrompt.Command.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = imagePrompt.Command.MessageId
+					},
 					cancellationToken: cancellationToken
 				);
 			}
@@ -62,11 +64,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 				}
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendTextMessageAsync(
+				return _telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: $"<code>Anda terlalu banyak menggunakan vision. Coba lagi {exc.Cooldown}.</code>",
 					parseMode: ParseMode.Html,
-					replyToMessageId: imagePrompt.Command.MessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = imagePrompt.Command.MessageId
+					},
 					cancellationToken: cancellationToken
 				);
 			}
@@ -80,11 +84,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				);
 
 				if (error is not null) {
-					await _telegramBotClient.SendTextMessageAsync(
+					await _telegramBotClient.SendMessage(
 						chatId: imagePrompt.Command.Chat.Id,
 						text: $"<code>{error}</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: imagePrompt.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = imagePrompt.Command.MessageId
+						},
 						cancellationToken: cancellationToken
 					);
 					return;
@@ -106,11 +112,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					ChatMessage.FromTextWithImageBase64("user", imagePrompt.Prompt, imageBase64!)
 				);
 
-				Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
+				Message responseMessage = await _telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("… ⏳"),
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: imagePrompt.Command.MessageId
+					replyParameters: new ReplyParameters {
+						MessageId = imagePrompt.Command.MessageId
+					}
 				);
 
 				string response = await _openAIClient.ChatAsync(
@@ -126,11 +134,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						try {
 							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(imagePrompt.Command.Chat.Id, imagePrompt.Command.Sender.Id);
 						} catch (RateLimitExceededException exc) {
-							await _telegramBotClient.SendTextMessageAsync(
+							await _telegramBotClient.SendMessage(
 								chatId: imagePrompt.Command.Chat.Id,
 								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 								parseMode: ParseMode.Html,
-								replyToMessageId: imagePrompt.Command.MessageId,
+								replyParameters: new ReplyParameters {
+									MessageId = imagePrompt.Command.MessageId
+								},
 								cancellationToken: cancellationToken
 							);
 							return;
@@ -164,7 +174,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 							);
 							break;
 						default:
-							await _telegramBotClient.EditMessageTextAsync(
+							await _telegramBotClient.EditMessageText(
 								chatId: imagePrompt.Command.Chat.Id,
 								messageId: responseMessage.MessageId,
 								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
@@ -193,7 +203,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 				} catch (Exception exc) {
 					_logger.LogError(exc, null);
-					await telegramBotClient.EditMessageTextAsync(
+					await telegramBotClient.EditMessageText(
 						chatId: imagePrompt.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
 						text: "😵",
@@ -220,7 +230,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		private static async Task<(string? ImageBase64, string? Error)> GetImageBase64Async(ITelegramBotClient botClient, string fileId, CancellationToken cancellationToken) {
 			// Download photo
 			using MemoryStream originalImageStream = new();
-			await botClient.GetInfoAndDownloadFileAsync(
+			await botClient.GetInfoAndDownloadFile(
 				fileId: fileId,
 				destination: originalImageStream,
 				cancellationToken: cancellationToken);

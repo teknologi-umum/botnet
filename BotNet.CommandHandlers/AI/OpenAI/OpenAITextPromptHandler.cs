@@ -44,11 +44,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						userId: textPrompt.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					return _telegramBotClient.SendTextMessageAsync(
+					return _telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: textPrompt.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = textPrompt.Command.MessageId
+						},
 						replyMarkup: new InlineKeyboardMarkup(
 							InlineKeyboardButton.WithUrl("Private chat 💬", "t.me/TeknumBot")
 						),
@@ -62,11 +64,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						userId: textPrompt.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					return _telegramBotClient.SendTextMessageAsync(
+					return _telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 						parseMode: ParseMode.Html,
-						replyToMessageId: textPrompt.Command.MessageId,
+						replyParameters: new ReplyParameters {
+							MessageId = textPrompt.Command.MessageId
+						},
 						cancellationToken: cancellationToken
 					);
 				}
@@ -90,11 +94,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					ChatMessage.FromText("user", textPrompt.Prompt)
 				);
 
-				Message responseMessage = await _telegramBotClient.SendTextMessageAsync(
+				Message responseMessage = await _telegramBotClient.SendMessage(
 					chatId: textPrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("… ⏳"),
 					parseMode: ParseMode.MarkdownV2,
-					replyToMessageId: textPrompt.Command.MessageId
+					replyParameters: new ReplyParameters {
+						MessageId = textPrompt.Command.MessageId
+					}
 				);
 
 				string response = await _openAIClient.ChatAsync(
@@ -113,11 +119,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						try {
 							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(textPrompt.Command.Chat.Id, textPrompt.Command.Sender.Id);
 						} catch (RateLimitExceededException exc) {
-							await _telegramBotClient.SendTextMessageAsync(
+							await _telegramBotClient.SendMessage(
 								chatId: textPrompt.Command.Chat.Id,
 								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 								parseMode: ParseMode.Html,
-								replyToMessageId: textPrompt.Command.MessageId,
+								replyParameters: new ReplyParameters {
+									MessageId = textPrompt.Command.MessageId
+								},
 								cancellationToken: cancellationToken
 							);
 							return;
@@ -151,7 +159,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 							);
 							break;
 						default:
-							await _telegramBotClient.EditMessageTextAsync(
+							await _telegramBotClient.EditMessageText(
 								chatId: textPrompt.Command.Chat.Id,
 								messageId: responseMessage.MessageId,
 								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
@@ -183,7 +191,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 				} catch (Exception exc) {
 					_logger.LogError(exc, null);
-					await telegramBotClient.EditMessageTextAsync(
+					await telegramBotClient.EditMessageText(
 						chatId: textPrompt.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
 						text: "😵",

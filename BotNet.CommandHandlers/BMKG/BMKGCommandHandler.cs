@@ -19,11 +19,13 @@ namespace BotNet.CommandHandlers.BMKG {
 			try {
 				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendTextMessageAsync(
+				return _telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Sabar dulu ya, tunggu giliran yang lain. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
-					replyToMessageId: command.CommandMessageId,
+					replyParameters: new ReplyParameters {
+						MessageId = command.CommandMessageId
+					},
 					cancellationToken: cancellationToken
 				);
 			}
@@ -33,11 +35,11 @@ namespace BotNet.CommandHandlers.BMKG {
 				try {
 					(string text, string shakemapUrl) = await _latestEarthQuake.GetLatestAsync();
 
-					await _telegramBotClient.SendPhotoAsync(
+					await _telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileUrl(shakemapUrl),
 						caption: text,
-						replyToMessageId: command.CommandMessageId,
+						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken
 					);
