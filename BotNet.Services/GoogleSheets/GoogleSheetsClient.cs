@@ -12,13 +12,11 @@ namespace BotNet.Services.GoogleSheets {
 	public sealed class GoogleSheetsClient(
 		SheetsService sheetsService
 	) {
-		private readonly SheetsService _sheetsService = sheetsService;
-
 		public async Task<ImmutableList<T>> GetDataAsync<T>(string spreadsheetId, string range, string firstColumn, CancellationToken cancellationToken) {
 			int firstColumnIndex = GetColumnIndex(firstColumn);
 
 			// Fetch data
-			SpreadsheetsResource.ValuesResource.GetRequest getRequest = _sheetsService.Spreadsheets.Values.Get(
+			SpreadsheetsResource.ValuesResource.GetRequest getRequest = sheetsService.Spreadsheets.Values.Get(
 				spreadsheetId: spreadsheetId,
 				range: range
 			);
@@ -63,7 +61,7 @@ namespace BotNet.Services.GoogleSheets {
 						if (decimal.TryParse(value, out decimal decimalValue)) {
 							parameters[i] = decimalValue;
 						} else {
-							parameters[i] = (decimal?)null;
+							parameters[i] = null;
 						}
 					} else if (property.PropertyType == typeof(int)) {
 						if (int.TryParse(value, out int intValue)) {
@@ -75,7 +73,7 @@ namespace BotNet.Services.GoogleSheets {
 						if (int.TryParse(value, out int intValue)) {
 							parameters[i] = intValue;
 						} else {
-							parameters[i] = (int?)null;
+							parameters[i] = null;
 						}
 					} else if (property.PropertyType == typeof(double)) {
 						if (double.TryParse(value, out double doubleValue)) {
@@ -87,7 +85,7 @@ namespace BotNet.Services.GoogleSheets {
 						if (double.TryParse(value, out double doubleValue)) {
 							parameters[i] = doubleValue;
 						} else {
-							parameters[i] = (double?)null;
+							parameters[i] = null;
 						}
 					} else {
 						parameters[i] = Convert.ChangeType(value, property.PropertyType);
@@ -100,11 +98,11 @@ namespace BotNet.Services.GoogleSheets {
 			return builder.ToImmutable();
 		}
 
-		public static int GetColumnIndex(string columnName) {
+		private static int GetColumnIndex(string columnName) {
 			int index = 0;
-			for (int i = 0; i < columnName.Length; i++) {
+			foreach (char c in columnName) {
 				index *= 26;
-				index += (columnName[i] - 'A' + 1);
+				index += (c - 'A' + 1);
 			}
 			return index - 1;
 		}

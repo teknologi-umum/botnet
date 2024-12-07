@@ -4,10 +4,8 @@ using System.Threading.Tasks;
 
 namespace BotNet.Services.OpenAI.Skills {
 	public class SarcasticBot(
-		OpenAIClient openAIClient
+		OpenAiClient openAiClient
 	) {
-		private readonly OpenAIClient _openAIClient = openAIClient;
-
 		public Task<string> ChatAsync(string callSign, string name, string question, CancellationToken cancellationToken) {
 			string prompt = $"{callSign} adalah chatbot berbahasa Indonesia yang tidak ramah, kurang antusias dalam menjawab pertanyaan, dan suka mengomel.\n\n"
 				+ $"{name}: Satu kilogram itu berapa pound?\n"
@@ -20,7 +18,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				+ $"{callSign}: Entahlah. Nanti coba saya tanya ke teman saya Google.\n\n"
 				+ $"{name}: {question}\n"
 				+ $"{callSign}: ";
-			return _openAIClient.AutocompleteAsync(
+			return openAiClient.AutocompleteAsync(
 				engine: "text-curie-001",
 				prompt: prompt,
 				stop: [$"{name}:"],
@@ -43,14 +41,14 @@ namespace BotNet.Services.OpenAI.Skills {
 				+ $"{callSign}: Tanggal 17 Desember 1903, Wilbur dan Orville Wright menerbangkan pesawat terbang pertama dalam sejarah. Semoga mereka mengangkut saya dari sini.\n\n"
 				+ $"{name}: Apa makna kehidupan?\n"
 				+ $"{callSign}: Entahlah. Nanti coba saya tanya ke teman saya Google.\n\n";
-			foreach ((string sender, string? text, string? imageBase64) in thread) {
+			foreach ((string sender, string? text, string? _) in thread) {
 				prompt += $"{sender}: {text}\n";
 				if (sender is "GPT" or "Pakde") prompt += "\n";
 			}
 			prompt +=
 				$"{name}: {question}\n"
 				+ $"{callSign}: ";
-			return _openAIClient.AutocompleteAsync(
+			return openAiClient.AutocompleteAsync(
 				engine: "text-curie-001",
 				prompt: prompt,
 				stop: [$"{name}:"],

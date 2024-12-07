@@ -6,8 +6,6 @@ namespace BotNet.Services.OpenAI {
 	public sealed class ThreadTracker(
 		IMemoryCache memoryCache
 	) {
-		private readonly IMemoryCache _memoryCache = memoryCache;
-
 		public void TrackMessage(
 			long messageId,
 			string sender,
@@ -15,7 +13,7 @@ namespace BotNet.Services.OpenAI {
 			string? imageBase64,
 			long? replyToMessageId
 		) {
-			_memoryCache.Set(
+			memoryCache.Set(
 				key: new MessageId(messageId),
 				value: new Message(
 					Sender: sender,
@@ -34,7 +32,7 @@ namespace BotNet.Services.OpenAI {
 			int maxLines
 		) {
 			bool firstLine = true;
-			while (_memoryCache.TryGetValue<Message>(
+			while (memoryCache.TryGetValue(
 				key: new MessageId(messageId),
 				value: out Message? message
 			) && message != null && maxLines-- > 0) {

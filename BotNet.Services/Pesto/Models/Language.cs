@@ -25,13 +25,13 @@ public enum Language {
 	[EnumMember(Value = "Lua")]
 	Lua = 9,
 	[EnumMember(Value = "PHP")]
-	PHP = 10,
+	Php = 10,
 	[EnumMember(Value = "Python")]
 	Python = 11,
 	[EnumMember(Value = "Ruby")]
 	Ruby = 12,
 	[EnumMember(Value = "SQLite3")]
-	SQLite3 = 13,
+	SqLite3 = 13,
 	[EnumMember(Value = "V")]
 	V = 14
 }
@@ -49,10 +49,10 @@ public static class LanguageExtensions {
 			Language.Javascript => "JavaScript",
 			Language.Julia => "Julia",
 			Language.Lua => "Lua",
-			Language.PHP => "PHP",
+			Language.Php => "PHP",
 			Language.Python => "Python",
 			Language.Ruby => "Ruby",
-			Language.SQLite3 => "SQLite3",
+			Language.SqLite3 => "SQLite3",
 			Language.V => "V",
 			_ => throw new ArgumentOutOfRangeException(nameof(language))
 		};

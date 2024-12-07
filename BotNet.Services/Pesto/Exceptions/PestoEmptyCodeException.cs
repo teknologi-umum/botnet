@@ -1,5 +1,3 @@
 ﻿namespace BotNet.Services.Pesto.Exceptions; 
 
-public class PestoEmptyCodeException : System.Exception{
-	public PestoEmptyCodeException() : base ("Code parameter is empty") { }
-}
+public class PestoEmptyCodeException() : System.Exception("Code parameter is empty");

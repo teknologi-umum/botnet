@@ -3,12 +3,12 @@ using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BMKG {
-	public sealed record BMKGCommand : ICommand {
+	public sealed record BmkgCommand : ICommand {
 		public MessageId CommandMessageId { get; }
 		public ChatBase Chat { get; }
 		public HumanSender Sender { get; }
 
-		private BMKGCommand(
+		private BmkgCommand(
 			MessageId commandMessageId,
 			ChatBase chat,
 			HumanSender sender
@@ -18,7 +18,7 @@ namespace BotNet.Commands.BMKG {
 			Sender = sender;
 		}
 
-		public static BMKGCommand FromSlashCommand(SlashCommand slashCommand) {
+		public static BmkgCommand FromSlashCommand(SlashCommand slashCommand) {
 			// Must be /bmkg
 			if (slashCommand.Command != "/bmkg") {
 				throw new ArgumentException("Command must be /bmkg.", nameof(slashCommand));

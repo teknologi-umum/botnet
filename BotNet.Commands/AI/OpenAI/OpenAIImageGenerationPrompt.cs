@@ -3,7 +3,7 @@ using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.AI.OpenAI {
-	public sealed record class OpenAIImageGenerationPrompt : ICommand {
+	public sealed record OpenAiImageGenerationPrompt : ICommand {
 		public string CallSign { get; }
 		public string Prompt { get; }
 		public MessageId PromptMessageId { get; }
@@ -11,7 +11,7 @@ namespace BotNet.Commands.AI.OpenAI {
 		public ChatBase Chat { get; }
 		public HumanSender Sender { get; }
 
-		public OpenAIImageGenerationPrompt(
+		public OpenAiImageGenerationPrompt(
 			string callSign,
 			string prompt,
 			MessageId promptMessageId,

@@ -17,9 +17,6 @@ namespace BotNet.Bot {
 		IMediator mediator,
 		ILogger<BotService> logger
 	) : IUpdateHandler {
-		private readonly IMediator _mediator = mediator;
-		private readonly ILogger<BotService> _logger = logger;
-
 		public async Task HandleUpdateAsync(
 			ITelegramBotClient botClient,
 			Update update,
@@ -28,21 +25,19 @@ namespace BotNet.Bot {
 			try {
 				switch (update.Type) {
 					case UpdateType.Message:
-						await _mediator.Send(new MessageUpdate(update.Message!));
+						await mediator.Send(new MessageUpdate(update.Message!), cancellationToken);
 						break;
 					case UpdateType.InlineQuery:
-						await _mediator.Send(new InlineQueryUpdate(update.InlineQuery!));
+						await mediator.Send(new InlineQueryUpdate(update.InlineQuery!), cancellationToken);
 						break;
 					case UpdateType.CallbackQuery:
-						await _mediator.Send(new CallbackQueryUpdate(update.CallbackQuery!));
-						break;
-					default:
+						await mediator.Send(new CallbackQueryUpdate(update.CallbackQuery!), cancellationToken);
 						break;
 				}
 			} catch (OperationCanceledException) {
 				throw;
 			} catch (Exception exc) {
-				_logger.LogError(exc, "{message}", exc.Message);
+				logger.LogError(exc, "{message}", exc.Message);
 			}
 		}
 
@@ -56,7 +51,7 @@ namespace BotNet.Bot {
 					$"Telegram API Error:\n{apiRequestException.ErrorCode}\n{apiRequestException.Message}",
 				_ => exception.ToString()
 			};
-			_logger.LogError(exception, "{message}", errorMessage);
+			logger.LogError(exception, "{message}", errorMessage);
 			return Task.CompletedTask;
 		}
 	}

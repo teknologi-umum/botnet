@@ -6,10 +6,8 @@ using BotNet.Services.OpenAI.Models;
 
 namespace BotNet.Services.OpenAI.Skills {
 	public sealed class VisionBot(
-		OpenAIStreamingClient openAIStreamingClient
+		OpenAiStreamingClient openAiStreamingClient
 	) {
-		private readonly OpenAIStreamingClient _openAIStreamingClient = openAIStreamingClient;
-
 		public async Task StreamChatAsync(
 			string message,
 			string imageBase64,
@@ -21,7 +19,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				ChatMessage.FromTextWithImageBase64("user", message, imageBase64)
 			};
 
-			await _openAIStreamingClient.StreamChatAsync(
+			await openAiStreamingClient.StreamChatAsync(
 				model: "gpt-4-vision-preview",
 				messages: messages,
 				maxTokens: 512,
@@ -56,7 +54,7 @@ namespace BotNet.Services.OpenAI.Skills {
 				ChatMessage.FromTextWithImageBase64("user", message, imageBase64)
 			};
 
-			await _openAIStreamingClient.StreamChatAsync(
+			await openAiStreamingClient.StreamChatAsync(
 				model: "gpt-4-vision-preview",
 				messages: messages,
 				maxTokens: 512,

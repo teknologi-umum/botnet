@@ -6,9 +6,10 @@ using System.Text;
 namespace BotNet.Services.Brainfuck {
 	public static class BrainfuckInterpreter {
 		public static string RunBrainfuck(string code) {
-			byte[] program = Encoding.UTF8.GetBytes(code);
+			Span<byte> program = stackalloc byte[Encoding.UTF8.GetByteCount(code)];
+			Encoding.UTF8.GetBytes(code, program);
 			int programPointer = 0;
-			byte[] memory = new byte[1024];
+			Span<byte> memory = stackalloc byte[1024];
 			int pointer = 0;
 			Stack<int> loopPointers = new();
 			Dictionary<int, int> loopCache = new();

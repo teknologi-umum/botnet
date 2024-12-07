@@ -15,46 +15,42 @@ using Microsoft.Extensions.Options;
 using RG.Ninja;
 
 namespace BotNet.Services.OpenAI {
-	public class OpenAIClient(
+	public class OpenAiClient(
 		HttpClient httpClient,
-		IOptions<OpenAIOptions> openAIOptionsAccessor,
-		ILogger<OpenAIClient> logger
+		IOptions<OpenAiOptions> openAiOptionsAccessor,
+		ILogger<OpenAiClient> logger
 	) {
-		private const string COMPLETION_URL_TEMPLATE = "https://api.openai.com/v1/engines/{0}/completions";
-		private const string CHAT_URL = "https://api.openai.com/v1/chat/completions";
-		private const string IMAGE_GENERATION_URL = "https://api.openai.com/v1/images/generations";
-		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
+		private const string CompletionUrlTemplate = "https://api.openai.com/v1/engines/{0}/completions";
+		private const string ChatUrl = "https://api.openai.com/v1/chat/completions";
+		private const string ImageGenerationUrl = "https://api.openai.com/v1/images/generations";
+		private static readonly JsonSerializerOptions JsonSerializerOptions = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
 		};
-		private readonly HttpClient _httpClient = httpClient;
-		private readonly string _apiKey = openAIOptionsAccessor.Value.ApiKey!;
-		private readonly ILogger<OpenAIClient> _logger = logger;
+
+		private readonly string _apiKey = openAiOptionsAccessor.Value.ApiKey!;
 
 		public async Task<string> AutocompleteAsync(string engine, string prompt, string[]? stop, int maxTokens, double frequencyPenalty, double presencePenalty, double temperature, double topP, CancellationToken cancellationToken) {
-			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(COMPLETION_URL_TEMPLATE, engine)) {
-				Headers = {
-					{ "Authorization", $"Bearer {_apiKey}" },
-					{ "Accept", "text/event-stream" }
+			using HttpRequestMessage request = new(HttpMethod.Post, string.Format(CompletionUrlTemplate, engine));
+			request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+			request.Headers.Add("Accept", "text/event-stream");
+			request.Content = JsonContent.Create(
+				inputValue: new {
+					Prompt = prompt,
+					Temperature = temperature,
+					MaxTokens = maxTokens,
+					Stream = true,
+					TopP = topP,
+					FrequencyPenalty = frequencyPenalty,
+					PresencePenalty = presencePenalty,
+					Stop = stop
 				},
-				Content = JsonContent.Create(
-					inputValue: new {
-						Prompt = prompt,
-						Temperature = temperature,
-						MaxTokens = maxTokens,
-						Stream = true,
-						TopP = topP,
-						FrequencyPenalty = frequencyPenalty,
-						PresencePenalty = presencePenalty,
-						Stop = stop
-					},
-					options: JSON_SERIALIZER_OPTIONS
-				)
-			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+				options: JsonSerializerOptions
+			);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
 			StringBuilder result = new();
-			using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+			await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 			using StreamReader streamReader = new(stream);
 			while (!streamReader.EndOfStream) {
 				string? line = await streamReader.ReadLineAsync(cancellationToken);
@@ -62,7 +58,7 @@ namespace BotNet.Services.OpenAI {
 				if (line == "") continue;
 				if (!line.StartsWith("data: ", out string? json)) break;
 				if (json == "[DONE]") break;
-				CompletionResult? completionResult = JsonSerializer.Deserialize<CompletionResult>(json, JSON_SERIALIZER_OPTIONS);
+				CompletionResult? completionResult = JsonSerializer.Deserialize<CompletionResult>(json, JsonSerializerOptions);
 				if (completionResult == null) break;
 				if (completionResult.Choices.Count == 0) break;
 				result.Append(completionResult.Choices[0].Text);
@@ -73,23 +69,20 @@ namespace BotNet.Services.OpenAI {
 		}
 
 		public async Task<string> ChatAsync(string model, IEnumerable<ChatMessage> messages, int maxTokens, CancellationToken cancellationToken) {
-			using HttpRequestMessage request = new(HttpMethod.Post, CHAT_URL) {
-				Headers = {
-					{ "Authorization", $"Bearer {_apiKey}" },
+			using HttpRequestMessage request = new(HttpMethod.Post, ChatUrl);
+			request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+			request.Content = JsonContent.Create(
+				inputValue: new {
+					Model = model,
+					MaxTokens = maxTokens,
+					Messages = messages
 				},
-				Content = JsonContent.Create(
-					inputValue: new {
-						Model = model,
-						MaxTokens = maxTokens,
-						Messages = messages
-					},
-					options: JSON_SERIALIZER_OPTIONS
-				)
-			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+				options: JsonSerializerOptions
+			);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
-			CompletionResult? completionResult = await response.Content.ReadFromJsonAsync<CompletionResult>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+			CompletionResult? completionResult = await response.Content.ReadFromJsonAsync<CompletionResult>(JsonSerializerOptions, cancellationToken);
 			if (completionResult == null) return "";
 			if (completionResult.Choices.Count == 0) return "";
 			return completionResult.Choices[0].Message?.Content!;
@@ -101,30 +94,27 @@ namespace BotNet.Services.OpenAI {
 			int maxTokens,
 			[EnumeratorCancellation] CancellationToken cancellationToken
 		) {
-			using HttpRequestMessage request = new(HttpMethod.Post, CHAT_URL) {
-				Headers = {
-					{ "Authorization", $"Bearer {_apiKey}" },
-					{ "Accept", "text/event-stream" }
+			using HttpRequestMessage request = new(HttpMethod.Post, ChatUrl);
+			request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+			request.Headers.Add("Accept", "text/event-stream");
+			request.Content = JsonContent.Create(
+				inputValue: new {
+					Model = model,
+					MaxTokens = maxTokens,
+					Messages = messages,
+					Stream = true
 				},
-				Content = JsonContent.Create(
-					inputValue: new {
-						Model = model,
-						MaxTokens = maxTokens,
-						Messages = messages,
-						Stream = true
-					},
-					options: JSON_SERIALIZER_OPTIONS
-				)
-			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+				options: JsonSerializerOptions
+			);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			if (!response.IsSuccessStatusCode) {
 				string errorMessage = await response.Content.ReadAsStringAsync(cancellationToken);
-				_logger.LogError(errorMessage);
+				logger.LogError(errorMessage);
 				response.EnsureSuccessStatusCode();
 			}
 
 			StringBuilder result = new();
-			using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+			await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 			using StreamReader streamReader = new(stream);
 
 			while (!streamReader.EndOfStream) {
@@ -149,7 +139,7 @@ namespace BotNet.Services.OpenAI {
 					yield break;
 				}
 
-				CompletionResult? completionResult = JsonSerializer.Deserialize<CompletionResult>(json, JSON_SERIALIZER_OPTIONS);
+				CompletionResult? completionResult = JsonSerializer.Deserialize<CompletionResult>(json, JsonSerializerOptions);
 
 				if (completionResult == null || completionResult.Choices.Count == 0) {
 					yield return (
@@ -167,34 +157,31 @@ namespace BotNet.Services.OpenAI {
 						Stop: true
 					);
 					yield break;
-				} else {
-					yield return (
-						Result: result.ToString(),
-						Stop: false
-					);
 				}
+
+				yield return (
+					Result: result.ToString(),
+					Stop: false
+				);
 			}
 		}
 
 		public async Task<Uri> GenerateImageAsync(string model, string prompt, CancellationToken cancellationToken) {
-			using HttpRequestMessage request = new(HttpMethod.Post, IMAGE_GENERATION_URL) {
-				Headers = {
-					{ "Authorization", $"Bearer {_apiKey}" }
+			using HttpRequestMessage request = new(HttpMethod.Post, ImageGenerationUrl);
+			request.Headers.Add("Authorization", $"Bearer {_apiKey}");
+			request.Content = JsonContent.Create(
+				inputValue: new {
+					Model = model,
+					Prompt = prompt,
+					N = 1,
+					Size = "1024x1024"
 				},
-				Content = JsonContent.Create(
-					inputValue: new {
-						Model = model,
-						Prompt = prompt,
-						N = 1,
-						Size = "1024x1024"
-					},
-					options: JSON_SERIALIZER_OPTIONS
-				)
-			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+				options: JsonSerializerOptions
+			);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
-			ImageGenerationResult? imageGenerationResult = await response.Content.ReadFromJsonAsync<ImageGenerationResult>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+			ImageGenerationResult? imageGenerationResult = await response.Content.ReadFromJsonAsync<ImageGenerationResult>(JsonSerializerOptions, cancellationToken);
 			return new(imageGenerationResult!.Data[0].Url);
 		}
 	}

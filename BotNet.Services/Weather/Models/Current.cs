@@ -1,4 +1,5 @@
-﻿namespace BotNet.Services.Weather.Models {
+﻿// ReSharper disable InconsistentNaming
+namespace BotNet.Services.Weather.Models {
 	public class Current {
 		public string? Last_Updated { get; set; }
 		public double Temp_C { get; set; }

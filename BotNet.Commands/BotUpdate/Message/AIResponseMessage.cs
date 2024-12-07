@@ -3,10 +3,10 @@ using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
-	public sealed record AIResponseMessage : MessageBase {
+	public sealed record AiResponseMessage : MessageBase {
 		public string CallSign { get; }
 
-		private AIResponseMessage(
+		private AiResponseMessage(
 			MessageId messageId,
 			ChatBase chat,
 			BotSender sender,
@@ -25,7 +25,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 			CallSign = callSign;
 		}
 
-		public static AIResponseMessage FromMessage(
+		public static AiResponseMessage FromMessage(
 			Telegram.Bot.Types.Message message,
 			HumanMessageBase replyToMessage,
 			string callSign,

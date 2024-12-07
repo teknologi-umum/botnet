@@ -19,28 +19,21 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.CommandHandlers.AI.OpenAI {
-	public sealed class OpenAIImagePromptHandler(
+	public sealed class OpenAiImagePromptHandler(
 		ITelegramBotClient telegramBotClient,
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
-		OpenAIClient openAIClient,
+		OpenAiClient openAiClient,
 		CommandPriorityCategorizer commandPriorityCategorizer,
-		ILogger<OpenAIImageGenerationPromptHandler> logger
-	) : ICommandHandler<OpenAIImagePrompt> {
-		internal static readonly RateLimiter VISION_RATE_LIMITER = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(15));
-		internal static readonly RateLimiter VIP_VISION_RATE_LIMITER = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(2));
+		ILogger<OpenAiImageGenerationPromptHandler> logger
+	) : ICommandHandler<OpenAiImagePrompt> {
+		private static readonly RateLimiter VisionRateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(15));
+		private static readonly RateLimiter VipVisionRateLimiter = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(2));
 
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ICommandQueue _commandQueue = commandQueue;
-		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
-		private readonly OpenAIClient _openAIClient = openAIClient;
-		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
-		private readonly ILogger<OpenAIImageGenerationPromptHandler> _logger = logger;
-
-		public Task Handle(OpenAIImagePrompt imagePrompt, CancellationToken cancellationToken) {
-			if (imagePrompt.Command.Sender is not VIPSender
+		public Task Handle(OpenAiImagePrompt imagePrompt, CancellationToken cancellationToken) {
+			if (imagePrompt.Command.Sender is not VipSender
 				&& imagePrompt.Command.Chat is not HomeGroupChat) {
-				return _telegramBotClient.SendMessage(
+				return telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("Vision tidak bisa dipakai di sini."),
 					parseMode: ParseMode.MarkdownV2,
@@ -52,19 +45,19 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			}
 
 			try {
-				if (imagePrompt.Command.Sender is VIPSender) {
-					VIP_VISION_RATE_LIMITER.ValidateActionRate(
+				if (imagePrompt.Command.Sender is VipSender) {
+					VipVisionRateLimiter.ValidateActionRate(
 						chatId: imagePrompt.Command.Chat.Id,
 						userId: imagePrompt.Command.Sender.Id
 					);
 				} else {
-					VISION_RATE_LIMITER.ValidateActionRate(
+					VisionRateLimiter.ValidateActionRate(
 						chatId: imagePrompt.Command.Chat.Id,
 						userId: imagePrompt.Command.Sender.Id
 					);
 				}
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendMessage(
+				return telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: $"<code>Anda terlalu banyak menggunakan vision. Coba lagi {exc.Cooldown}.</code>",
 					parseMode: ParseMode.Html,
@@ -78,13 +71,13 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			// Fire and forget
 			Task.Run(async () => {
 				(string? imageBase64, string? error) = await GetImageBase64Async(
-					botClient: _telegramBotClient,
+					botClient: telegramBotClient,
 					fileId: imagePrompt.ImageFileId,
 					cancellationToken: cancellationToken
 				);
 
 				if (error is not null) {
-					await _telegramBotClient.SendMessage(
+					await telegramBotClient.SendMessage(
 						chatId: imagePrompt.Command.Chat.Id,
 						text: $"<code>{error}</code>",
 						parseMode: ParseMode.Html,
@@ -103,7 +96,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				messages.AddRange(
 					from message in imagePrompt.Thread.Take(10).Reverse()
 					select ChatMessage.FromText(
-						role: message.Sender.ChatGPTRole,
+						role: message.Sender.ChatGptRole,
 						text: message.Text
 					)
 				);
@@ -112,7 +105,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					ChatMessage.FromTextWithImageBase64("user", imagePrompt.Prompt, imageBase64!)
 				);
 
-				Message responseMessage = await _telegramBotClient.SendMessage(
+				Message responseMessage = await telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("… ⏳"),
 					parseMode: ParseMode.MarkdownV2,
@@ -121,7 +114,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					}
 				);
 
-				string response = await _openAIClient.ChatAsync(
+				string response = await openAiClient.ChatAsync(
 					model: "gpt-4-vision-preview",
 					messages: messages,
 					maxTokens: 512,
@@ -130,11 +123,11 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 				// Handle image generation intent
 				if (response.StartsWith("ImageGeneration:")) {
-					if (imagePrompt.Command.Sender is not VIPSender) {
+					if (imagePrompt.Command.Sender is not VipSender) {
 						try {
-							ArtCommandHandler.IMAGE_GENERATION_RATE_LIMITER.ValidateActionRate(imagePrompt.Command.Chat.Id, imagePrompt.Command.Sender.Id);
+							ArtCommandHandler.ImageGenerationRateLimiter.ValidateActionRate(imagePrompt.Command.Chat.Id, imagePrompt.Command.Sender.Id);
 						} catch (RateLimitExceededException exc) {
-							await _telegramBotClient.SendMessage(
+							await telegramBotClient.SendMessage(
 								chatId: imagePrompt.Command.Chat.Id,
 								text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 								parseMode: ParseMode.Html,
@@ -149,9 +142,9 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 					string imageGenerationPrompt = response.Substring(response.IndexOf(':') + 1).Trim();
 					switch (imagePrompt.Command) {
-						case { Sender: VIPSender }:
-							await _commandQueue.DispatchAsync(
-								command: new OpenAIImageGenerationPrompt(
+						case { Sender: VipSender }:
+							await commandQueue.DispatchAsync(
+								command: new OpenAiImageGenerationPrompt(
 									callSign: imagePrompt.CallSign,
 									prompt: imageGenerationPrompt,
 									promptMessageId: imagePrompt.Command.MessageId,
@@ -162,7 +155,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 							);
 							break;
 						case { Chat: HomeGroupChat }:
-							await _commandQueue.DispatchAsync(
+							await commandQueue.DispatchAsync(
 								command: new StabilityTextToImagePrompt(
 									callSign: imagePrompt.CallSign,
 									prompt: imageGenerationPrompt,
@@ -174,7 +167,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 							);
 							break;
 						default:
-							await _telegramBotClient.EditMessageText(
+							await telegramBotClient.EditMessageText(
 								chatId: imagePrompt.Command.Chat.Id,
 								messageId: responseMessage.MessageId,
 								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
@@ -202,7 +195,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						cancellationToken: cancellationToken
 					);
 				} catch (Exception exc) {
-					_logger.LogError(exc, null);
+					logger.LogError(exc, null);
 					await telegramBotClient.EditMessageText(
 						chatId: imagePrompt.Command.Chat.Id,
 						messageId: responseMessage.MessageId,
@@ -214,12 +207,12 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				}
 
 				// Track thread
-				_telegramMessageCache.Add(
-					message: AIResponseMessage.FromMessage(
+				telegramMessageCache.Add(
+					message: AiResponseMessage.FromMessage(
 						message: responseMessage,
 						replyToMessage: imagePrompt.Command,
 						callSign: imagePrompt.CallSign,
-						commandPriorityCategorizer: _commandPriorityCategorizer
+						commandPriorityCategorizer: commandPriorityCategorizer
 					)
 				);
 			});

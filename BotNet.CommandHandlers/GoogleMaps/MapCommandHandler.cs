@@ -13,18 +13,13 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 		StaticMap staticMap,
 		ILogger<MapCommandHandler> logger
 	) : ICommandHandler<MapCommand> {
-		private static readonly RateLimiter SEARCH_PLACE_RATE_LIMITER = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(2));
-
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly GeoCode _geoCode = geoCode;
-		private readonly StaticMap _staticMap = staticMap;
-		private readonly ILogger<MapCommandHandler> _logger = logger;
+		private static readonly RateLimiter SearchPlaceRateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(2));
 
 		public Task Handle(MapCommand command, CancellationToken cancellationToken) {
 			try {
-				SEARCH_PLACE_RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
+				SearchPlaceRateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendMessage(
+				return telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
@@ -36,10 +31,10 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					(double lat, double lng) = await _geoCode.SearchPlaceAsync(command.PlaceName);
-					string staticMapUrl = _staticMap.SearchPlace(command.PlaceName);
+					(double lat, double lng) = await geoCode.SearchPlaceAsync(command.PlaceName);
+					string staticMapUrl = staticMap.SearchPlace(command.PlaceName);
 
-					await _telegramBotClient.SendPhoto(
+					await telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileUrl(staticMapUrl),
 						caption: $"<a href=\"https://www.google.com/maps/search/{lat},{lng}\">View in 🗺️ Google Maps</a>",
@@ -50,7 +45,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
 				} catch (Exception exc) {
-					_logger.LogError(exc, "Could not find place");
+					logger.LogError(exc, "Could not find place");
 					await telegramBotClient.SendMessage(
 						chatId: command.Chat.Id,
 						text: "<code>Lokasi tidak dapat ditemukan</code>",

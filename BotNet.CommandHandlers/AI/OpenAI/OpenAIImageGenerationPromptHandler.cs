@@ -10,32 +10,26 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.CommandHandlers.AI.OpenAI {
-	public sealed class OpenAIImageGenerationPromptHandler(
+	public sealed class OpenAiImageGenerationPromptHandler(
 		ITelegramBotClient telegramBotClient,
 		ImageGenerationBot imageGenerationBot,
 		ITelegramMessageCache telegramMessageCache,
 		CommandPriorityCategorizer commandPriorityCategorizer,
-		ILogger<OpenAIImageGenerationPromptHandler> logger
-	) : ICommandHandler<OpenAIImageGenerationPrompt> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ImageGenerationBot _imageGenerationBot = imageGenerationBot;
-		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
-		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
-		private readonly ILogger<OpenAIImageGenerationPromptHandler> _logger = logger;
-
-		public Task Handle(OpenAIImageGenerationPrompt command, CancellationToken cancellationToken) {
+		ILogger<OpenAiImageGenerationPromptHandler> logger
+	) : ICommandHandler<OpenAiImageGenerationPrompt> {
+		public Task Handle(OpenAiImageGenerationPrompt command, CancellationToken cancellationToken) {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
 					Uri generatedImageUrl;
 					try {
-						generatedImageUrl = await _imageGenerationBot.GenerateImageAsync(
+						generatedImageUrl = await imageGenerationBot.GenerateImageAsync(
 							prompt: command.Prompt,
 							cancellationToken: cancellationToken
 						);
 					} catch (Exception exc) {
-						_logger.LogError(exc, "Could not generate image");
-						await _telegramBotClient.EditMessageText(
+						logger.LogError(exc, "Could not generate image");
+						await telegramBotClient.EditMessageText(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							text: "<code>Failed to generate image.</code>",
@@ -47,7 +41,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 
 					// Delete busy message
 					try {
-						await _telegramBotClient.DeleteMessage(
+						await telegramBotClient.DeleteMessage(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							cancellationToken: cancellationToken
@@ -57,7 +51,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					}
 
 					// Send generated image
-					Message responseMessage = await _telegramBotClient.SendPhoto(
+					Message responseMessage = await telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileUrl(generatedImageUrl),
 						replyMarkup: new InlineKeyboardMarkup(
@@ -73,14 +67,14 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 
 					// Track thread
-					_telegramMessageCache.Add(
-						NormalMessage.FromMessage(responseMessage, _commandPriorityCategorizer)
+					telegramMessageCache.Add(
+						NormalMessage.FromMessage(responseMessage, commandPriorityCategorizer)
 					);
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
 					// TODO: tie up loose ends
 				} catch (Exception exc) {
-					_logger.LogError(exc, "Could not handle command");
+					logger.LogError(exc, "Could not handle command");
 				}
 			});
 

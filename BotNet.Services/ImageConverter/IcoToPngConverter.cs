@@ -5,26 +5,17 @@ using System.Threading.Tasks;
 using SkiaSharp;
 
 namespace BotNet.Services.ImageConverter {
-	public class IcoToPngConverter {
-		private readonly HttpClient _httpClient;
-
-		public IcoToPngConverter(
-			HttpClient httpClient
-		) {
-			_httpClient = httpClient;
-		}
-
+	public class IcoToPngConverter(
+		HttpClient httpClient
+	) {
 		public async Task<byte[]> ConvertFromUrlAsync(string url, CancellationToken cancellationToken) {
-			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url) {
-				Headers = {
-					{ "Accept", "image/ico" },
-					{ "User-Agent", "TEKNUM" }
-				}
-			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url);
+			httpRequest.Headers.Add("Accept", "image/ico");
+			httpRequest.Headers.Add("User-Agent", "TEKNUM");
+			using HttpResponseMessage response = await httpClient.SendAsync(httpRequest, cancellationToken);
 			response.EnsureSuccessStatusCode();
 
-			using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+			await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
 			SKBitmap bitmap = SKBitmap.Decode(stream);
 			SKImage image = SKImage.FromBitmap(bitmap);

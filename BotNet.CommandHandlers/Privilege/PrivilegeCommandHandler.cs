@@ -1,5 +1,4 @@
 ﻿using BotNet.Commands.ChatAggregate;
-using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.Privilege;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.RateLimit;
@@ -9,17 +8,13 @@ using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Privilege {
 	public sealed class PrivilegeCommandHandler(
-		ITelegramBotClient telegramBotClient,
-		CommandPriorityCategorizer commandPriorityCategorizer
+		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<PrivilegeCommand> {
-		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(1, TimeSpan.FromMinutes(1));
-
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
+		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(1, TimeSpan.FromMinutes(1));
 
 		public Task Handle(PrivilegeCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
+				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException) {
 				// Silently reject commands after rate limit exceeded
 				return Task.CompletedTask;
@@ -29,8 +24,8 @@ namespace BotNet.CommandHandlers.Privilege {
 			Task.Run(async () => {
 				try {
 					switch (command) {
-						case { Chat: PrivateChat, Sender: VIPSender }:
-							await _telegramBotClient.SendMessage(
+						case { Chat: PrivateChat, Sender: VipSender }:
+							await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: $$"""
 									👑 Anda adalah user VIP (ID: {{command.Sender.Id}})
@@ -45,7 +40,7 @@ namespace BotNet.CommandHandlers.Privilege {
 							);
 							break;
 						case { Chat: PrivateChat }:
-							await _telegramBotClient.SendMessage(
+							await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: $$"""
 									❌ Feature bot dibatasi di dalam private chat (ID: {{command.Sender.Id}})
@@ -59,8 +54,8 @@ namespace BotNet.CommandHandlers.Privilege {
 								cancellationToken: cancellationToken
 							);
 							break;
-						case { Chat: HomeGroupChat, Sender: VIPSender }:
-							await _telegramBotClient.SendMessage(
+						case { Chat: HomeGroupChat, Sender: VipSender }:
+							await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: $$"""
 										👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
@@ -78,7 +73,7 @@ namespace BotNet.CommandHandlers.Privilege {
 							);
 							break;
 						case { Chat: HomeGroupChat }:
-							await _telegramBotClient.SendMessage(
+							await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: $$"""
 									👑 Group {{command.Chat.Title}} (ID: {{command.Chat.Id}}) adalah home group
@@ -92,8 +87,8 @@ namespace BotNet.CommandHandlers.Privilege {
 								cancellationToken: cancellationToken
 							);
 							break;
-						case { Chat: GroupChat, Sender: VIPSender }:
-							await _telegramBotClient.SendMessage(
+						case { Chat: GroupChat, Sender: VipSender }:
+							await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: $$"""
 										⚠️ Bot dipakai di group selain home group (ID: {{command.Chat.Id}})
@@ -113,7 +108,7 @@ namespace BotNet.CommandHandlers.Privilege {
 							);
 							break;
 						case { Chat: GroupChat }:
-							await _telegramBotClient.SendMessage(
+							await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
 								text: $$"""
 									⚠️ Bot dipakai di group selain home group (ID: {{command.Chat.Id}})

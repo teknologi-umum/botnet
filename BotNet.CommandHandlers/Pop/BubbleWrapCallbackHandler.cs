@@ -8,11 +8,8 @@ namespace BotNet.CommandHandlers.Pop {
 		ITelegramBotClient telegramBotClient,
 		BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator
 	) : ICommandHandler<BubbleWrapCallback> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly BubbleWrapKeyboardGenerator _bubbleWrapKeyboardGenerator = bubbleWrapKeyboardGenerator;
-
 		public Task Handle(BubbleWrapCallback command, CancellationToken cancellationToken) {
-			InlineKeyboardMarkup poppedKeyboardMarkup = _bubbleWrapKeyboardGenerator.HandleCallback(
+			InlineKeyboardMarkup poppedKeyboardMarkup = bubbleWrapKeyboardGenerator.HandleCallback(
 				chatId: command.ChatId,
 				messageId: command.MessageId,
 				sheetData: command.SheetData
@@ -20,7 +17,7 @@ namespace BotNet.CommandHandlers.Pop {
 
 			// Fire and forget
 			Task.Run(async () => {
-				await _telegramBotClient.EditMessageReplyMarkup(
+				await telegramBotClient.EditMessageReplyMarkup(
 					chatId: command.ChatId,
 					messageId: command.MessageId,
 					replyMarkup: poppedKeyboardMarkup,

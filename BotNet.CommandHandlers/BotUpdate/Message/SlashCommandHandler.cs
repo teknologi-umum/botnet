@@ -24,10 +24,6 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache
 	) : ICommandHandler<SlashCommand> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ICommandQueue _commandQueue = commandQueue;
-		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
-
 		public async Task Handle(SlashCommand command, CancellationToken cancellationToken) {
 			try {
 				switch (command.Command) {
@@ -35,14 +31,14 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/flop":
 					case "/flep":
 					case "/flap":
-						await _commandQueue.DispatchAsync(FlipFlopCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(FlipFlopCommand.FromSlashCommand(command));
 						break;
 					case "/evaljs":
 					case "/evalcs":
-						await _commandQueue.DispatchAsync(EvalCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(EvalCommand.FromSlashCommand(command));
 						break;
 					case "/fuck":
-						await _commandQueue.DispatchAsync(FuckCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(FuckCommand.FromSlashCommand(command));
 						break;
 					case "/c":
 					case "/clojure":
@@ -69,51 +65,51 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/js":
 					case "/ts":
 					case "/vb":
-						await _commandQueue.DispatchAsync(ExecCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(ExecCommand.FromSlashCommand(command));
 						break;
 					case "/pop":
-						await _commandQueue.DispatchAsync(PopCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(PopCommand.FromSlashCommand(command));
 						break;
 					case "/ask":
-						await _commandQueue.DispatchAsync(
+						await commandQueue.DispatchAsync(
 							command: AskCommand.FromSlashCommand(
 								command: command,
 								thread: command.ReplyToMessage is null
-									? Enumerable.Empty<MessageBase>()
-									: _telegramMessageCache.GetThread(
+									? []
+									: telegramMessageCache.GetThread(
 										firstMessage: command.ReplyToMessage
 									)
 							)
 						);
 						break;
 					case "/humor":
-						await _commandQueue.DispatchAsync(HumorCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(HumorCommand.FromSlashCommand(command));
 						break;
 					case "/primbon":
-						await _commandQueue.DispatchAsync(PrimbonCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(PrimbonCommand.FromSlashCommand(command));
 						break;
 					case "/art":
-						await _commandQueue.DispatchAsync(ArtCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(ArtCommand.FromSlashCommand(command));
 						break;
 					case "/bmkg":
-						await _commandQueue.DispatchAsync(BMKGCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(BmkgCommand.FromSlashCommand(command));
 						break;
 					case "/map":
-						await _commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(MapCommand.FromSlashCommand(command));
 						break;
 					case "/weather":
-						await _commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(WeatherCommand.FromSlashCommand(command));
 						break;
 					case "/privilege":
 					case "/start":
-						await _commandQueue.DispatchAsync(PrivilegeCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(PrivilegeCommand.FromSlashCommand(command));
 						break;
 					case "/khodam":
-						await _commandQueue.DispatchAsync(KhodamCommand.FromSlashCommand(command));
+						await commandQueue.DispatchAsync(KhodamCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
-				await _telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: exc.Message,
 					parseMode: exc.ParseMode,

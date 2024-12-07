@@ -4,10 +4,8 @@ using System.Threading.Tasks;
 
 namespace BotNet.Services.OpenAI.Skills {
 	public class Translator(
-		OpenAIClient openAIClient
+		OpenAiClient openAiClient
 	) {
-		private readonly OpenAIClient _openAIClient = openAIClient;
-
 		public async Task<string> TranslateAsync(string sentence, string languagePair, CancellationToken cancellationToken) {
 			switch (languagePair) {
 				case "eniden":
@@ -23,7 +21,7 @@ namespace BotNet.Services.OpenAI.Skills {
 						cancellationToken: cancellationToken
 					);
 			}
-			string? prompt = languagePair switch {
+			string prompt = languagePair switch {
 				"enid" => "English: I do not speak Indonesian.\n"
 					+ "Indonesian: Saya tidak bisa berbicara bahasa Indonesia.\n\n"
 
@@ -54,7 +52,7 @@ namespace BotNet.Services.OpenAI.Skills {
 					+ "English:",
 				_ => throw new NotImplementedException()
 			};
-			return await _openAIClient.AutocompleteAsync(
+			return await openAiClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
 				stop: ["\n"],

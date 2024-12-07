@@ -39,8 +39,9 @@ namespace BotNet.Tests.Services.SocialLink {
 			new[] { "https://www.twitter.com/ShowwcaseHQ/status/1556259601829576707", "https://instagram.com/reel/C0XXKVnpRUI" })]
 		[InlineData("Iyakah?", new string[] { })]
 		public void CanDetectSocialLink(string message, IEnumerable<string>? urls) {
-			List<string>? resUrls =
-				SocialLinkEmbedFixer.GetPossibleUrls(message)?.Select(u => u.OriginalString).ToList();
+			List<string> resUrls =
+				SocialLinkEmbedFixer.GetPossibleUrls(message)
+					.Select(u => u.OriginalString).ToList();
 			if (urls == null) {
 				resUrls.Should().BeNull();
 			} else {

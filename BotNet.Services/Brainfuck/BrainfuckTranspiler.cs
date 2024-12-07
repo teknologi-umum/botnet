@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace BotNet.Services.Brainfuck {
 	public class BrainfuckTranspiler {
@@ -36,7 +37,17 @@ namespace BotNet.Services.Brainfuck {
 			return Generate(message);
 		}
 
-		private static int GCD(int c, int a) => a == 0 ? c : GCD(a, c % a);
+		private static int Gcd(
+			int c,
+			int a
+		) {
+			while (true) {
+				if (a == 0) return c;
+				int c1 = c;
+				c = a;
+				a = c1 % a;
+			}
+		}
 
 		private static int InverseMod(int c, int a) {
 			int f = 1, d = 0, b;
@@ -65,7 +76,7 @@ namespace BotNet.Services.Brainfuck {
 			for (int c = 0; 256 > c; c++) {
 				for (int a = 1; 40 > a; a++) {
 					for (int f = InverseMod(a, 256) & 255, d = 1; 40 > d; d++) {
-						if (1 == GCD(a, d)) {
+						if (1 == Gcd(a, d)) {
 							int b;
 							int e;
 							if ((a & 1) != 0) {
@@ -118,16 +129,17 @@ namespace BotNet.Services.Brainfuck {
 		}
 
 		private string Generate(string s) {
-			byte[] c = Encoding.UTF8.GetBytes(s);
-			string d = "";
+			Span<byte> c = stackalloc byte[Encoding.UTF8.GetByteCount(s)];
+			Encoding.UTF8.GetBytes(s, c);
+			StringBuilder d = new();
 			for (int a = 0, f = c.Length, b = 0; b < f; b++) {
 				int e = c[b] & 255;
-				string[] l = { ">" + _map[0][e], _map[a][e] };
+				string[] l = [$">{_map[0][e]}", _map[a][e]];
 				int g = ShortestStr(l);
-				d += l[g] + ".";
+				d.Append(l[g]).Append('.');
 				a = e;
 			}
-			return d;
+			return d.ToString();
 		}
 	}
 }

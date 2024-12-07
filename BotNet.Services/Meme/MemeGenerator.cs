@@ -5,17 +5,11 @@ using BotNet.Services.Typography;
 using SkiaSharp;
 
 namespace BotNet.Services.Meme {
-	public class MemeGenerator {
-		private readonly BotNetFontService _botNetFontService;
-
-		public MemeGenerator(
-			BotNetFontService botNetFontService
-		) {
-			_botNetFontService = botNetFontService;
-		}
-
+	public class MemeGenerator(
+		BotNetFontService botNetFontService
+	) {
 		public byte[] CaptionRamad(string text) {
-			return CaptionMeme(Templates.RAMAD, text);
+			return CaptionMeme(Templates.Ramad, text);
 		}
 
 		private byte[] CaptionMeme(Template template, string text) {
@@ -33,15 +27,14 @@ namespace BotNet.Services.Meme {
 
 			canvas.Save();
 			canvas.RotateDegrees(template.Rotation);
-			using Stream fontStream = _botNetFontService.GetFontStyleById(template.FontStyleId).OpenStream();
+			using Stream fontStream = botNetFontService.GetFontStyleById(template.FontStyleId).OpenStream();
 			using SKTypeface typeface = SKTypeface.FromStream(fontStream);
-			using SKPaint paint = new() {
-				TextAlign = template.TextAlign,
-				Color = template.TextColor,
-				Typeface = typeface,
-				TextSize = template.TextSize,
-				IsAntialias = true
-			};
+			using SKPaint paint = new();
+			paint.TextAlign = template.TextAlign;
+			paint.Color = template.TextColor;
+			paint.Typeface = typeface;
+			paint.TextSize = template.TextSize;
+			paint.IsAntialias = true;
 			float offset = 0f;
 			foreach (string line in WrapWords(text, template.MaxWidth, paint)) {
 				canvas.DrawText(
@@ -65,7 +58,7 @@ namespace BotNet.Services.Meme {
 
 		private static List<string> WrapWords(string text, float maxWidth, SKPaint paint) {
 			string[] words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-			List<string> lines = new();
+			List<string> lines = [];
 			bool firstWord = true;
 			string line = "";
 			foreach (string word in words) {

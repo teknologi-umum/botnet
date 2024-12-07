@@ -6,13 +6,13 @@ using SqlParser;
 using SqlParser.Ast;
 
 namespace BotNet.Commands.SQL {
-	public sealed record SQLCommand : ICommand {
+	public sealed record SqlCommand : ICommand {
 		public string RawStatement { get; }
 		public Statement.Select SelectStatement { get; }
-		public MessageId SQLMessageId { get; }
+		public MessageId SqlMessageId { get; }
 		public ChatBase Chat { get; }
 
-		private SQLCommand(
+		private SqlCommand(
 			string rawStatement,
 			Statement.Select selectStatement,
 			MessageId sqlMessageId,
@@ -20,14 +20,14 @@ namespace BotNet.Commands.SQL {
 		) {
 			RawStatement = rawStatement;
 			SelectStatement = selectStatement;
-			SQLMessageId = sqlMessageId;
+			SqlMessageId = sqlMessageId;
 			Chat = chat;
 		}
 
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
 			CommandPriorityCategorizer commandPriorityCategorizer,
-			[NotNullWhen(true)] out SQLCommand? sqlCommand
+			[NotNullWhen(true)] out SqlCommand? sqlCommand
 		) {
 			// Must start with select
 			if (message.Text is not { } text || !text.StartsWith("select", StringComparison.OrdinalIgnoreCase)) {
@@ -44,7 +44,7 @@ namespace BotNet.Commands.SQL {
 			// Must be a valid SQL statement
 			Sequence<Statement> ast;
 			try {
-				ast = new SqlParser.Parser().ParseSql(text);
+				ast = new Parser().ParseSql(text);
 			} catch {
 				sqlCommand = null;
 				return false;

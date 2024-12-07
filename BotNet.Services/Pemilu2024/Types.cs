@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+// ReSharper disable NotAccessedPositionalProperty.Global
+// ReSharper disable UnusedMember.Global
 
 namespace BotNet.Services.Pemilu2024 {
 	public sealed record Paslon(
@@ -75,13 +77,13 @@ namespace BotNet.Services.Pemilu2024 {
 		);
 	}
 
-	public sealed record ReportPilegDPRByWilayah(
+	public sealed record ReportPilegDprByWilayah(
 		[property: JsonPropertyName("ts")] string Timestamp,
 		string Psu,
 		string Mode,
 		IDictionary<string, decimal> Chart,
-		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDPRByWilayah.Row> RowByKodeWilayah,
-		ReportPilegDPRByWilayah.Progress Progres
+		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDprByWilayah.Row> RowByKodeWilayah,
+		ReportPilegDprByWilayah.Progress Progres
 	) {
 		public sealed record Row {
 			public string? Psu { get; set; }
@@ -116,12 +118,12 @@ namespace BotNet.Services.Pemilu2024 {
 		);
 	}
 
-	public sealed record ReportPilegDPRByDapil(
+	public sealed record ReportPilegDprByDapil(
 		[property: JsonPropertyName("ts")] string Timestamp,
 		string Mode,
 		IDictionary<string, decimal> Chart,
-		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDPRByDapil.Row?> RowByKodeDapil,
-		ReportPilegDPRByDapil.Progress Progres
+		[property: JsonPropertyName("table")] IDictionary<string, ReportPilegDprByDapil.Row?> RowByKodeDapil,
+		ReportPilegDprByDapil.Progress Progres
 	) {
 		public sealed record Row {
 			public decimal Persen { get; set; }
@@ -154,12 +156,12 @@ namespace BotNet.Services.Pemilu2024 {
 		);
 	}
 
-	public sealed record ReportCalegDPR(
+	public sealed record ReportCalegDpr(
 		[property: JsonPropertyName("ts")] string Timestamp,
 		string Mode,
 		IDictionary<string, decimal> Chart,
 		[property: JsonPropertyName("table")] IDictionary<string, IDictionary<string, int>> VotesByKodeCalegByKodePartai,
-		ReportCalegDPR.Progress Progres
+		ReportCalegDpr.Progress Progres
 	) {
 		public sealed record Progress(
 			int Total,

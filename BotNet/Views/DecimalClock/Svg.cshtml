@@ -1,6 +1,6 @@
 ﻿@{
-    TimeSpan timeOfDay = DateTime.UtcNow.AddHours(7).TimeOfDay;
-    double fractionOfDay = timeOfDay / TimeSpan.FromDays(1);
+    var timeOfDay = DateTime.UtcNow.AddHours(7).TimeOfDay;
+    var fractionOfDay = timeOfDay / TimeSpan.FromDays(1);
 }
 <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
     <style>
@@ -25,9 +25,9 @@
     <rect x="88.75" y="88.75" width="822.5" height="822.5" rx="422.5" stroke="#888" stroke-width="22.5" fill="#fff"></rect>
     <g transform="translate(100 100)">
         <text x="400" y="228" class="logo" fill="#bbb">TEKNUM</text>
-        @for (int i = 0; i < 10; i++) {
-            double x = 400 - Math.Sin(Math.PI * i / 5) * 320;
-            double y = 400 + Math.Cos(Math.PI * i / 5) * 320;
+        @for (var i = 0; i < 10; i++) {
+            var x = 400 - Math.Sin(Math.PI * i / 5) * 320;
+            var y = 400 + Math.Cos(Math.PI * i / 5) * 320;
             <text>
                 <text x="@x" y="@y">@i</text>
             </text>

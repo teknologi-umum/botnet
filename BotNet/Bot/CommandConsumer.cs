@@ -12,9 +12,6 @@ namespace BotNet.Bot {
 		IMediator mediator,
 		ILogger<CommandConsumer> logger
 	) : IHostedService {
-		private readonly ICommandQueue _commandQueue = commandQueue;
-		private readonly IMediator _mediator = mediator;
-		private readonly ILogger<CommandConsumer> _logger = logger;
 		private CancellationTokenSource? _cancellationTokenSource;
 		private TaskCompletionSource? _shutdownCompletionSource;
 
@@ -28,20 +25,20 @@ namespace BotNet.Bot {
 					while (_cancellationTokenSource is { IsCancellationRequested: false }) {
 						// Execution strategy is defined here.
 						// Current strategy is sequential, not concurrent, no DLQ, in single queue.
-						ICommand command = await _commandQueue.ReceiveAsync(_cancellationTokenSource.Token);
-						await _mediator.Send(command, _cancellationTokenSource.Token);
+						ICommand command = await commandQueue.ReceiveAsync(_cancellationTokenSource.Token);
+						await mediator.Send(command, _cancellationTokenSource.Token);
 					}
 				} catch (OperationCanceledException) {
 					// Graceful shutdown
 					_shutdownCompletionSource?.TrySetResult();
 				} catch (Exception exc) {
 					if (_cancellationTokenSource is not { IsCancellationRequested: false }) {
-						_logger.LogError(exc, "Command consumer crashed.");
+						logger.LogError(exc, "Command consumer crashed.");
 						_shutdownCompletionSource?.TrySetException(exc);
 						return;
 					}
 
-					_logger.LogError(exc, "Command consumer crashed. Restarting in 5 seconds...");
+					logger.LogError(exc, "Command consumer crashed. Restarting in 5 seconds...");
 					try {
 						await Task.Delay(5000, _cancellationTokenSource.Token);
 						goto Restart;
@@ -56,7 +53,10 @@ namespace BotNet.Bot {
 		}
 
 		public async Task StopAsync(CancellationToken cancellationToken) {
-			_cancellationTokenSource?.Cancel();
+			if (_cancellationTokenSource != null) {
+				await _cancellationTokenSource.CancelAsync();
+			}
+
 			_cancellationTokenSource?.Dispose();
 			_cancellationTokenSource = null;
 			if (_shutdownCompletionSource != null) {

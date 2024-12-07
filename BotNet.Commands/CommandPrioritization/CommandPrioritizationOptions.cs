@@ -1,6 +1,6 @@
 ﻿namespace BotNet.Commands.CommandPrioritization {
 	public sealed class CommandPrioritizationOptions {
-		public string[] HomeGroupChatIds { get; set; } = [];
-		public string[] VIPUserIds { get; set; } = [];
+		public string[] HomeGroupChatIds { get; init; } = [];
+		public string[] VipUserIds { get; init; } = [];
 	}
 }

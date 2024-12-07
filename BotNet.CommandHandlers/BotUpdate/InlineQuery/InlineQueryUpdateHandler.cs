@@ -13,16 +13,12 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 		BrainfuckTranspiler brainfuckTranspiler,
 		ILogger<InlineQueryUpdateHandler> logger
 	) : ICommandHandler<InlineQueryUpdate> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly BrainfuckTranspiler _brainfuckTranspiler = brainfuckTranspiler;
-		private readonly ILogger<InlineQueryUpdateHandler> _logger = logger;
-
 		public Task Handle(InlineQueryUpdate command, CancellationToken cancellationToken) {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
 					// Query must not be empty
-					if (command.InlineQuery?.Query.Trim() is not { Length: > 0 } query) {
+					if (command.InlineQuery.Query.Trim() is not { Length: > 0 } query) {
 						return;
 					}
 
@@ -53,7 +49,7 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 					}
 
 					// Generate brainfuck code
-					string brainfuckCode = _brainfuckTranspiler.TranspileBrainfuck(query);
+					string brainfuckCode = brainfuckTranspiler.TranspileBrainfuck(query);
 					results.Add(new InlineQueryResultArticle(
 						id: Guid.NewGuid().ToString("N"),
 						title: brainfuckCode,
@@ -61,7 +57,7 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 					));
 
 					// Send results
-					await _telegramBotClient.AnswerInlineQuery(
+					await telegramBotClient.AnswerInlineQuery(
 						inlineQueryId: command.InlineQuery.Id,
 						results: results,
 						cancellationToken: cancellationToken
@@ -69,7 +65,7 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
 				} catch (Exception exc) {
-					_logger.LogError(exc, "Could not handle inline query");
+					logger.LogError(exc, "Could not handle inline query");
 				}
 			});
 

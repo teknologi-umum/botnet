@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace BotNet.Services.Tokopedia {
-	public class TokopediaLinkSanitizer : IDisposable {
+	public sealed class TokopediaLinkSanitizer : IDisposable {
 		private readonly HttpClientHandler _httpClientHandler;
 		private readonly HttpClient _httpClient;
 		private readonly string _userAgent;
@@ -52,13 +52,13 @@ namespace BotNet.Services.Tokopedia {
 				throw new HttpRequestException("Invalid link");
 			}
 
-			Uri? redirectedLink = secondStageRedirect;
+			Uri redirectedLink = secondStageRedirect;
 			string sanitizedUri = redirectedLink.GetLeftPart(UriPartial.Path);
 			return new Uri(sanitizedUri);
 
 		}
 
-		protected virtual void Dispose(bool disposing) {
+		private void Dispose(bool disposing) {
 			if (!_disposedValue) {
 				if (disposing) {
 					// dispose managed state (managed objects)
@@ -72,7 +72,6 @@ namespace BotNet.Services.Tokopedia {
 
 		public void Dispose() {
 			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
 		}
 	}
 }

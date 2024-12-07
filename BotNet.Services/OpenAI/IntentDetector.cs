@@ -5,10 +5,8 @@ using BotNet.Services.OpenAI.Models;
 
 namespace BotNet.Services.OpenAI {
 	public sealed class IntentDetector(
-		OpenAIClient openAIClient
+		OpenAiClient openAiClient
 	) {
-		private readonly OpenAIClient _openAIClient = openAIClient;
-
 		public async Task<ChatIntent> DetectChatIntentAsync(
 			string message,
 			CancellationToken cancellationToken
@@ -29,7 +27,7 @@ namespace BotNet.Services.OpenAI {
 				""")
 			];
 
-			string answer = await _openAIClient.ChatAsync(
+			string answer = await openAiClient.ChatAsync(
 				model: "gpt-3.5-turbo",
 				messages: messages,
 				maxTokens: 128,
@@ -64,7 +62,7 @@ namespace BotNet.Services.OpenAI {
 				""")
 ];
 
-			string answer = await _openAIClient.ChatAsync(
+			string answer = await openAiClient.ChatAsync(
 				model: "gpt-3.5-turbo",
 				messages: messages,
 				maxTokens: 128,

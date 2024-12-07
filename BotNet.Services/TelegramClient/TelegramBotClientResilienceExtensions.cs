@@ -38,9 +38,7 @@ namespace BotNet.Services.TelegramClient {
 						replyMarkup: replyMarkup,
 						cancellationToken: cancellationToken
 					);
-				} catch (ApiRequestException) {
-					continue;
-				}
+				} catch (ApiRequestException) { }
 			}
 
 			// Last resort: escape everything
@@ -81,9 +79,7 @@ namespace BotNet.Services.TelegramClient {
 						replyMarkup: replyMarkup,
 						cancellationToken: cancellationToken
 					);
-				} catch (ApiRequestException) {
-					continue;
-				}
+				} catch (ApiRequestException) { }
 			}
 			
 			// Last resort: escape everything

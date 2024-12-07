@@ -79,7 +79,7 @@ namespace BotNet.Services.Piston {
 				return await response.Content.ReadFromJsonAsync<ExecuteResult>(_jsonSerializerOptions, cancellationToken) ?? throw new ExecutionEngineException();
 #pragma warning restore CS0618 // Type or member is obsolete
 			} finally {
-				_semaphore!.Release();
+				_semaphore.Release();
 			}
 		}
 	}

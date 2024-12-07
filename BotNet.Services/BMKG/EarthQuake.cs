@@ -1,9 +1,9 @@
 ﻿namespace BotNet.Services.BMKG {
 	public record EarthQuake {
-		public QuakeInfo InfoGempa { get; set; } = new QuakeInfo();
+		public QuakeInfo InfoGempa { get; set; } = new();
 
 		public record QuakeInfo {
-			public Quake Gempa { get; set; } = new Quake();
+			public Quake Gempa { get; set; } = new();
 
 			public record Quake {
 				public string Tanggal { get; set; } = string.Empty;
@@ -15,10 +15,7 @@
 				public string Potensi { get; set; } = string.Empty;
 				public string Dirasakan { get; set; } = string.Empty;
 				public string Shakemap{ get; set; } = string.Empty;
-				public string ShakemapUrl {
-					get => $"https://data.bmkg.go.id/DataMKG/TEWS/{Shakemap}";
-					set { }
-				}
+				public string ShakemapUrl => $"https://data.bmkg.go.id/DataMKG/TEWS/{Shakemap}";
 			}
 		}
 

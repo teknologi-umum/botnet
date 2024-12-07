@@ -11,12 +11,10 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Services.OpenAI {
-	public sealed class OpenAIStreamingClient(
+	public sealed class OpenAiStreamingClient(
 		IServiceProvider serviceProvider,
-		ILogger<OpenAIStreamingClient> logger
+		ILogger<OpenAiStreamingClient> logger
 	) : IDisposable {
-		private readonly IServiceProvider _serviceProvider = serviceProvider;
-		private readonly ILogger<OpenAIStreamingClient> _logger = logger;
 		private IServiceScope? _danglingServiceScope;
 		private bool _disposedValue;
 
@@ -28,12 +26,12 @@ namespace BotNet.Services.OpenAI {
 			long chatId,
 			int replyToMessageId
 		) {
-			IServiceScope serviceScope = _serviceProvider.CreateScope();
+			IServiceScope serviceScope = serviceProvider.CreateScope();
 			_danglingServiceScope = serviceScope;
-			OpenAIClient openAIClient = serviceScope.ServiceProvider.GetRequiredService<OpenAIClient>();
+			OpenAiClient openAiClient = serviceScope.ServiceProvider.GetRequiredService<OpenAiClient>();
 			ITelegramBotClient telegramBotClient = serviceScope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
-			IAsyncEnumerable<(string Result, bool Stop)> enumerable = openAIClient.StreamChatAsync(
+			IAsyncEnumerable<(string Result, bool Stop)> enumerable = openAiClient.StreamChatAsync(
 				model: model,
 				messages: messages,
 				maxTokens: maxTokens,
@@ -53,7 +51,7 @@ namespace BotNet.Services.OpenAI {
 						}
 					}
 				} catch (Exception exc) {
-					_logger.LogError(exc, null);
+					logger.LogError(exc, null);
 				}
 			});
 
@@ -108,6 +106,7 @@ namespace BotNet.Services.OpenAI {
 				_ = Task.Run(async () => {
 					try {
 						while (!downstreamTask.IsCompleted) {
+							// ReSharper disable once AccessToDisposedClosure
 							await Task.Delay(TimeSpan.FromSeconds(3), cts.Token);
 
 							if (lastSent != lastResult) {
@@ -118,11 +117,12 @@ namespace BotNet.Services.OpenAI {
 										messageId: incompleteMessage.MessageId,
 										text: MarkdownV2Sanitizer.Sanitize(lastResult ?? "") + "… ⏳", // ellipsis, nbsp, hourglass emoji
 										parseMode: ParseMode.MarkdownV2,
+										// ReSharper disable once AccessToDisposedClosure
 										cancellationToken: cts.Token
 									);
 								} catch (Exception exc) when (exc is not OperationCanceledException) {
 									// Message might be deleted
-									_logger.LogError(exc, null);
+									logger.LogError(exc, null);
 									break;
 								}
 							}
@@ -145,7 +145,7 @@ namespace BotNet.Services.OpenAI {
 							cancellationToken: cts.Token
 						);
 					} catch (Exception exc) {
-						_logger.LogError(exc, null);
+						logger.LogError(exc, null);
 						throw;
 					}
 
@@ -162,7 +162,7 @@ namespace BotNet.Services.OpenAI {
 					// Message might be deleted, suppress exception
 				}
 
-				cts.Cancel();
+				await cts.CancelAsync();
 				serviceScope.Dispose();
 			});
 		}

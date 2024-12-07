@@ -16,25 +16,24 @@ namespace BotNet.Services.Stability {
 		IOptions<StabilityOptions> optionsAccessor,
 		ILogger<StabilityClient> logger
 	) {
-		private const string TEXT_TO_IMAGE_URL_TEMPLATE = "https://api.stability.ai/v1/generation/{0}/text-to-image";
-		private const string IMAGE_TO_IMAGE_URL_TEMPLATE = "https://api.stability.ai/v1/generation/{0}/image-to-image";
+		private const string TextToImageUrlTemplate = "https://api.stability.ai/v1/generation/{0}/text-to-image";
+		private const string ImageToImageUrlTemplate = "https://api.stability.ai/v1/generation/{0}/image-to-image";
 
-		private static readonly JsonSerializerOptions SNAKE_CASE_SERIALIZER_OPTIONS = new() {
+		private static readonly JsonSerializerOptions SnakeCaseSerializerOptions = new() {
 			PropertyNamingPolicy = new SnakeCaseNamingPolicy()
 		};
-		private static readonly JsonSerializerOptions CAMEL_CASE_SERIALIZER_OPTIONS = new() {
+		private static readonly JsonSerializerOptions CamelCaseSerializerOptions = new() {
 			PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 		};
-		private readonly HttpClient _httpClient = httpClient;
+
 		private readonly string? _apiKey = optionsAccessor.Value.ApiKey;
-		private readonly ILogger<StabilityClient> _logger = logger;
 
 		public async Task<byte[]> GenerateImageAsync(
 			string engine,
 			string promptText,
 			CancellationToken cancellationToken
 		) {
-			string url = string.Format(TEXT_TO_IMAGE_URL_TEMPLATE, engine);
+			string url = string.Format(TextToImageUrlTemplate, engine);
 			using HttpRequestMessage request = new(HttpMethod.Post, url);
 			request.Headers.Add("Authorization", $"Bearer {_apiKey}");
 			request.Headers.Add("Accept", "application/json");
@@ -57,28 +56,28 @@ namespace BotNet.Services.Stability {
 						}
 					}
 				},
-				options: SNAKE_CASE_SERIALIZER_OPTIONS
+				options: SnakeCaseSerializerOptions
 			);
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			if (!response.IsSuccessStatusCode) {
 				string error = await response.Content.ReadAsStringAsync(cancellationToken);
 				if (response.StatusCode == HttpStatusCode.BadRequest) {
-					ErrorResponse? errorResponse = JsonSerializer.Deserialize<ErrorResponse>(error, SNAKE_CASE_SERIALIZER_OPTIONS);
-					throw new ContentFilteredException(errorResponse?.Message);
+					ErrorResponse? errorResponse = JsonSerializer.Deserialize<ErrorResponse>(error, SnakeCaseSerializerOptions);
+					throw new ContentFilteredException(errorResponse?.Message ?? "Content filtered");
 				}
-				_logger.LogError("Unable to generate image: {0}, HTTP Status Code: {1}", error, (int)response.StatusCode);
+				logger.LogError("Unable to generate image: {0}, HTTP Status Code: {1}", error, (int)response.StatusCode);
 				response.EnsureSuccessStatusCode();
 			}
 
 			string responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
 
-			TextToImageResponse? responseData = JsonSerializer.Deserialize<TextToImageResponse>(responseJson, CAMEL_CASE_SERIALIZER_OPTIONS);
+			TextToImageResponse? responseData = JsonSerializer.Deserialize<TextToImageResponse>(responseJson, CamelCaseSerializerOptions);
 
-			if (responseData is { Artifacts: [Artifact { FinishReason: "CONTENT_FILTERED" }] }) {
+			if (responseData is { Artifacts: [{ FinishReason: "CONTENT_FILTERED" }] }) {
 				throw new ContentFilteredException();
 			}
 
-			if (responseData is not { Artifacts: [Artifact { FinishReason: "SUCCESS", Base64: var base64 }] }) {
+			if (responseData is not { Artifacts: [{ FinishReason: "SUCCESS", Base64: var base64 }] }) {
 				throw new HttpRequestException();
 			}
 
@@ -91,7 +90,7 @@ namespace BotNet.Services.Stability {
 			string promptText,
 			CancellationToken cancellationToken
 		) {
-			string url = string.Format(IMAGE_TO_IMAGE_URL_TEMPLATE, engine);
+			string url = string.Format(ImageToImageUrlTemplate, engine);
 			using HttpRequestMessage request = new(HttpMethod.Post, url);
 			request.Headers.Add("Authorization", $"Bearer {_apiKey}");
 			request.Headers.Add("Accept", "application/json");
@@ -127,22 +126,22 @@ namespace BotNet.Services.Stability {
 			formData.Add(textPrompts1Text, "text_prompts[1][text]");
 			formData.Add(textPrompts1Weight, "text_prompts[1][weight]");
 			request.Content = formData;
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			if (!response.IsSuccessStatusCode) {
 				string error = await response.Content.ReadAsStringAsync(cancellationToken);
-				_logger.LogError("Unable to generate image: {0}, HTTP Status Code: {1}", error, (int)response.StatusCode);
+				logger.LogError("Unable to generate image: {0}, HTTP Status Code: {1}", error, (int)response.StatusCode);
 				response.EnsureSuccessStatusCode();
 			}
 
 			string responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
 
-			TextToImageResponse? responseData = JsonSerializer.Deserialize<TextToImageResponse>(responseJson, CAMEL_CASE_SERIALIZER_OPTIONS);
+			TextToImageResponse? responseData = JsonSerializer.Deserialize<TextToImageResponse>(responseJson, CamelCaseSerializerOptions);
 
-			if (responseData is { Artifacts: [Artifact { FinishReason: "CONTENT_FILTERED" }] }) {
+			if (responseData is { Artifacts: [{ FinishReason: "CONTENT_FILTERED" }] }) {
 				throw new ContentFilteredException();
 			}
 
-			if (responseData is not { Artifacts: [Artifact { FinishReason: "SUCCESS", Base64: var base64 }] }) {
+			if (responseData is not { Artifacts: [{ FinishReason: "SUCCESS", Base64: var base64 }] }) {
 				throw new HttpRequestException();
 			}
 

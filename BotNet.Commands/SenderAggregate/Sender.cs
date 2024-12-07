@@ -6,7 +6,7 @@ namespace BotNet.Commands.SenderAggregate {
 		SenderId Id,
 		string Name
 	) {
-		public abstract string ChatGPTRole { get; }
+		public abstract string ChatGptRole { get; }
 		public abstract string GeminiRole { get; }
 	}
 
@@ -14,7 +14,7 @@ namespace BotNet.Commands.SenderAggregate {
 		SenderId Id,
 		string Name
 	) : SenderBase(Id, Name) {
-		public override string ChatGPTRole => "user";
+		public override string ChatGptRole => "user";
 		public override string GeminiRole => "user";
 
 		public static bool TryCreate(
@@ -25,24 +25,26 @@ namespace BotNet.Commands.SenderAggregate {
 			if (user is not {
 				IsBot: false,
 				Id: long senderId,
-				FirstName: string senderFirstName,
+				FirstName: { } senderFirstName,
 				LastName: var senderLastName
 			}) {
 				humanSender = null;
 				return false;
 			}
 
-			if (commandPriorityCategorizer.IsVIPUser(senderId)) {
-				humanSender = new VIPSender(
+			if (commandPriorityCategorizer.IsVipUser(senderId)) {
+				humanSender = new VipSender(
 					Id: senderId,
-					Name: senderLastName is { } ? $"{senderFirstName} {senderLastName}" : senderFirstName
+					Name: senderLastName is not null
+						? $"{senderFirstName} {senderLastName}" : senderFirstName
 				);
 				return true;
 			}
 
 			humanSender = new HumanSender(
 				Id: senderId,
-				Name: senderLastName is { } ? $"{senderFirstName} {senderLastName}" : senderFirstName
+				Name: senderLastName is not null
+					? $"{senderFirstName} {senderLastName}" : senderFirstName
 			);
 			return true;
 		}
@@ -52,7 +54,7 @@ namespace BotNet.Commands.SenderAggregate {
 		SenderId Id,
 		string Name
 	) : SenderBase(Id, Name) {
-		public override string ChatGPTRole => "assistant";
+		public override string ChatGptRole => "assistant";
 		public override string GeminiRole => "model";
 
 		public static bool TryCreate(
@@ -62,12 +64,13 @@ namespace BotNet.Commands.SenderAggregate {
 			if (user is {
 				IsBot: true,
 				Id: long senderId,
-				FirstName: string senderFirstName,
+				FirstName: { } senderFirstName,
 				LastName: var senderLastName
 			}) {
 				botSender = new BotSender(
 					Id: senderId,
-					Name: senderLastName is { } ? $"{senderFirstName} {senderLastName}" : senderFirstName
+					Name: senderLastName is not null
+						? $"{senderFirstName} {senderLastName}" : senderFirstName
 				);
 				return true;
 			}
@@ -77,7 +80,7 @@ namespace BotNet.Commands.SenderAggregate {
 		}
 	}
 
-	public sealed record VIPSender(
+	public sealed record VipSender(
 		SenderId Id,
 		string Name
 	) : HumanSender(Id, Name);

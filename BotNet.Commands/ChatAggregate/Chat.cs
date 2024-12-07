@@ -3,26 +3,18 @@ using BotNet.Commands.CommandPrioritization;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.Commands.ChatAggregate {
-	public abstract record ChatBase {
-		public ChatId Id { get; }
-		public string? Title { get; }
-
-		protected ChatBase(
-			ChatId id,
-			string? title
-		) {
-			Id = id;
-			Title = title;
-		}
-
+	public abstract record ChatBase(
+		ChatId Id,
+		string? Title
+	) {
 		public static bool TryCreate(
 			Telegram.Bot.Types.Chat telegramChat,
 			CommandPriorityCategorizer priorityCategorizer,
 			[NotNullWhen(true)] out ChatBase? chat
 		) {
 			chat = telegramChat switch {
-				Telegram.Bot.Types.Chat { Type: ChatType.Private } => PrivateChat.FromTelegramChat(telegramChat),
-				Telegram.Bot.Types.Chat { Type: ChatType.Group or ChatType.Supergroup } => priorityCategorizer.IsHomeGroup(telegramChat.Id)
+				{ Type: ChatType.Private } => PrivateChat.FromTelegramChat(telegramChat),
+				{ Type: ChatType.Group or ChatType.Supergroup } => priorityCategorizer.IsHomeGroup(telegramChat.Id)
 					? HomeGroupChat.FromTelegramChat(telegramChat)
 					: GroupChat.FromTelegramChat(telegramChat),
 				_ => null

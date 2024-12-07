@@ -5,8 +5,8 @@ using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SenderAggregate;
 
 namespace BotNet.Commands.BotUpdate.Message {
-	public sealed record AICallCommand : HumanMessageBase, ICommand {
-		public static readonly ImmutableHashSet<string> CALL_SIGNS = [
+	public sealed record AiCallCommand : HumanMessageBase, ICommand {
+		private static readonly ImmutableHashSet<string> CALL_SIGNS = [
 			"AI",
 			"Bot",
 			"GPT",
@@ -16,7 +16,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 
 		public string CallSign { get; }
 
-		private AICallCommand(
+		private AiCallCommand(
 			MessageId messageId,
 			ChatBase chat,
 			HumanSender sender,
@@ -38,7 +38,7 @@ namespace BotNet.Commands.BotUpdate.Message {
 		public static bool TryCreate(
 			Telegram.Bot.Types.Message message,
 			CommandPriorityCategorizer commandPriorityCategorizer,
-			[NotNullWhen(true)] out AICallCommand? aiCallCommand
+			[NotNullWhen(true)] out AiCallCommand? aiCallCommand
 		) {
 			// Chat must be private or group
 			if (!ChatBase.TryCreate(message.Chat, commandPriorityCategorizer, out ChatBase? chat)) {

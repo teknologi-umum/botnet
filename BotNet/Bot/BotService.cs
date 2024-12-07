@@ -14,8 +14,6 @@ public class BotService(
 	IOptions<HostingOptions> hostingOptionsAccessor,
 	UpdateHandler updateHandler
 ) : IHostedService {
-	private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-	private readonly UpdateHandler _updateHandler = updateHandler;
 	private readonly string _botToken = botOptionsAccessor.Value.AccessToken!;
 	private readonly string _hostName = hostingOptionsAccessor.Value.HostName!;
 	private readonly bool _useLongPolling = hostingOptionsAccessor.Value.UseLongPolling;
@@ -24,28 +22,28 @@ public class BotService(
 	public Task StartAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource = new();
 		if (_useLongPolling) {
-			_telegramBotClient.StartReceiving(_updateHandler, cancellationToken: _cancellationTokenSource.Token);
+			telegramBotClient.StartReceiving(updateHandler, cancellationToken: _cancellationTokenSource.Token);
 			return Task.CompletedTask;
-		} else {
-			string webhookAddress = $"https://{_hostName}/webhook/{_botToken.Split(':')[1]}";
-			return _telegramBotClient.SetWebhook(
-				url: webhookAddress,
-				allowedUpdates: [
-					UpdateType.CallbackQuery,
-					UpdateType.InlineQuery,
-					UpdateType.Message,
-				],
-				cancellationToken: cancellationToken
-			);
 		}
+
+		string webhookAddress = $"https://{_hostName}/webhook/{_botToken.Split(':')[1]}";
+		return telegramBotClient.SetWebhook(
+			url: webhookAddress,
+			allowedUpdates: [
+				UpdateType.CallbackQuery,
+				UpdateType.InlineQuery,
+				UpdateType.Message,
+			],
+			cancellationToken: cancellationToken
+		);
 	}
 
 	public Task StopAsync(CancellationToken cancellationToken) {
 		_cancellationTokenSource?.Cancel();
 		if (_useLongPolling) {
-			return _telegramBotClient.Close(cancellationToken);
-		} else {
-			return _telegramBotClient.DeleteWebhook(cancellationToken: cancellationToken);
+			return telegramBotClient.Close(cancellationToken);
 		}
+
+		return telegramBotClient.DeleteWebhook(cancellationToken: cancellationToken);
 	}
 }

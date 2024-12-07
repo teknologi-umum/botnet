@@ -7,27 +7,26 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace BotNet.Services.FancyText {
-	public class FancyTextGenerator {
-		private static readonly Dictionary<FancyTextStyle, ImmutableDictionary<char, string>> CHAR_MAP_BY_STYLE = new();
-		private static readonly SemaphoreSlim SEMAPHORE = new(1, 1);
+	public static class FancyTextGenerator {
+		private static readonly Dictionary<FancyTextStyle, ImmutableDictionary<char, string>> CharMapByStyle = new();
+		private static readonly SemaphoreSlim Semaphore = new(1, 1);
 
 		private static async Task<ImmutableDictionary<char, string>> GetCharMapAsync(FancyTextStyle style, CancellationToken cancellationToken) {
-			await SEMAPHORE.WaitAsync(cancellationToken);
+			await Semaphore.WaitAsync(cancellationToken);
 			try {
-				if (CHAR_MAP_BY_STYLE.TryGetValue(style, out ImmutableDictionary<char, string>? charMap)) {
+				if (CharMapByStyle.TryGetValue(style, out ImmutableDictionary<char, string>? charMap)) {
 					return charMap;
 				}
-				using Stream resourceStream = typeof(FancyTextStyle).Assembly.GetManifestResourceStream($"BotNet.Services.FancyText.CharMaps.{style}.json")!;
+
+				await using Stream resourceStream = typeof(FancyTextStyle).Assembly.GetManifestResourceStream($"BotNet.Services.FancyText.CharMaps.{style}.json")!;
 				using StreamReader resourceStreamReader = new(resourceStream);
-				string resourceText = await resourceStreamReader.ReadToEndAsync();
+				string resourceText = await resourceStreamReader.ReadToEndAsync(cancellationToken);
 				Dictionary<string, string> map = JsonSerializer.Deserialize<Dictionary<string, string>>(resourceText)!;
 				charMap = map.ToImmutableDictionary(kvp => kvp.Key[0], kvp => kvp.Value);
-				CHAR_MAP_BY_STYLE.Add(style, charMap!);
+				CharMapByStyle.Add(style, charMap);
 				return charMap;
-			} catch {
-				throw;
 			} finally {
-				SEMAPHORE.Release();
+				Semaphore.Release();
 			}
 		}
 

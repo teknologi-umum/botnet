@@ -6,8 +6,6 @@ namespace BotNet.CommandHandlers.BotUpdate.CallbackQuery {
 	public sealed class CallbackQueryUpdateHandler(
 		ICommandQueue commandQueue
 	) : ICommandHandler<CallbackQueryUpdate> {
-		private readonly ICommandQueue _commandQueue = commandQueue;
-
 		public async Task Handle(CallbackQueryUpdate command, CancellationToken cancellationToken) {
 			// Only handle callback queries with data
 			if (command.CallbackQuery.Data is not { } data) {
@@ -27,7 +25,7 @@ namespace BotNet.CommandHandlers.BotUpdate.CallbackQuery {
 						callbackQuery: command.CallbackQuery,
 						out BubbleWrapCallback? bubbleWrapCallback
 					)) {
-						await _commandQueue.DispatchAsync(bubbleWrapCallback);
+						await commandQueue.DispatchAsync(bubbleWrapCallback);
 					}
 					break;
 			}

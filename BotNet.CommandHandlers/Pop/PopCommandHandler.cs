@@ -7,14 +7,12 @@ namespace BotNet.CommandHandlers.Pop {
 	public sealed class PopCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<PopCommand> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-
 		public async Task Handle(PopCommand command, CancellationToken cancellationToken) {
-			await _telegramBotClient.SendMessage(
+			await telegramBotClient.SendMessage(
 				chatId: command.Chat.Id,
 				text: "Here's a bubble wrap. Enjoy!",
 				parseMode: ParseMode.Html,
-				replyMarkup: BubbleWrapKeyboardGenerator.EMPTY_KEYBOARD,
+				replyMarkup: BubbleWrapKeyboardGenerator.EmptyKeyboard,
 				cancellationToken: cancellationToken
 			);
 		}

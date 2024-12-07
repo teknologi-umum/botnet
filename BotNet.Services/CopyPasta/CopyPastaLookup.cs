@@ -6,17 +6,17 @@ using System.Text.Json;
 
 namespace BotNet.Services.CopyPasta {
 	public class CopyPastaLookup {
-		private static readonly ImmutableDictionary<string, ImmutableList<string>> DICTIONARY;
+		private static readonly ImmutableDictionary<string, ImmutableList<string>> Dictionary;
 
 		static CopyPastaLookup() {
 			using Stream stream = Assembly.GetAssembly(typeof(CopyPastaLookup))!.GetManifestResourceStream("BotNet.Services.CopyPasta.Pasta.json")!;
 			using StreamReader streamReader = new(stream);
 			string json = streamReader.ReadToEnd();
-			DICTIONARY = JsonSerializer.Deserialize<ImmutableDictionary<string, ImmutableList<string>>>(json)!;
+			Dictionary = JsonSerializer.Deserialize<ImmutableDictionary<string, ImmutableList<string>>>(json)!;
 		}
 
 		public static bool TryGetAutoText(string key, [NotNullWhen(true)] out ImmutableList<string>? values) {
-			return DICTIONARY.TryGetValue(key, out values);
+			return Dictionary.TryGetValue(key, out values);
 		}
 	}
 }

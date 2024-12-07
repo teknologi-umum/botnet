@@ -4,39 +4,32 @@ using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 
 namespace BotNet.CommandHandlers.BotUpdate.Message {
-	public sealed class AIFollowUpMessageHandler(
+	public sealed class AiFollowUpMessageHandler(
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache
-	) : ICommandHandler<AIFollowUpMessage> {
-		private readonly ICommandQueue _commandQueue = commandQueue;
-		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
-
-		public async Task Handle(AIFollowUpMessage command, CancellationToken cancellationToken) {
+	) : ICommandHandler<AiFollowUpMessage> {
+		public async Task Handle(AiFollowUpMessage command, CancellationToken cancellationToken) {
 			switch (command.CallSign) {
 				// OpenAI GPT-4 Chat
 				case "GPT":
-					await _commandQueue.DispatchAsync(
-						command: OpenAITextPrompt.FromAIFollowUpMessage(
+					await commandQueue.DispatchAsync(
+						command: OpenAiTextPrompt.FromAiFollowUpMessage(
 							aiFollowUpMessage: command,
-							thread: command.ReplyToMessage is null
-								? Enumerable.Empty<MessageBase>()
-								: _telegramMessageCache.GetThread(
-									firstMessage: command.ReplyToMessage
-								)
+							thread: telegramMessageCache.GetThread(
+								firstMessage: command.ReplyToMessage
+							)
 						)
 					);
 					break;
 
 				// Google Gemini Chat
 				case "AI" or "Bot" or "Gemini":
-					await _commandQueue.DispatchAsync(
-						command: GeminiTextPrompt.FromAIFollowUpMessage(
+					await commandQueue.DispatchAsync(
+						command: GeminiTextPrompt.FromAiFollowUpMessage(
 							aIFollowUpMessage: command,
-							thread: command.ReplyToMessage is null
-								? Enumerable.Empty<MessageBase>()
-								: _telegramMessageCache.GetThread(
-									firstMessage: command.ReplyToMessage
-								)
+							thread: telegramMessageCache.GetThread(
+								firstMessage: command.ReplyToMessage
+							)
 						)
 					);
 					break;

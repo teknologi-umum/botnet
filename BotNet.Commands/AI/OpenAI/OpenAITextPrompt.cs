@@ -1,13 +1,13 @@
 ﻿using BotNet.Commands.BotUpdate.Message;
 
 namespace BotNet.Commands.AI.OpenAI {
-	public sealed record OpenAITextPrompt : ICommand {
+	public sealed record OpenAiTextPrompt : ICommand {
 		public string CallSign { get; }
 		public string Prompt { get; }
 		public HumanMessageBase Command { get; }
 		public IEnumerable<MessageBase> Thread { get; }
 
-		private OpenAITextPrompt(
+		private OpenAiTextPrompt(
 			string callSign,
 			string prompt,
 			HumanMessageBase command,
@@ -19,7 +19,7 @@ namespace BotNet.Commands.AI.OpenAI {
 			Thread = thread;
 		}
 
-		public static OpenAITextPrompt FromAICallCommand(AICallCommand aiCallCommand, IEnumerable<MessageBase> thread) {
+		public static OpenAiTextPrompt FromAiCallCommand(AiCallCommand aiCallCommand, IEnumerable<MessageBase> thread) {
 			// Call sign must be GPT
 			if (aiCallCommand.CallSign is not "GPT") {
 				throw new ArgumentException("Call sign must be GPT.", nameof(aiCallCommand));
@@ -31,25 +31,33 @@ namespace BotNet.Commands.AI.OpenAI {
 			}
 
 			// Non-empty thread must begin with reply to message
-			if (thread.FirstOrDefault() is {
-				MessageId: { } firstMessageId,
-				Chat.Id: { } firstChatId
-			}) {
-				if (firstMessageId != aiCallCommand.ReplyToMessage?.MessageId
-					|| firstChatId != aiCallCommand.Chat.Id) {
-					throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
-				}
+			IEnumerable<MessageBase> messageBases = thread as MessageBase[] ?? thread.ToArray();
+			if (messageBases.FirstOrDefault() is not {
+				    MessageId: var firstMessageId,
+				    Chat.Id: var firstChatId
+			    }) {
+				return new(
+					callSign: aiCallCommand.CallSign,
+					prompt: aiCallCommand.Text,
+					command: aiCallCommand,
+					thread: messageBases
+				);
+			}
+
+			if (firstMessageId != aiCallCommand.ReplyToMessage?.MessageId
+			    || firstChatId != aiCallCommand.Chat.Id) {
+				throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
 			}
 
 			return new(
 				callSign: aiCallCommand.CallSign,
 				prompt: aiCallCommand.Text,
 				command: aiCallCommand,
-				thread: thread
+				thread: messageBases
 			);
 		}
 
-		public static OpenAITextPrompt FromAIFollowUpMessage(AIFollowUpMessage aiFollowUpMessage, IEnumerable<MessageBase> thread) {
+		public static OpenAiTextPrompt FromAiFollowUpMessage(AiFollowUpMessage aiFollowUpMessage, IEnumerable<MessageBase> thread) {
 			// Call sign must be GPT
 			if (aiFollowUpMessage.CallSign is not "GPT") {
 				throw new ArgumentException("Call sign must be GPT.", nameof(aiFollowUpMessage));
@@ -61,21 +69,29 @@ namespace BotNet.Commands.AI.OpenAI {
 			}
 
 			// Non-empty thread must begin with reply to message
-			if (thread.FirstOrDefault() is {
-				MessageId: { } firstMessageId,
-				Chat.Id: { } firstChatId
-			}) {
-				if (firstMessageId != aiFollowUpMessage.ReplyToMessage.MessageId
-					|| firstChatId != aiFollowUpMessage.Chat.Id) {
-					throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
-				}
+			IEnumerable<MessageBase> messageBases = thread as MessageBase[] ?? thread.ToArray();
+			if (messageBases.FirstOrDefault() is not {
+				    MessageId: var firstMessageId,
+				    Chat.Id: var firstChatId
+			    }) {
+				return new(
+					callSign: aiFollowUpMessage.CallSign,
+					prompt: aiFollowUpMessage.Text,
+					command: aiFollowUpMessage,
+					thread: messageBases
+				);
+			}
+
+			if (firstMessageId != aiFollowUpMessage.ReplyToMessage.MessageId
+			    || firstChatId != aiFollowUpMessage.Chat.Id) {
+				throw new ArgumentException("Thread must begin with reply to message.", nameof(thread));
 			}
 
 			return new(
 				callSign: aiFollowUpMessage.CallSign,
 				prompt: aiFollowUpMessage.Text,
 				command: aiFollowUpMessage,
-				thread: thread
+				thread: messageBases
 			);
 		}
 	}

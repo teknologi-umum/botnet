@@ -9,14 +9,14 @@ namespace BotNet.Services.OpenAI {
 	public partial class AttachmentGenerator(
 		IOptions<HostingOptions> hostingOptionsAccessor
 	) {
-		private static readonly Regex HEX_COLOR_CODE_PATTERN = HexColorCodeRegex();
+		private static readonly Regex HexColorCodePattern = HexColorCodeRegex();
 		private readonly HostingOptions _hostingOptions = hostingOptionsAccessor.Value;
 
 		public ImmutableList<Uri> GenerateAttachments(string message) {
 			ImmutableList<Uri>.Builder builder = ImmutableList<Uri>.Empty.ToBuilder();
 
 			// Detect hex color codes
-			MatchCollection matches = HEX_COLOR_CODE_PATTERN.Matches(message);
+			MatchCollection matches = HexColorCodePattern.Matches(message);
 			foreach (Match match in matches) {
 				builder.Add(new Uri($"https://{_hostingOptions.HostName}/renderer/color?name={WebUtility.UrlEncode(match.Value)}"));
 			}

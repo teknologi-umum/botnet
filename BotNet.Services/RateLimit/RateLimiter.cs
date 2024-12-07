@@ -6,8 +6,6 @@ namespace BotNet.Services.RateLimit {
 	/// Note: This rate limiter is for monolith app and isn't ready to be used in Orleans
 	/// </summary>
 	public abstract class RateLimiter {
-		protected RateLimiter() { }
-
 		public static RateLimiter PerChat(int actionCount, TimeSpan window) => new PerChatRateLimiter(actionCount, window);
 		public static RateLimiter PerUser(int actionCount, TimeSpan window) => new PerUserRateLimiter(actionCount, window);
 		public static RateLimiter PerUserPerChat(int actionCount, TimeSpan window) => new PerUserPerChatRateLimiter(actionCount, window);

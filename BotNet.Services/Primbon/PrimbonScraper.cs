@@ -11,12 +11,11 @@ namespace BotNet.Services.Primbon {
 	public class PrimbonScraper(
 		HttpClient httpClient
 	) {
-		private const string KAMAROKAM_URL = "https://www.primbon.com/petung_hari_baik.php";
-		private const string TALIWANGKE_URL = "https://primbon.com/hari_sangar_taliwangke.php";
-		private readonly HttpClient _httpClient = httpClient;
+		private const string KamarokamUrl = "https://www.primbon.com/petung_hari_baik.php";
+		private const string TaliwangkeUrl = "https://primbon.com/hari_sangar_taliwangke.php";
 
 		public async Task<(string Title, string[] Traits)> GetKamarokamAsync(DateOnly date, CancellationToken cancellationToken) {
-			using HttpRequestMessage httpRequest = new(HttpMethod.Post, KAMAROKAM_URL);
+			using HttpRequestMessage httpRequest = new(HttpMethod.Post, KamarokamUrl);
 			using FormUrlEncodedContent content = new(
 				nameValueCollection: new List<KeyValuePair<string, string>>() {
 					new("tgl", date.Day.ToString()),
@@ -26,7 +25,7 @@ namespace BotNet.Services.Primbon {
 				}
 			);
 			httpRequest.Content = content;
-			using HttpResponseMessage httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
 			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
@@ -43,7 +42,7 @@ namespace BotNet.Services.Primbon {
 				throw new InvalidOperationException("Primbon.com returned an unexpected response.");
 			}
 
-			if (traits.IndexOf("</b>") is int index and not -1) {
+			if (traits.IndexOf("</b>", StringComparison.Ordinal) is int index and not -1) {
 				traits = traits[(index + 4)..];
 			}
 
@@ -54,7 +53,7 @@ namespace BotNet.Services.Primbon {
 		}
 
 		public async Task<(string JavaneseDate, string Title, string Description)> GetTaliwangkeAsync(DateOnly date, CancellationToken cancellationToken) {
-			using HttpRequestMessage httpRequest = new(HttpMethod.Post, TALIWANGKE_URL);
+			using HttpRequestMessage httpRequest = new(HttpMethod.Post, TaliwangkeUrl);
 			using FormUrlEncodedContent content = new(
 				nameValueCollection: new List<KeyValuePair<string, string>>() {
 					new("tgl", date.Day.ToString()),
@@ -64,7 +63,7 @@ namespace BotNet.Services.Primbon {
 				}
 			);
 			httpRequest.Content = content;
-			using HttpResponseMessage httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
 			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
@@ -83,14 +82,14 @@ namespace BotNet.Services.Primbon {
 				throw new InvalidOperationException("Primbon.com returned an unexpected response.");
 			}
 
-			if (body.IndexOf("<br>") is int index1 and not -1) {
+			if (body.IndexOf("<br>", StringComparison.Ordinal) is int index1 and not -1) {
 				body = body[(index1 + 4)..];
-				if (body.IndexOf("<br>") is int index2 and not -1) {
+				if (body.IndexOf("<br>", StringComparison.Ordinal) is int index2 and not -1) {
 					body = body[..index2];
 				}
 			}
 
-			if (desc.IndexOf("</b>") is int index3 and not -1) {
+			if (desc.IndexOf("</b>", StringComparison.Ordinal) is int index3 and not -1) {
 				desc = desc[(index3 + 4)..];
 			}
 

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using BotNet.Commands.SQL;
 using BotNet.Services.SQL;
 using BotNet.Services.Sqlite;
@@ -10,21 +11,18 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.SQL {
-	public sealed class SQLCommandHandler(
+	public sealed class SqlCommandHandler(
 		ITelegramBotClient telegramBotClient,
 		IServiceProvider serviceProvider
-	) : ICommandHandler<SQLCommand> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly IServiceProvider _serviceProvider = serviceProvider;
-
-		public async Task Handle(SQLCommand command, CancellationToken cancellationToken) {
+	) : ICommandHandler<SqlCommand> {
+		public async Task Handle(SqlCommand command, CancellationToken cancellationToken) {
 			if (command.SelectStatement.Query.Body.AsSelectExpression().Select.From is not { } froms
 				|| froms.Count == 0) {
-				await _telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>No FROM clause found.</code>",
 					parseMode: ParseMode.Html,
-					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
+					replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 					cancellationToken: cancellationToken
 				);
 				return;
@@ -47,16 +45,16 @@ namespace BotNet.CommandHandlers.SQL {
 			}
 
 			// Create scoped for scoped database
-			using IServiceScope serviceScope = _serviceProvider.CreateScope();
+			using IServiceScope serviceScope = serviceProvider.CreateScope();
 
 			// Load tables into memory
 			foreach (string table in tables) {
 				IScopedDataSource? dataSource = serviceScope.ServiceProvider.GetKeyedService<IScopedDataSource>(table);
 				if (dataSource == null) {
-					await _telegramBotClient.SendMessage(
+					await telegramBotClient.SendMessage(
 						chatId: command.Chat.Id,
-						text: $$"""
-						<code>Table '{{table}}' not found. Available tables are:
+						text: $"""
+						<code>Table '{table}' not found. Available tables are:
 						- pileg_dpr_dapil
 						- pileg_dpr_&lt;kodedapil&gt;
 						- pileg_dpr_provinsi
@@ -65,7 +63,7 @@ namespace BotNet.CommandHandlers.SQL {
 						</code>
 						""",
 						parseMode: ParseMode.Html,
-						replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
+						replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 						cancellationToken: cancellationToken
 					);
 					return;
@@ -101,25 +99,25 @@ namespace BotNet.CommandHandlers.SQL {
 
 								Type fieldType = reader.GetFieldType(i);
 								if (fieldType == typeof(string)) {
-									values[i] = '"' + reader.GetString(i).Replace("\"", "\"\"") + '"';
+									values[i] = $"\"{reader.GetString(i).Replace("\"", "\"\"")}\"";
 								} else if (fieldType == typeof(int)) {
 									values[i] = reader.GetInt32(i).ToString();
 								} else if (fieldType == typeof(long)) {
 									values[i] = reader.GetInt64(i).ToString();
 								} else if (fieldType == typeof(float)) {
-									values[i] = reader.GetFloat(i).ToString();
+									values[i] = reader.GetFloat(i).ToString(CultureInfo.InvariantCulture);
 								} else if (fieldType == typeof(double)) {
-									values[i] = reader.GetDouble(i).ToString();
+									values[i] = reader.GetDouble(i).ToString(CultureInfo.InvariantCulture);
 								} else if (fieldType == typeof(decimal)) {
-									values[i] = reader.GetDecimal(i).ToString();
+									values[i] = reader.GetDecimal(i).ToString(CultureInfo.InvariantCulture);
 								} else if (fieldType == typeof(bool)) {
 									values[i] = reader.GetBoolean(i).ToString();
 								} else if (fieldType == typeof(DateTime)) {
-									values[i] = reader.GetDateTime(i).ToString();
+									values[i] = reader.GetDateTime(i).ToString(CultureInfo.InvariantCulture);
 								} else if (fieldType == typeof(byte[])) {
-									values[i] = BitConverter.ToString(reader.GetFieldValue<byte[]>(i)).Replace("-", "");
+									values[i] = Convert.ToHexString(reader.GetFieldValue<byte[]>(i));
 								} else {
-									values[i] = reader[i]?.ToString() ?? "";
+									values[i] = reader[i].ToString() ?? "";
 								}
 							}
 							resultBuilder.AppendLine(string.Join(',', values));
@@ -128,11 +126,11 @@ namespace BotNet.CommandHandlers.SQL {
 					}
 				);
 			} catch (SqliteException exc) {
-				await _telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: "<code>" + exc.Message.Replace("SQLite Error", "Error") + "</code>",
 					parseMode: ParseMode.Html,
-					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
+					replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 					cancellationToken: cancellationToken
 				);
 				return;
@@ -141,19 +139,19 @@ namespace BotNet.CommandHandlers.SQL {
 			// Send result
 			string csvResult = resultBuilder.ToString();
 			if (csvResult.Length > 4000) {
-				await _telegramBotClient.SendDocument(
+				await telegramBotClient.SendDocument(
 					chatId: command.Chat.Id,
 					caption: $"{rows} rows affected",
 					document: new InputFileStream(new MemoryStream(Encoding.UTF8.GetBytes(csvResult)), "result.csv"),
-					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
+					replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 					cancellationToken: cancellationToken
 				);
 			} else {
-				await _telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
-					text: "```csv\n" + resultBuilder.ToString() + $"```\n{rows} rows affected",
+					text: $"```csv\n{resultBuilder}```\n{rows} rows affected",
 					parseMode: ParseMode.MarkdownV2,
-					replyParameters: new ReplyParameters { MessageId = command.SQLMessageId },
+					replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 					cancellationToken: cancellationToken
 				);
 			}
@@ -178,9 +176,9 @@ namespace BotNet.CommandHandlers.SQL {
 						}
 					}
 					break;
-				case TableFactor.Function function:
+				case TableFactor.Function:
 					break;
-				case TableFactor.JsonTable jsonTable:
+				case TableFactor.JsonTable:
 					break;
 				case TableFactor.NestedJoin nestedJoin:
 					if (nestedJoin.TableWithJoins != null) {
@@ -203,9 +201,9 @@ namespace BotNet.CommandHandlers.SQL {
 				case TableFactor.Table table:
 					tables.Add(table.Name.ToString());
 					break;
-				case TableFactor.TableFunction tableFunction:
+				case TableFactor.TableFunction:
 					break;
-				case TableFactor.UnNest unNest:
+				case TableFactor.UnNest:
 					break;
 				case TableFactor.Unpivot unpivot:
 					tables.Add(unpivot.Name.ToString());

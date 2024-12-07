@@ -2,7 +2,7 @@
 
 namespace BotNet.Services.Khodam {
 	public static class KhodamCalculator {
-		private static readonly string[] ANIMALS = [
+		private static readonly string[] Animals = [
 			"Anjing",
 			"Ayam",
 			"Bebek",
@@ -26,7 +26,7 @@ namespace BotNet.Services.Khodam {
 			"Ular",
 		];
 
-		private static readonly string[] ADJECTIVES = [
+		private static readonly string[] Adjectives = [
 			"Birahi",
 			"Hitam",
 			"Hutan",
@@ -43,7 +43,7 @@ namespace BotNet.Services.Khodam {
 			"Sunda",
 		];
 
-		private static readonly string[] RARES = [
+		private static readonly string[] Rares = [
 			"Ayam Geprek",
 			"Ban Serep",
 			"Bintang Laut",
@@ -97,11 +97,11 @@ namespace BotNet.Services.Khodam {
 
 			// Rare
 			if (hashCode % 631 > 580) {
-				return RARES[hashCode % RARES.Length];
+				return Rares[hashCode % Rares.Length];
 			}
 
 			// Animals
-			return $"{ANIMALS[hashCode % ANIMALS.Length]} {ADJECTIVES[hashCode % ADJECTIVES.Length]}";
+			return $"{Animals[hashCode % Animals.Length]} {Adjectives[hashCode % Adjectives.Length]}";
 		}
 	}
 }

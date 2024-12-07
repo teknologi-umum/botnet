@@ -13,13 +13,13 @@ using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.Pesto;
 
-public class PestoClient : IDisposable {
-	private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
+public sealed class PestoClient : IDisposable {
+	private static readonly JsonSerializerOptions JsonSerializerOptions = new() {
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		Converters = { new JsonStringEnumConverter() }
 	};
 
-	private const int GRACE_PERIOD = 1_500_000;
+	private const int GracePeriod = 1_500_000;
 
 	private static SemaphoreSlim? _semaphore;
 	private bool _disposedValue;
@@ -53,7 +53,7 @@ public class PestoClient : IDisposable {
 		_baseUrl = new Uri(options.BaseUrl);
 		_compileTimeout = options.CompileTimeout;
 		_runTimeout = options.RunTimeout;
-		_executeTimeout = TimeSpan.FromMilliseconds(_compileTimeout + _runTimeout + GRACE_PERIOD);
+		_executeTimeout = TimeSpan.FromMilliseconds(_compileTimeout + _runTimeout + GracePeriod);
 	}
 
 	/// <summary>
@@ -62,7 +62,7 @@ public class PestoClient : IDisposable {
 	/// <param name="cancellationToken"></param>
 	/// <returns>PingResponse record which shows some message</returns>
 	/// <exception cref="PestoServerRateLimitedException">Too many request to the API. Client should try again in a few minutes</exception>
-	/// <exception cref="PestoAPIException"></exception>
+	/// <exception cref="PestoApiException"></exception>
 	public async Task<PingResponse> PingAsync(CancellationToken cancellationToken) {
 		Uri requestUrl = new(_baseUrl, "api/ping");
 		using HttpResponseMessage response = await _httpClient.GetAsync(
@@ -74,9 +74,9 @@ public class PestoClient : IDisposable {
 
 		response.EnsureSuccessStatusCode();
 		PingResponse? pingResponse =
-			await response.Content.ReadFromJsonAsync<PingResponse>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+			await response.Content.ReadFromJsonAsync<PingResponse>(JsonSerializerOptions, cancellationToken);
 
-		return pingResponse ?? throw new PestoAPIException();
+		return pingResponse ?? throw new PestoApiException();
 	}
 
 	/// <summary>
@@ -88,15 +88,12 @@ public class PestoClient : IDisposable {
 	/// <param name="cancellationToken"></param>
 	/// <returns>Array of runtimes</returns>
 	/// <exception cref="PestoServerRateLimitedException">Too many request to the API. Client should try again in a few minutes</exception>
-	/// <exception cref="PestoAPIException"></exception>
+	/// <exception cref="PestoApiException"></exception>
 	public async Task<RuntimeResponse> ListRuntimesAsync(CancellationToken cancellationToken) {
 		Uri requestUrl = new(_baseUrl, "api/list-runtimes");
-		using HttpRequestMessage request = new(HttpMethod.Get, requestUrl) {
-			Headers = {
-				{ "X-Pesto-Token", _token },
-				{ "Accept", "application/json" }
-			}
-		};
+		using HttpRequestMessage request = new(HttpMethod.Get, requestUrl);
+		request.Headers.Add("X-Pesto-Token", _token);
+		request.Headers.Add("Accept", "application/json");
 
 		using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
 
@@ -104,9 +101,9 @@ public class PestoClient : IDisposable {
 
 		response.EnsureSuccessStatusCode();
 		RuntimeResponse? runtimeResponse =
-			await response.Content.ReadFromJsonAsync<RuntimeResponse>(JSON_SERIALIZER_OPTIONS, cancellationToken);
+			await response.Content.ReadFromJsonAsync<RuntimeResponse>(JsonSerializerOptions, cancellationToken);
 
-		return runtimeResponse ?? throw new PestoAPIException();
+		return runtimeResponse ?? throw new PestoApiException();
 	}
 
 	/// <summary>
@@ -117,10 +114,10 @@ public class PestoClient : IDisposable {
 	/// <param name="cancellationToken"></param>
 	/// <returns>The code execution result</returns>
 	/// <exception cref="PestoEmptyCodeException">Code parameter is empty</exception>
-	/// <exception cref="PestoMonthlyLimitExceededException">Token has exceed the allowed monthly limit. User should contact the Pesto team to increase their allowed limit.</exception>
+	/// <exception cref="PestoMonthlyLimitExceededException">Token has exceeded the allowed monthly limit. User should contact the Pesto team to increase their allowed limit.</exception>
 	/// <exception cref="PestoRuntimeNotFoundException">THe runtime specified (language-version combination) is not allowed at Pesto's API</exception>
 	/// <exception cref="PestoServerRateLimitedException">Too many request to the API. Client should try again in a few minutes</exception>
-	/// <exception cref="PestoAPIException"></exception>
+	/// <exception cref="PestoApiException"></exception>
 	public async Task<CodeResponse> ExecuteAsync(Language language, string code, CancellationToken cancellationToken) {
 		if (string.IsNullOrWhiteSpace(code)) throw new PestoEmptyCodeException();
 
@@ -136,28 +133,25 @@ public class PestoClient : IDisposable {
 
 		try {
 			Uri requestUrl = new(_baseUrl, "api/execute");
-			using HttpRequestMessage request = new(HttpMethod.Post, requestUrl) {
-				Headers = {
-					{ "X-Pesto-Token", _token },
-					{ "Accept", "application/json" }
-				},
-				Content = JsonContent.Create(
-					inputValue: new CodeRequest(
-						Language: language,
-						Code: code,
-						Version: "latest",
-						CompileTimeout: _compileTimeout,
-						RunTimeout: _runTimeout
-					),
-					options: JSON_SERIALIZER_OPTIONS
-				)
-			};
+			using HttpRequestMessage request = new(HttpMethod.Post, requestUrl);
+			request.Headers.Add("X-Pesto-Token", _token);
+			request.Headers.Add("Accept", "application/json");
+			request.Content = JsonContent.Create(
+				inputValue: new CodeRequest(
+					Language: language,
+					Code: code,
+					Version: "latest",
+					CompileTimeout: _compileTimeout,
+					RunTimeout: _runTimeout
+				),
+				options: JsonSerializerOptions
+			);
 
 			using HttpResponseMessage response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, linkedSource.Token).ConfigureAwait(false);
 
 			if (response.StatusCode != HttpStatusCode.OK) {
 				ErrorResponse? errorResponse =
-					await response.Content.ReadFromJsonAsync<ErrorResponse>(JSON_SERIALIZER_OPTIONS, linkedSource.Token);
+					await response.Content.ReadFromJsonAsync<ErrorResponse>(JsonSerializerOptions, linkedSource.Token);
 
 				throw response.StatusCode switch {
 					HttpStatusCode.TooManyRequests when errorResponse?.Message == "Monthly limit exceeded" =>
@@ -165,21 +159,21 @@ public class PestoClient : IDisposable {
 					HttpStatusCode.TooManyRequests => new PestoServerRateLimitedException(),
 					HttpStatusCode.BadRequest when errorResponse?.Message == "Runtime not found" =>
 						new PestoRuntimeNotFoundException(language.ToString()),
-					_ => new PestoAPIException(errorResponse?.Message)
+					_ => new PestoApiException(errorResponse?.Message)
 				};
 			}
 
 			response.EnsureSuccessStatusCode();
 			CodeResponse? codeResponse =
-				await response.Content.ReadFromJsonAsync<CodeResponse>(JSON_SERIALIZER_OPTIONS, linkedSource.Token);
+				await response.Content.ReadFromJsonAsync<CodeResponse>(JsonSerializerOptions, linkedSource.Token);
 
-			return codeResponse ?? throw new PestoAPIException();
+			return codeResponse ?? throw new PestoApiException();
 		} finally {
 			_semaphore.Release();
 		}
 	}
 
-	protected virtual void Dispose(bool disposing) {
+	private void Dispose(bool disposing) {
 		if (!_disposedValue) {
 			if (disposing) {
 				// dispose managed state (managed objects)
@@ -194,6 +188,5 @@ public class PestoClient : IDisposable {
 	public void Dispose() {
 		// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
 		Dispose(disposing: true);
-		GC.SuppressFinalize(this);
 	}
 }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace BotNet.Services.MarkdownV2 {
 	public static class MarkdownV2Sanitizer {
-		private static readonly HashSet<char> CHARACTERS_TO_ESCAPE = [
+		private static readonly HashSet<char> CharactersToEscape = [
 			'[', ']', '(', ')', '~', '>', '#',
 			'+', '-', '=', '|', '{', '}', '.', '!'
 		];
@@ -18,7 +18,7 @@ namespace BotNet.Services.MarkdownV2 {
 			char previousCharacter = '\0';
 			foreach (char character in input) {
 				// If the character is in our list, append a backslash before it
-				if (CHARACTERS_TO_ESCAPE.Contains(character)
+				if (CharactersToEscape.Contains(character)
 					&& previousCharacter != '\\') {
 					sanitized.Append('\\');
 				}
@@ -27,18 +27,6 @@ namespace BotNet.Services.MarkdownV2 {
 			}
 
 			return sanitized.ToString();
-		}
-
-		private static int CountOccurences(string text, string substring) {
-			int count = 0;
-			int i = 0;
-
-			while ((i = text.IndexOf(substring, i)) != -1) {
-				i += substring.Length;
-				count++;
-			}
-
-			return count;
 		}
 	}
 }

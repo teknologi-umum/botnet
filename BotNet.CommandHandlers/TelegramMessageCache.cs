@@ -7,19 +7,18 @@ namespace BotNet.CommandHandlers {
 	internal sealed class TelegramMessageCache(
 		IMemoryCache memoryCache
 	) : ITelegramMessageCache {
-		private static readonly TimeSpan CACHE_TTL = TimeSpan.FromHours(1);
-		private readonly IMemoryCache _memoryCache = memoryCache;
+		private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(1);
 
 		public void Add(MessageBase message) {
-			_memoryCache.Set(
+			memoryCache.Set(
 				key: new Key(message.MessageId, message.Chat.Id),
 				value: message,
-				absoluteExpirationRelativeToNow: CACHE_TTL
+				absoluteExpirationRelativeToNow: CacheTtl
 			);
 		}
 
 		public MessageBase? GetOrDefault(MessageId messageId, ChatId chatId) {
-			if (_memoryCache.TryGetValue<MessageBase>(
+			if (memoryCache.TryGetValue(
 				key: new Key(messageId, chatId),
 				value: out MessageBase? message
 			)) {
@@ -42,10 +41,12 @@ namespace BotNet.CommandHandlers {
 		public IEnumerable<MessageBase> GetThread(MessageBase firstMessage) {
 			yield return firstMessage;
 			Add(firstMessage);
-			if (firstMessage.ReplyToMessage is not null) {
-				foreach (MessageBase reply in GetThread(firstMessage.ReplyToMessage.MessageId, firstMessage.Chat.Id)) {
-					yield return reply;
-				}
+			if (firstMessage.ReplyToMessage is null) {
+				yield break;
+			}
+
+			foreach (MessageBase reply in GetThread(firstMessage.ReplyToMessage.MessageId, firstMessage.Chat.Id)) {
+				yield return reply;
 			}
 		}
 

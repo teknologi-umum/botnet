@@ -3,6 +3,7 @@
 
 		public Coordinate? Location{ get; set; }
 
+		// ReSharper disable once InconsistentNaming
 		public string? Location_Type { get; set; }
 
 		public class Coordinate {

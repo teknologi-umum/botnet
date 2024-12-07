@@ -10,8 +10,7 @@ using AngleSharp.Html.Dom;
 
 namespace BotNet.Services.ChineseCalendar {
 	public class ChineseCalendarScraper(HttpClient httpClient) {
-		private const string URL_TEMPLATE = "https://www.chinesecalendaronline.com/{0}/{1}/{2}.htm";
-		private readonly HttpClient _httpClient = httpClient;
+		private const string UrlTemplate = "https://www.chinesecalendaronline.com/{0}/{1}/{2}.htm";
 
 		public async Task<(
 			string Clash,
@@ -22,9 +21,9 @@ namespace BotNet.Services.ChineseCalendar {
 			string[] AuspiciousActivities,
 			string[] InauspiciousActivities
 		)> GetYellowCalendarAsync(DateOnly date, CancellationToken cancellationToken) {
-			string url = string.Format(URL_TEMPLATE, date.Year, date.Month, date.Day);
+			string url = string.Format(UrlTemplate, date.Year, date.Month, date.Day);
 			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url);
-			using HttpResponseMessage httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
 			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);

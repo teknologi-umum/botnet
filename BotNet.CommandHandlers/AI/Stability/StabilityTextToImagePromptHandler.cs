@@ -16,32 +16,27 @@ namespace BotNet.CommandHandlers.AI.Stability {
 		ITelegramMessageCache telegramMessageCache,
 		CommandPriorityCategorizer commandPriorityCategorizer
 	) : ICommandHandler<StabilityTextToImagePrompt> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ImageGenerationBot _imageGenerationBot = imageGenerationBot;
-		private readonly ITelegramMessageCache _telegramMessageCache = telegramMessageCache;
-		private readonly CommandPriorityCategorizer _commandPriorityCategorizer = commandPriorityCategorizer;
-
 		public Task Handle(StabilityTextToImagePrompt command, CancellationToken cancellationToken) {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
 					byte[] generatedImage;
 					try {
-						generatedImage = await _imageGenerationBot.GenerateImageAsync(
+						generatedImage = await imageGenerationBot.GenerateImageAsync(
 							prompt: command.Prompt,
 							cancellationToken: cancellationToken
 						);
 					} catch (ContentFilteredException exc) {
-						await _telegramBotClient.EditMessageText(
+						await telegramBotClient.EditMessageText(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
-							text: $"<code>{exc.Message ?? "Content filtered."}</code>",
+							text: $"<code>{exc.Message}</code>",
 							parseMode: ParseMode.Html,
 							cancellationToken: cancellationToken
 						);
 						return;
 					} catch {
-						await _telegramBotClient.EditMessageText(
+						await telegramBotClient.EditMessageText(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							text: "<code>Failed to generate image.</code>",
@@ -53,7 +48,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 
 					// Delete busy message
 					try {
-						await _telegramBotClient.DeleteMessage(
+						await telegramBotClient.DeleteMessage(
 							chatId: command.Chat.Id,
 							messageId: command.ResponseMessageId,
 							cancellationToken: cancellationToken
@@ -64,7 +59,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 
 					// Send generated image
 					using MemoryStream generatedImageStream = new(generatedImage);
-					Message responseMessage = await _telegramBotClient.SendPhoto(
+					Message responseMessage = await telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileStream(generatedImageStream, "art.png"),
 						replyMarkup: new InlineKeyboardMarkup(
@@ -80,8 +75,8 @@ namespace BotNet.CommandHandlers.AI.Stability {
 					);
 
 					// Track thread
-					_telegramMessageCache.Add(
-						NormalMessage.FromMessage(responseMessage, _commandPriorityCategorizer)
+					telegramMessageCache.Add(
+						NormalMessage.FromMessage(responseMessage, commandPriorityCategorizer)
 					);
 				} catch (OperationCanceledException) {
 					// Terminate gracefully

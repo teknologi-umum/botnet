@@ -14,7 +14,7 @@ namespace BotNet.Services.Giphy {
 	[Obsolete("Use TenorClient instead.")]
 	[ExcludeFromCodeCoverage]
 	public class GiphyClient {
-		private const string GIF_SEARCH_ENDPOINT = "https://api.giphy.com/v1/gifs/search";
+		private const string GifSearchEndpoint = "https://api.giphy.com/v1/gifs/search";
 		private readonly HttpClient _httpClient;
 		private readonly string _apiKey;
 		private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -32,9 +32,9 @@ namespace BotNet.Services.Giphy {
 		}
 
 		public async Task<GifObject[]> SearchGifsAsync(string query, CancellationToken cancellationToken) {
-			string requestUrl = $"{GIF_SEARCH_ENDPOINT}?api_key={_apiKey}&q={WebUtility.UrlEncode(query)}&offset=0&limit=25&rating=g&lang=id";
+			string requestUrl = $"{GifSearchEndpoint}?api_key={_apiKey}&q={WebUtility.UrlEncode(query)}&offset=0&limit=25&rating=g&lang=id";
 			GifSearchResult? searchResult = await _httpClient.GetFromJsonAsync<GifSearchResult>(requestUrl, _jsonSerializerOptions, cancellationToken);
-			return searchResult?.Data ?? Array.Empty<GifObject>();
+			return searchResult?.Data ?? [];
 		}
 	}
 }

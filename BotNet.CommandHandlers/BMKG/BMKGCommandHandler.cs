@@ -6,20 +6,17 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.BMKG {
-	public sealed class BMKGCommandHandler(
+	public sealed class BmkgCommandHandler(
 		ITelegramBotClient telegramBotClient,
 		LatestEarthQuake latestEarthQuake
-	) : ICommandHandler<BMKGCommand> {
-		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(3, TimeSpan.FromMinutes(2));
+	) : ICommandHandler<BmkgCommand> {
+		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(3, TimeSpan.FromMinutes(2));
 
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly LatestEarthQuake _latestEarthQuake = latestEarthQuake;
-
-		public Task Handle(BMKGCommand command, CancellationToken cancellationToken) {
+		public Task Handle(BmkgCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
+				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendMessage(
+				return telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Sabar dulu ya, tunggu giliran yang lain. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
@@ -33,9 +30,9 @@ namespace BotNet.CommandHandlers.BMKG {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					(string text, string shakemapUrl) = await _latestEarthQuake.GetLatestAsync();
+					(string text, string shakemapUrl) = await latestEarthQuake.GetLatestAsync();
 
-					await _telegramBotClient.SendPhoto(
+					await telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileUrl(shakemapUrl),
 						caption: text,

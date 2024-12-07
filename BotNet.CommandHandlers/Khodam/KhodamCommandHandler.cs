@@ -9,15 +9,13 @@ namespace BotNet.CommandHandlers.Khodam {
 	public sealed class KhodamCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<KhodamCommand> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-
 		public async Task Handle(KhodamCommand command, CancellationToken cancellationToken) {
 			string khodam = KhodamCalculator.CalculateKhodam(
 				name: command.Name,
 				userId: command.UserId
 			);
 
-			await _telegramBotClient.SendMessage(
+			await telegramBotClient.SendMessage(
 				chatId: command.Chat.Id,
 				text: $$"""
 					Khodam <b>{{WebUtility.HtmlEncode(command.Name)}}</b> hari ini adalah...

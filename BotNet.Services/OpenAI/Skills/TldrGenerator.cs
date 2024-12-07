@@ -3,13 +3,11 @@ using System.Threading.Tasks;
 
 namespace BotNet.Services.OpenAI.Skills {
 	public class TldrGenerator(
-		OpenAIClient openAIClient
+		OpenAiClient openAiClient
 	) {
-		private readonly OpenAIClient _openAIClient = openAIClient;
-
 		public Task<string> GenerateTldrAsync(string text, CancellationToken cancellationToken) {
 			string prompt = $"{text}\n\nTl;dr:\n";
-			return _openAIClient.AutocompleteAsync(
+			return openAiClient.AutocompleteAsync(
 				engine: "text-davinci-002",
 				prompt: prompt,
 				stop: null,

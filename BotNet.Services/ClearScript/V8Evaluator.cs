@@ -7,8 +7,10 @@ using Microsoft.ClearScript.V8;
 using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.ClearScript {
-	public class V8Evaluator {
-		private static readonly JsonSerializerOptions JSON_SERIALIZER_OPTIONS = new() {
+	public class V8Evaluator(
+		IOptions<V8Options> v8OptionsAccessor
+	) {
+		private static readonly JsonSerializerOptions JsonSerializerOptions = new() {
 			Converters = {
 				new ScriptObjectConverter(),
 				new DoubleConverter(),
@@ -16,26 +18,19 @@ namespace BotNet.Services.ClearScript {
 				new UndefinedConverter()
 			}
 		};
-		private readonly V8Options _v8Options;
-
-		public V8Evaluator(
-			IOptions<V8Options> v8OptionsAccessor
-		) {
-			_v8Options = v8OptionsAccessor.Value;
-		}
+		private readonly V8Options _v8Options = v8OptionsAccessor.Value;
 
 		public async Task<string> EvaluateAsync(string script, CancellationToken cancellationToken) {
-			using V8ScriptEngine engine = new() {
-				MaxRuntimeHeapSize = _v8Options.HeapSize,
-				MaxRuntimeStackUsage = _v8Options.StackUsage
-			};
+			using V8ScriptEngine engine = new();
+			engine.MaxRuntimeHeapSize = _v8Options.HeapSize;
+			engine.MaxRuntimeStackUsage = _v8Options.StackUsage;
 			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(1));
 			timeoutSource.Token.Register(engine.Interrupt);
 			cancellationToken.Register(engine.Interrupt);
 			return await Task.Run(() => {
 				object? result = engine.Evaluate(script);
-				return JsonSerializer.Serialize(result, JSON_SERIALIZER_OPTIONS);
-			});
+				return JsonSerializer.Serialize(result, JsonSerializerOptions);
+			}, timeoutSource.Token);
 		}
 	}
 }

@@ -10,11 +10,11 @@ namespace BotNet.Services.GoogleMap {
 		IOptions<GoogleMapOptions> options
 	) {
 		private readonly string? _apiKey = options.Value.ApiKey;
-		protected string mapPosition = "center";
-		protected int zoom = 13;
-		protected string size = "600x300";
-		protected string marker = "color:red";
-		private const string URI_TEMPLATE = "https://maps.googleapis.com/maps/api/staticmap";
+		private const string MapPosition = "center";
+		private const int Zoom = 13;
+		private const string Size = "600x300";
+		private const string Marker = "color:red";
+		private const string UriTemplate = "https://maps.googleapis.com/maps/api/staticmap";
 
 		/// <summary>
 		/// Get static map image from google map api
@@ -30,7 +30,7 @@ namespace BotNet.Services.GoogleMap {
 				return "Api key is needed";
 			}
 
-			Uri uri = new(URI_TEMPLATE + $"?{mapPosition}={place}&zoom={zoom}&size={size}&markers={marker}|{place}&key={_apiKey}");
+			Uri uri = new($"{UriTemplate}?{MapPosition}={place}&zoom={Zoom}&size={Size}&markers={Marker}|{place}&key={_apiKey}");
 
 			return uri.ToString();
 		}

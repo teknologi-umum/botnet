@@ -7,12 +7,10 @@ using AngleSharp.Html.Dom;
 
 namespace BotNet.Services.ThisXDoesNotExist {
 	public class ThisIdeaDoesNotExist(HttpClient httpClient) {
-		private readonly HttpClient _httpClient = httpClient;
-
 		public async Task<string?> GetRandomIdeaAsync(CancellationToken cancellationToken) {
 			const string url = "https://thisideadoesnotexist.com/";
 			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url);
-			using HttpResponseMessage httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
 			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);

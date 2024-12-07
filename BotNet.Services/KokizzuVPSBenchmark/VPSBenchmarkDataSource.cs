@@ -6,15 +6,12 @@ using BotNet.Services.SQL;
 using BotNet.Services.Sqlite;
 
 namespace BotNet.Services.KokizzuVPSBenchmark {
-	public sealed class VPSBenchmarkDataSource(
+	public sealed class VpsBenchmarkDataSource(
 		GoogleSheetsClient googleSheetsClient,
 		ScopedDatabase scopedDatabase
 	) : IScopedDataSource {
-		private readonly GoogleSheetsClient _googleSheetsClient = googleSheetsClient;
-		private readonly ScopedDatabase _scopedDatabase = scopedDatabase;
-
 		public async Task LoadTableAsync(CancellationToken cancellationToken) {
-			_scopedDatabase.ExecuteNonQuery("""
+			scopedDatabase.ExecuteNonQuery("""
 			CREATE TABLE vps (
 				Provider TEXT,
 				Location VARCHAR(2),
@@ -37,7 +34,7 @@ namespace BotNet.Services.KokizzuVPSBenchmark {
 			)
 			""");
 
-			ImmutableList<VPSBenchmark> data = await _googleSheetsClient.GetDataAsync<VPSBenchmark>(
+			ImmutableList<VpsBenchmark> data = await googleSheetsClient.GetDataAsync<VpsBenchmark>(
 				// Source: https://docs.google.com/spreadsheets/d/14nAIFzIzkQuSxiayhc5tSFWFCWFncrV-GCA3Q5BbS4g/edit#gid=0
 				spreadsheetId: "14nAIFzIzkQuSxiayhc5tSFWFCWFncrV-GCA3Q5BbS4g",
 				range: "'Result'!A3:T",
@@ -45,8 +42,8 @@ namespace BotNet.Services.KokizzuVPSBenchmark {
 				cancellationToken: cancellationToken
 			);
 
-			foreach (VPSBenchmark vpsBenchmark in data) {
-				_scopedDatabase.ExecuteNonQuery($"""
+			foreach (VpsBenchmark vpsBenchmark in data) {
+				scopedDatabase.ExecuteNonQuery($"""
 				INSERT INTO vps (
 					Provider,
 					Location,

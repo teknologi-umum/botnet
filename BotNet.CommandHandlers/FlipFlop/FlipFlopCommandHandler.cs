@@ -8,12 +8,10 @@ namespace BotNet.CommandHandlers.FlipFlop {
 	internal sealed class FlipFlopCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<FlipFlopCommand> {
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-
 		public async Task Handle(FlipFlopCommand command, CancellationToken cancellationToken) {
 			// Download original image
 			using MemoryStream originalImageStream = new();
-			File fileInfo = await _telegramBotClient.GetInfoAndDownloadFile(
+			File fileInfo = await telegramBotClient.GetInfoAndDownloadFile(
 				fileId: command.ImageFileId,
 				destination: originalImageStream,
 				cancellationToken: cancellationToken
@@ -40,7 +38,7 @@ namespace BotNet.CommandHandlers.FlipFlop {
 
 			// Send result image
 			using MemoryStream resultImageStream = new(resultImage);
-			await _telegramBotClient.SendPhoto(
+			await telegramBotClient.SendPhoto(
 				chatId: command.Chat.Id,
 				photo: new InputFileStream(resultImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
 				replyParameters: new ReplyParameters { MessageId = command.ImageMessageId },

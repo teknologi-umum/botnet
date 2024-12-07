@@ -12,17 +12,13 @@ namespace BotNet.CommandHandlers.Weather {
 		CurrentWeather currentWeather,
 		ILogger<WeatherCommandHandler> logger
 	) : ICommandHandler<WeatherCommand> {
-		private static readonly RateLimiter GET_WEATHER_RATE_LIMITER = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
-
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly CurrentWeather _currentWeather = currentWeather;
-		private readonly ILogger<WeatherCommandHandler> _logger = logger;
+		private static readonly RateLimiter GetWeatherRateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
 
 		public Task Handle(WeatherCommand command, CancellationToken cancellationToken) {
 			try {
-				GET_WEATHER_RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
+				GetWeatherRateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendMessage(
+				return telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
@@ -34,12 +30,12 @@ namespace BotNet.CommandHandlers.Weather {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					(string title, string icon) = await _currentWeather.GetCurrentWeatherAsync(
+					(string title, string icon) = await currentWeather.GetCurrentWeatherAsync(
 						place: command.CityName,
 						cancellationToken: cancellationToken
 					);
 
-					await _telegramBotClient.SendPhoto(
+					await telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileUrl(icon),
 						caption: title,
@@ -50,8 +46,8 @@ namespace BotNet.CommandHandlers.Weather {
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
 				} catch (Exception exc) {
-					_logger.LogError(exc, "Could not get weather");
-					await _telegramBotClient.SendMessage(
+					logger.LogError(exc, "Could not get weather");
+					await telegramBotClient.SendMessage(
 						chatId: command.Chat.Id,
 						text: "<code>Lokasi tidak dapat ditemukan</code>",
 						parseMode: ParseMode.Html,

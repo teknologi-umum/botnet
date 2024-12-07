@@ -58,7 +58,7 @@ builder.Services.Configure<HostingOptions>(builder.Configuration.GetSection("Hos
 builder.Services.Configure<V8Options>(builder.Configuration.GetSection("V8Options"));
 builder.Services.Configure<PistonOptions>(builder.Configuration.GetSection("PistonOptions"));
 builder.Services.Configure<PestoOptions>(builder.Configuration.GetSection("PestoOptions"));
-builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("OpenAIOptions"));
+builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection("OpenAIOptions"));
 builder.Services.Configure<StabilityOptions>(builder.Configuration.GetSection("StabilityOptions"));
 builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("GoogleMapOptions"));
 builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
@@ -73,7 +73,7 @@ builder.Services.AddBrainfuckTranspiler();
 builder.Services.AddV8Evaluator();
 builder.Services.AddPistonClient();
 builder.Services.AddPestoClient();
-builder.Services.AddOpenAIClient();
+builder.Services.AddOpenAiClient();
 builder.Services.AddProgrammerHumorScraper();
 builder.Services.AddTiktokServices();
 builder.Services.AddCSharpEvaluator();
@@ -83,7 +83,7 @@ builder.Services.AddStabilityClient();
 builder.Services.AddTokopediaServices();
 builder.Services.AddGoogleMaps();
 builder.Services.AddWeatherService();
-builder.Services.AddBMKG();
+builder.Services.AddBmkg();
 builder.Services.AddPreviewServices();
 builder.Services.AddMemeGenerator();
 builder.Services.AddBubbleWrapKeyboardGenerator();
@@ -96,7 +96,7 @@ builder.Services.AddGeminiClient();
 builder.Services.AddSqliteDatabases();
 builder.Services.AddPemilu2024();
 builder.Services.AddGoogleSheets();
-builder.Services.AddKokizzuVPSBenchmarkDataSource();
+builder.Services.AddKokizzuVpsBenchmarkDataSource();
 
 // MediatR
 builder.Services.AddMediatR(config => {

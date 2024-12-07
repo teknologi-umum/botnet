@@ -5,15 +5,15 @@ using Microsoft.Maui.Graphics;
 
 namespace BotNet.Services.Typography {
 	public class BotNetFontService {
-		private readonly FontFamily _jetbrainsMonoNL = new(
+		private readonly FontFamily _jetbrainsMonoNl = new(
 			name: "JetBrainsMonoNL",
-			stylesSetup: EnumerateJetBrainsMonoMLStyles);
+			stylesSetup: EnumerateJetBrainsMonoNlStyles);
 
 		private readonly FontFamily _inter = new(
 			name: "Inter",
 			stylesSetup: EnumerateInterStyles);
 
-		private static IEnumerable<FontStyle> EnumerateJetBrainsMonoMLStyles(FontFamily fontFamily) {
+		private static IEnumerable<FontStyle> EnumerateJetBrainsMonoNlStyles(FontFamily fontFamily) {
 			Assembly resourceAssembly = Assembly.GetAssembly(typeof(BotNetFontService))!;
 			string resourceNamespace = "BotNet.Services.Typography.Assets";
 
@@ -74,11 +74,11 @@ namespace BotNet.Services.Typography {
 			yield return CreateFontStyle("Inter-Black", 900, FontStyleType.Normal);
 		}
 
-		public FontStyle GetDefaultFontStyle() => _jetbrainsMonoNL.GetFontStyles().Single(style => style is { Weight: 400, StyleType: FontStyleType.Normal });
-		public FontFamily[] GetFontFamilies() => new[] { _jetbrainsMonoNL, _inter };
+		public FontStyle GetDefaultFontStyle() => _jetbrainsMonoNl.GetFontStyles().Single(style => style is { Weight: 400, StyleType: FontStyleType.Normal });
+		public FontFamily[] GetFontFamilies() => [_jetbrainsMonoNl, _inter];
 
 		public FontStyle GetFontStyleById(string id)
-			=> _jetbrainsMonoNL.GetFontStyles().SingleOrDefault(style => style.Id == id)
+			=> _jetbrainsMonoNl.GetFontStyles().SingleOrDefault(style => style.Id == id)
 			?? _inter.GetFontStyles().SingleOrDefault(style => style.Id == id)
 			?? throw new KeyNotFoundException();
 	}

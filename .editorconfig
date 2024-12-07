@@ -85,30 +85,24 @@ dotnet_naming_symbols.method_symbols.required_modifiers = async
 dotnet_naming_rule.public_members_must_be_capitalized.severity = error
 dotnet_naming_rule.public_members_must_be_capitalized.symbols  = public_symbols
 dotnet_naming_rule.public_members_must_be_capitalized.style    = pascal_case_style
-dotnet_naming_symbols.public_symbols.applicable_kinds   = property,method,field,event,delegate
+dotnet_naming_symbols.public_symbols.applicable_kinds   = property,method,field,event,delegate,tuples
 dotnet_naming_symbols.public_symbols.applicable_accessibilities = public,internal,protected,protected_internal
-# Named tuples must be pascal case
-dotnet_naming_rule.public_members_must_be_capitalized.severity = warning
-dotnet_naming_rule.public_members_must_be_capitalized.symbols  = named_tuples
-dotnet_naming_rule.public_members_must_be_capitalized.style    = pascal_case_style
-dotnet_naming_symbols.named_tuples.applicable_kinds   = tuples
-dotnet_naming_symbols.named_tuples.applicable_accessibilities = public,internal,protected,protected_internal
 # Fields must be camel case prefixed with an underscore
 dotnet_naming_rule.non_public_members_must_be_underscored_camel_case.severity = warning
 dotnet_naming_rule.non_public_members_must_be_underscored_camel_case.symbols  = fields
 dotnet_naming_rule.non_public_members_must_be_underscored_camel_case.style    = underscore_camel_case_style
 dotnet_naming_symbols.fields.applicable_kinds   = field
 dotnet_naming_symbols.fields.applicable_accessibilities = private
-# Constants must be macro case
+# Constants must be pascal case
 dotnet_naming_rule.constant_fields_should_be_upper_case.severity = error
 dotnet_naming_rule.constant_fields_should_be_upper_case.symbols  = constant_fields
-dotnet_naming_rule.constant_fields_should_be_upper_case.style    = macro_case_style
+dotnet_naming_rule.constant_fields_should_be_upper_case.style    = pascal_case_style
 dotnet_naming_symbols.constant_fields.applicable_kinds   = field
 dotnet_naming_symbols.constant_fields.required_modifiers = const
-# Static readonly fields must be macro case
+# Static readonly fields must be pascal case
 dotnet_naming_rule.static_readonly_fields_should_be_upper_case.severity = error
 dotnet_naming_rule.static_readonly_fields_should_be_upper_case.symbols  = static_readonly_fields
-dotnet_naming_rule.static_readonly_fields_should_be_upper_case.style    = macro_case_style
+dotnet_naming_rule.static_readonly_fields_should_be_upper_case.style    = pascal_case_style
 dotnet_naming_symbols.static_readonly_fields.applicable_kinds   = field
 dotnet_naming_symbols.static_readonly_fields.required_modifiers = static,readonly
 # Locals must be camel case
@@ -153,7 +147,7 @@ csharp_style_inlined_variable_declaration = true:suggestion
 # C# Formatting Rules         #
 ###############################
 # New line preferences
-csharp_new_line_before_open_brace = false
+csharp_new_line_before_open_brace = none
 csharp_new_line_before_else = false
 csharp_new_line_before_catch = false
 csharp_new_line_before_finally = false
@@ -213,9 +207,6 @@ dotnet_diagnostic.RCS1118.severity = warning
 
 # RCS1169: Make field read-only.
 dotnet_diagnostic.RCS1169.severity = warning
-
-# IDE0011: Add braces
-csharp_prefer_braces = when_multiline:warning
 
 # RCS1001: Add braces (when expression spans over multiple lines).
 dotnet_diagnostic.RCS1001.severity = warning

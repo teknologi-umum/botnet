@@ -11,16 +11,16 @@ namespace BotNet.Views.DecimalClock {
 			for (int i = 0; i < 10; i++) {
 				double x = 400 - Math.Sin(Math.PI * i / 5) * 320;
 				double y = 400 + Math.Cos(Math.PI * i / 5) * 320;
-				digitsBuilder.Append($$"""
-				        <text x="{{x}}" y="{{y}}">{{i}}</text>
+				digitsBuilder.Append($"""
+				        <text x="{x}" y="{y}">{i}</text>
 
 				""");
 			}
 
 			StringBuilder ticksBuilder = new();
 			for (int i = 0; i < 100; i++) {
-				ticksBuilder.Append($$"""
-				<rect x="398.8" y="0" width="2.4" class="{{(i % 10 == 0 ? "large tick" : "tick")}}" transform="rotate({{i * 3.6}})" transform-origin="400 400" fill="#888"></rect>
+				ticksBuilder.Append($"""
+				<rect x="398.8" y="0" width="2.4" class="{(i % 10 == 0 ? "large tick" : "tick")}" transform="rotate({i * 3.6})" transform-origin="400 400" fill="#888"></rect>
 
 				""");
 			}

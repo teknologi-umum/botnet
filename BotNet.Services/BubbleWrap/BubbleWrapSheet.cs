@@ -29,7 +29,7 @@ namespace BotNet.Services.BubbleWrap {
 			return new(data);
 		}
 
-		public BubbleWrapSheet Pop(int row, int col) {
+		private BubbleWrapSheet Pop(int row, int col) {
 			if (!Data[row, col]) return this;
 
 			bool[,] data = (bool[,])Data.Clone();
@@ -47,7 +47,7 @@ namespace BotNet.Services.BubbleWrap {
 			return new(data);
 		}
 
-		public string ToSheetData() {
+		private string ToSheetData() {
 			StringBuilder callbackData = new();
 			for (int row = 0; row < 4; row++) {
 				int bitmap = 0;

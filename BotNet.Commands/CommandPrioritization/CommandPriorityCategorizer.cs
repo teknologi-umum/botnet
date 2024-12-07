@@ -17,7 +17,7 @@ namespace BotNet.Commands.CommandPrioritization {
 				.Distinct()
 				.ToImmutableHashSet();
 
-			_vipUserIds = optionsAccessor.Value.VIPUserIds
+			_vipUserIds = optionsAccessor.Value.VipUserIds
 				.SelectMany(userId => userId.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
 				.Select(userIdStr => long.TryParse(userIdStr, out long userId) ? (long?)userId : null)
 				.Where(userId => userId.HasValue)
@@ -30,7 +30,7 @@ namespace BotNet.Commands.CommandPrioritization {
 			return _homeGroupChatIds.Contains(chatId);
 		}
 
-		public bool IsVIPUser(long userId) {
+		public bool IsVipUser(long userId) {
 			return _vipUserIds.Contains(userId);
 		}
 	}

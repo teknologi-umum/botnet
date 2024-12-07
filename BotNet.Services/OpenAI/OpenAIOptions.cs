@@ -1,5 +1,5 @@
 ﻿namespace BotNet.Services.OpenAI {
-	public class OpenAIOptions {
-		public string? ApiKey { get; set; }
+	public class OpenAiOptions {
+		public string? ApiKey { get; init; }
 	}
 }

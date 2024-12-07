@@ -5,15 +5,9 @@ using BotNet.Services.Typography;
 using SkiaSharp;
 
 namespace BotNet.Services.ColorCard {
-	public class ColorCardRenderer {
-		private readonly BotNetFontService _botNetFontService;
-
-		public ColorCardRenderer(
-			BotNetFontService botNetFontService
-		) {
-			_botNetFontService = botNetFontService;
-		}
-
+	public class ColorCardRenderer(
+		BotNetFontService botNetFontService
+	) {
 		public byte[] RenderColorCard(string colorName) {
 			if (string.IsNullOrWhiteSpace(colorName)) throw new ArgumentNullException(nameof(colorName));
 
@@ -45,15 +39,14 @@ namespace BotNet.Services.ColorCard {
 
 			canvas.Clear(fillColor);
 
-			using Stream fontStream = _botNetFontService.GetFontStyleById("JetBrainsMonoNL-Regular").OpenStream();
+			using Stream fontStream = botNetFontService.GetFontStyleById("JetBrainsMonoNL-Regular").OpenStream();
 			using SKTypeface typeface = SKTypeface.FromStream(fontStream);
-			using SKPaint paint = new() {
-				TextAlign = SKTextAlign.Center,
-				Color = textColor,
-				Typeface = typeface,
-				TextSize = 50f,
-				IsAntialias = true
-			};
+			using SKPaint paint = new();
+			paint.TextAlign = SKTextAlign.Center;
+			paint.Color = textColor;
+			paint.Typeface = typeface;
+			paint.TextSize = 50f;
+			paint.IsAntialias = true;
 			SKRect textBound = new();
 			paint.MeasureText(normalizedName, ref textBound);
 			canvas.DrawText(

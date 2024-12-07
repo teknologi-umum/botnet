@@ -10,16 +10,13 @@ namespace BotNet.CommandHandlers.Humor {
 		ITelegramBotClient telegramBotClient,
 		ProgrammerHumorScraper programmerHumorScraper
 	) : ICommandHandler<HumorCommand> {
-		private static readonly RateLimiter RATE_LIMITER = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
-
-		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
-		private readonly ProgrammerHumorScraper _programmerHumorScraper = programmerHumorScraper;
+		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
 
 		public Task Handle(HumorCommand command, CancellationToken cancellationToken) {
 			try {
-				RATE_LIMITER.ValidateActionRate(command.Chat.Id, command.Sender.Id);
+				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return _telegramBotClient.SendMessage(
+				return telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Bentar ya saya mikir dulu jokenya. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
@@ -31,10 +28,10 @@ namespace BotNet.CommandHandlers.Humor {
 			// Fire and forget
 			Task.Run(async () => {
 				try {
-					(string title, byte[] image) = await _programmerHumorScraper.GetRandomJokeAsync(cancellationToken);
+					(string title, byte[] image) = await programmerHumorScraper.GetRandomJokeAsync(cancellationToken);
 					using MemoryStream imageStream = new(image);
 
-					await _telegramBotClient.SendPhoto(
+					await telegramBotClient.SendPhoto(
 						chatId: command.Chat.Id,
 						photo: new InputFileStream(imageStream, "joke.webp"),
 						caption: title,

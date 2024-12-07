@@ -37,7 +37,7 @@ namespace BotNet.Services.Typography {
 			_resourceName = resourceName;
 		}
 
-		public int CompareTo(FontStyle? other) => Id.CompareTo(other?.Id ?? throw new ArgumentNullException(nameof(other)));
+		public int CompareTo(FontStyle? other) => String.Compare(Id, other?.Id ?? throw new ArgumentNullException(nameof(other)), StringComparison.Ordinal);
 
 		public Stream OpenStream() => _resourceAssembly.GetManifestResourceStream(_resourceName) ?? throw new InvalidOperationException("Embedded resource could not be loaded.");
 	}

@@ -1,4 +1,5 @@
-﻿namespace BotNet.Services.GoogleMap.Models {
+﻿// ReSharper disable InconsistentNaming
+namespace BotNet.Services.GoogleMap.Models {
 	public enum StatusCode {
 		OK,
 		ZERO_RESULTS,

@@ -15,7 +15,7 @@ namespace BotNet.Services.Meme {
 	);
 
 	internal static class Templates {
-		public static readonly Template RAMAD = new(
+		public static readonly Template Ramad = new(
 			ImageResourceName: "BotNet.Services.Meme.Images.Ramad.jpg",
 			FontStyleId: "Inter-Regular",
 			TextAlign: SKTextAlign.Left,

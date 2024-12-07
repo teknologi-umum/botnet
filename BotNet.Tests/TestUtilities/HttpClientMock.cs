@@ -11,10 +11,9 @@ namespace BotNet.Tests.TestUtilities {
 		public static async Task TestHttpClientUsingDummyContentAsync(string content, Func<HttpClient, Task> testAsync) {
 			Mock<HttpMessageHandler> handlerMock = new();
 
-			using HttpResponseMessage responseMessage = new() {
-				StatusCode = HttpStatusCode.OK,
-				Content = new StringContent(content)
-			};
+			using HttpResponseMessage responseMessage = new();
+			responseMessage.StatusCode = HttpStatusCode.OK;
+			responseMessage.Content = new StringContent(content);
 
 			handlerMock
 				.Protected()

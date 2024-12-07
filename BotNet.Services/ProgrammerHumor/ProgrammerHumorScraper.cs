@@ -7,12 +7,10 @@ using AngleSharp.Html.Dom;
 
 namespace BotNet.Services.ProgrammerHumor {
 	public class ProgrammerHumorScraper(HttpClient httpClient) {
-		private readonly HttpClient _httpClient = httpClient;
-
 		public async Task<(string Title, byte[] Image)> GetRandomJokeAsync(CancellationToken cancellationToken) {
 			const string url = "https://programmerhumor.io/?bimber_random_post=true";
 			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url);
-			using HttpResponseMessage httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
+			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
 			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
@@ -26,7 +24,7 @@ namespace BotNet.Services.ProgrammerHumor {
 
 			return (
 				Title: titleElement?.InnerHtml ?? "Humor",
-				Image: await _httpClient.GetByteArrayAsync(src, cancellationToken)
+				Image: await httpClient.GetByteArrayAsync(src, cancellationToken)
 			);
 		}
 	}

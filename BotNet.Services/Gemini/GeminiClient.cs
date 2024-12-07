@@ -6,19 +6,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Services.Gemini.Models;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace BotNet.Services.Gemini {
 	public class GeminiClient(
 		HttpClient httpClient,
-		IOptions<GeminiOptions> geminiOptionsAccessor,
-		ILogger<GeminiClient> logger
+		IOptions<GeminiOptions> geminiOptionsAccessor
 	) {
-		private const string BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
-		private readonly HttpClient _httpClient = httpClient;
+		private const string BaseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 		private readonly string _apiKey = geminiOptionsAccessor.Value.ApiKey!;
-		private readonly ILogger<GeminiClient> _logger = logger;
 
 		public async Task<string> ChatAsync(IEnumerable<Content> messages, int maxTokens, CancellationToken cancellationToken) {
 			GeminiRequest geminiRequest = new(
@@ -33,15 +29,12 @@ namespace BotNet.Services.Gemini {
 					MaxOutputTokens: maxTokens
 				)
 			);
-			using HttpRequestMessage request = new(HttpMethod.Post, BASE_URL + $"?key={_apiKey}") {
-				Headers = {
-					{ "Accept", "application/json" }
-				},
-				Content = JsonContent.Create(
-					inputValue: geminiRequest
-				)
-			};
-			using HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+			using HttpRequestMessage request = new(HttpMethod.Post, $"{BaseUrl}?key={_apiKey}");
+			request.Headers.Add("Accept", "application/json");
+			request.Content = JsonContent.Create(
+				inputValue: geminiRequest
+			);
+			using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
 			string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
 			response.EnsureSuccessStatusCode();
 

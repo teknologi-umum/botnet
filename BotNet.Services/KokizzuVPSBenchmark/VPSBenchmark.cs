@@ -1,7 +1,7 @@
 ﻿using BotNet.Services.GoogleSheets;
 
 namespace BotNet.Services.KokizzuVPSBenchmark {
-	public sealed record VPSBenchmark(
+	public sealed record VpsBenchmark(
 		[property: FromColumn("A")] string Provider,
 		[property: FromColumn("B")] string Location,
 		[property: FromColumn("C")] string BenchmarkDate,

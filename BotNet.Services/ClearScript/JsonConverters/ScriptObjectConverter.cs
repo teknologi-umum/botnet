@@ -8,7 +8,7 @@ namespace BotNet.Services.ClearScript.JsonConverters {
 	public class ScriptObjectConverter : JsonConverter<ScriptObject> {
 		public override bool CanConvert(Type typeToConvert) => typeof(ScriptObject).IsAssignableFrom(typeToConvert);
 
-		public override ScriptObject? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
+		public override ScriptObject Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => throw new NotImplementedException();
 
 		public override void Write(Utf8JsonWriter writer, ScriptObject value, JsonSerializerOptions options) {
 			if (value is IList) {
