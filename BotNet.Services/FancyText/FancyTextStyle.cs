@@ -7,6 +7,7 @@
 		Medieval,
 		//Monospace,
 		//OldEnglish,
-		WideText
+		WideText,
+		NewAlay
 	}
 }
