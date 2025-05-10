@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using BotNet.Bot;
 using BotNet.CommandHandlers;
@@ -35,6 +35,7 @@ using BotNet.Services.Tiktok;
 using BotNet.Services.Tokopedia;
 using BotNet.Services.Typography;
 using BotNet.Services.Weather;
+using BotNet.Views.Clock;
 using BotNet.Views.DecimalClock;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +45,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using TimeZoneConverter;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
@@ -143,6 +145,16 @@ app.MapGet("/decimalclock/svg", () => Results.Content(
 	content: DecimalClockSvgBuilder.GenerateSvg(),
 	contentType: "image/svg+xml"
 ));
+
+// Clock renderer
+app.MapGet(
+	"/clock/svg", (
+		string? iana
+	) => Results.Content(
+		content: ClockSvgBuilder.GenerateSvg(iana ?? "Asia/Jakarta"),
+		contentType: "image/svg+xml"
+	)
+);
 
 // Color card renderer
 app.MapGet("/renderer/color", (
