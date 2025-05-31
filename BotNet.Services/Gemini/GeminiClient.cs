@@ -13,7 +13,7 @@ namespace BotNet.Services.Gemini {
 		HttpClient httpClient,
 		IOptions<GeminiOptions> geminiOptionsAccessor
 	) {
-		private const string BaseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+		private const string BaseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent";
 		private readonly string _apiKey = geminiOptionsAccessor.Value.ApiKey!;
 
 		public async Task<string> ChatAsync(IEnumerable<Content> messages, int maxTokens, CancellationToken cancellationToken) {
