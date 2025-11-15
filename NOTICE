@@ -1,0 +1,67 @@
+BotNet - Telegram Bot
+Copyright (c) Teknologi Umum Contributors
+Licensed under GPL-3.0
+
+This software includes third-party components with the following licenses:
+
+================================================================================
+
+FONTS
+================================================================================
+
+Inter Font Family
+Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter)
+Licensed under SIL Open Font License 1.1
+License: BotNet.Services/Typography/Assets/Inter-LICENSE.txt
+
+JetBrains Mono Font Family
+Copyright (c) 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)
+Licensed under SIL Open Font License 1.1
+License: BotNet.Services/Typography/Assets/JetBrainsMono-LICENSE.txt
+
+================================================================================
+
+NUGET PACKAGES
+================================================================================
+
+The following NuGet packages are used under their respective licenses:
+
+MIT License:
+- Microsoft.AspNetCore.* (Microsoft Corporation)
+- Microsoft.Extensions.* (Microsoft Corporation)
+- Microsoft.Data.Sqlite (Microsoft Corporation)
+- Microsoft.Maui.Graphics.Skia (Microsoft Corporation)
+- Microsoft.ClearScript (Microsoft Corporation)
+- Telegram.Bot (Telegram Bot API contributors)
+- prometheus-net (Prometheus contributors)
+- Sentry.AspNetCore (Sentry contributors)
+- AngleSharp (AngleSharp contributors)
+- SkiaSharp.* (SkiaSharp contributors)
+- TimeZoneConverter (Matt Johnson-Pint)
+- SqlParserCS (SqlParserCS contributors)
+- DynamicExpresso.Core (Davide Icardi)
+- RG.Ninja (RG contributors)
+
+Apache License 2.0:
+- MediatR (Jimmy Bogard)
+- Google.Apis.Sheets.v4 (Google Inc.)
+- Grpc.Net.Client (Google Inc.)
+- Google.Protobuf (Google Inc.)
+- xunit (xUnit contributors)
+
+BSD-2-Clause License:
+- Shouldly (Shouldly contributors)
+
+BSD-3-Clause License:
+- Google.Protobuf (Google Inc.)
+- Moq (Moq contributors)
+
+For complete license texts, see:
+- https://opensource.org/licenses/MIT
+- https://opensource.org/licenses/Apache-2.0
+- https://opensource.org/licenses/BSD-2-Clause
+- https://opensource.org/licenses/BSD-3-Clause
+
+================================================================================
+
+For a complete third-party license audit, see THIRD_PARTY_LICENSES.md

@@ -63,7 +63,7 @@ Telegram Update → UpdateHandler → Command → Queue → Handler → Response
 - ✅ **Rate Limiting** - Per-user, per-chat, and per-day limiters with automatic cleanup
 - ✅ **Background Task Management** - Consistent exception handling and metrics
 - ✅ **Prometheus Metrics** - Full observability for production monitoring
-- ✅ **Memory Leak Prevention** - Comprehensive safeguards (see [MEMORY_LEAK_AUDIT.md](MEMORY_LEAK_AUDIT.md))
+- ✅ **Memory Leak Prevention** - Comprehensive safeguards (see [MEMORY_LEAK_AUDIT.md](.github/audits/MEMORY_LEAK_AUDIT.md))
 
 ## 📊 Production-Ready
 

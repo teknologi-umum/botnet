@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <None Remove="CopyPasta\Pasta.json" />
-    <None Remove="Meme\Images\ramad.jpg" />
     <None Remove="FancyText\CharMaps\Bold.json" />
     <None Remove="FancyText\CharMaps\BoldItalic.json" />
     <None Remove="FancyText\CharMaps\Cursive.json" />
@@ -70,7 +69,6 @@
   <ItemGroup>
     <EmbeddedResource Include="FancyText\CharMaps\**\*.*" />
     <EmbeddedResource Include="CopyPasta\Pasta.json" />
-    <EmbeddedResource Include="Meme\Images\Ramad.jpg" />
     <EmbeddedResource Include="Typography\Assets\Inter-Black.ttf" />
     <EmbeddedResource Include="Typography\Assets\Inter-Bold.ttf" />
     <EmbeddedResource Include="Typography\Assets\Inter-ExtraBold.ttf" />

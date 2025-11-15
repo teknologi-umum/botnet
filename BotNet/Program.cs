@@ -20,7 +20,6 @@ using BotNet.Services.GoogleSheets.Options;
 using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.KokizzuVPSBenchmark;
-using BotNet.Services.Meme;
 using BotNet.Services.NoAsAService;
 using BotNet.Services.OpenAI;
 using BotNet.Services.Pemilu2024;
@@ -89,7 +88,6 @@ builder.Services.AddGoogleMaps();
 builder.Services.AddWeatherService();
 builder.Services.AddBmkg();
 builder.Services.AddPreviewServices();
-builder.Services.AddMemeGenerator();
 builder.Services.AddBubbleWrapKeyboardGenerator();
 builder.Services.AddPrimbonScraper();
 builder.Services.AddChineseCalendarScraper();
@@ -177,15 +175,6 @@ app.MapGet("/renderer/color", (
 		return Results.NotFound();
 	}
 });
-
-// Meme generator test
-#if DEBUG
-app.MapGet("/meme", ([FromServices] MemeGenerator memeGenerator) => Results.File(
-	fileContents: memeGenerator.CaptionRamad("Melakukan TDD, meski situasi sulit"),
-	contentType: "image/png",
-	enableRangeProcessing: true
-));
-#endif
 
 app.MapMetrics();
 
