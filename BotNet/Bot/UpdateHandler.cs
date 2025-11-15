@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
-using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -44,6 +44,7 @@ namespace BotNet.Bot {
 		public Task HandleErrorAsync(
 			ITelegramBotClient botClient,
 			Exception exception,
+			HandleErrorSource source,
 			CancellationToken cancellationToken
 		) {
 			string errorMessage = exception switch {
