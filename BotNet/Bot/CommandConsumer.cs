@@ -76,7 +76,12 @@ namespace BotNet.Bot {
 		}
 
 	private static string GetSenderType(ICommand command) {
-		PropertyInfo? senderProperty = command.GetType().GetProperty("Sender");
+		// Use BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+		// to avoid AmbiguousMatchException when derived types have same-named properties
+		PropertyInfo? senderProperty = command.GetType().GetProperty(
+			"Sender", 
+			BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+		);
 		if (senderProperty == null) return "Unknown";
 		
 		object? sender = senderProperty.GetValue(command);
@@ -84,7 +89,12 @@ namespace BotNet.Bot {
 	}
 
 	private static string GetChatType(ICommand command) {
-		PropertyInfo? chatProperty = command.GetType().GetProperty("Chat");
+		// Use BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+		// to avoid AmbiguousMatchException when derived types have same-named properties
+		PropertyInfo? chatProperty = command.GetType().GetProperty(
+			"Chat",
+			BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
+		);
 		if (chatProperty == null) return "Unknown";
 		
 		object? chat = chatProperty.GetValue(command);
