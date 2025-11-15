@@ -1,12 +1,14 @@
 ﻿using BotNet.Commands.Pop;
 using BotNet.Services.BubbleWrap;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotNet.CommandHandlers.Pop {
 	public sealed class BubbleWrapCallbackHandler(
 		ITelegramBotClient telegramBotClient,
-		BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator
+		BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator,
+		ILogger<BubbleWrapCallbackHandler> logger
 	) : ICommandHandler<BubbleWrapCallback> {
 		public Task Handle(BubbleWrapCallback command, CancellationToken cancellationToken) {
 			InlineKeyboardMarkup poppedKeyboardMarkup = bubbleWrapKeyboardGenerator.HandleCallback(
@@ -16,14 +18,14 @@ namespace BotNet.CommandHandlers.Pop {
 			);
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				await telegramBotClient.EditMessageReplyMarkup(
 					chatId: command.ChatId,
 					messageId: command.MessageId,
 					replyMarkup: poppedKeyboardMarkup,
 					cancellationToken: cancellationToken
 				);
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

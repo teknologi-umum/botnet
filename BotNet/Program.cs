@@ -43,6 +43,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Prometheus;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -125,6 +126,9 @@ builder.Services.AddMemoryCache();
 
 WebApplication app = builder.Build();
 
+// Prometheus metrics
+app.UseHttpMetrics();
+
 // Healthcheck endpoint
 app.MapGet("/", () => "https://t.me/teknologi_umum_v2");
 
@@ -182,5 +186,7 @@ app.MapGet("/meme", ([FromServices] MemeGenerator memeGenerator) => Results.File
 	enableRangeProcessing: true
 ));
 #endif
+
+app.MapMetrics();
 
 app.Run();

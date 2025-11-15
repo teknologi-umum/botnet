@@ -23,7 +23,7 @@ namespace BotNet.CommandHandlers.Exec {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				try {
 					ExecuteResult result = await pistonClient.ExecuteAsync(
 						language: command.PistonLanguageIdentifier,
@@ -85,7 +85,7 @@ namespace BotNet.CommandHandlers.Exec {
 				} catch (Exception exc) {
 					logger.LogError(exc, "Unhandled exception while executing code.");
 				}
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

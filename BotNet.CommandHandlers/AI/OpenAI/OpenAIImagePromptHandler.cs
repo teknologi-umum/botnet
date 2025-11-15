@@ -69,7 +69,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				(string? imageBase64, string? error) = await GetImageBase64Async(
 					botClient: telegramBotClient,
 					fileId: imagePrompt.ImageFileId,
@@ -215,7 +215,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						commandPriorityCategorizer: commandPriorityCategorizer
 					)
 				);
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

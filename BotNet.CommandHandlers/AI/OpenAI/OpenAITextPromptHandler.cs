@@ -70,7 +70,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				List<ChatMessage> messages = [
 					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point. When user asks for an image to be generated, the AI assistant should respond with \"ImageGeneration:\" followed by comma separated list of features to be expected from the generated image.")
 				];
@@ -203,7 +203,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						commandPriorityCategorizer: commandPriorityCategorizer
 					)
 				);
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

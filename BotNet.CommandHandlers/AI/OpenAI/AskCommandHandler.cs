@@ -66,7 +66,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 			}
 
 			// Fire and forget
-			Task _ = Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				List<ChatMessage> messages = [
 					ChatMessage.FromText("system", "The following is a conversation with an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
 					ChatMessage.FromText("user", askCommand.Prompt)
@@ -138,7 +138,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						commandPriorityCategorizer: commandPriorityCategorizer
 					)
 				);
-			});
+			}, logger);
 		}
 	}
 }

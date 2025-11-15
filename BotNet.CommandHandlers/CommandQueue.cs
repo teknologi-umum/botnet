@@ -4,17 +4,35 @@ using BotNet.Commands;
 namespace BotNet.CommandHandlers {
 	internal sealed class CommandQueue : ICommandQueue {
 		private readonly Channel<ICommand> _channel;
+		private int _queueDepth;
 
 		public CommandQueue() {
-			_channel = Channel.CreateUnbounded<ICommand>();
+			// Use bounded channel to prevent unbounded memory growth during traffic spikes
+			// Drop oldest commands when queue is full to maintain system stability
+			BoundedChannelOptions options = new(capacity: 1000) {
+				FullMode = BoundedChannelFullMode.DropOldest
+			};
+			_channel = Channel.CreateBounded<ICommand>(options);
+			_queueDepth = 0;
 		}
 
 		public async Task DispatchAsync(ICommand command) {
-			await _channel.Writer.WriteAsync(command);
+			int currentDepth = Interlocked.Increment(ref _queueDepth);
+			CommandQueueMetrics.SetQueueDepth(currentDepth);
+			CommandQueueMetrics.RecordEnqueued();
+			
+			bool written = _channel.Writer.TryWrite(command);
+			if (!written) {
+				CommandQueueMetrics.RecordDropped();
+				await _channel.Writer.WriteAsync(command);
+			}
 		}
 
 		public async Task<ICommand> ReceiveAsync(CancellationToken cancellationToken) {
-			return await _channel.Reader.ReadAsync(cancellationToken);
+			ICommand command = await _channel.Reader.ReadAsync(cancellationToken);
+			int currentDepth = Interlocked.Decrement(ref _queueDepth);
+			CommandQueueMetrics.SetQueueDepth(currentDepth);
+			return command;
 		}
 	}
 }

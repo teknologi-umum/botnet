@@ -15,59 +15,53 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 	) : ICommandHandler<InlineQueryUpdate> {
 		public Task Handle(InlineQueryUpdate command, CancellationToken cancellationToken) {
 			// Fire and forget
-			Task.Run(async () => {
-				try {
-					// Query must not be empty
-					if (command.InlineQuery.Query.Trim() is not { Length: > 0 } query) {
-						return;
-					}
+			BackgroundTask.Run(async () => {
+				// Query must not be empty
+				if (command.InlineQuery.Query.Trim() is not { Length: > 0 } query) {
+					return;
+				}
 
-					List<InlineQueryResult> results = [];
+				List<InlineQueryResult> results = [];
 
-					// Find copypasta
-					if (CopyPastaLookup.TryGetAutoText(
-						key: query.ToLowerInvariant(),
-						values: out ImmutableList<string>? autoTexts
-					)) {
-						foreach (string pasta in autoTexts) {
-							results.Add(new InlineQueryResultArticle(
-								id: Guid.NewGuid().ToString("N"),
-								title: pasta,
-								inputMessageContent: new InputTextMessageContent(pasta)
-							));
-						}
-					}
-
-					// Generate fancy texts
-					foreach (FancyTextStyle style in Enum.GetValues<FancyTextStyle>()) {
-						string fancyText = await FancyTextGenerator.GenerateAsync(query, style, cancellationToken);
+				// Find copypasta
+				if (CopyPastaLookup.TryGetAutoText(
+					key: query.ToLowerInvariant(),
+					values: out ImmutableList<string>? autoTexts
+				)) {
+					foreach (string pasta in autoTexts) {
 						results.Add(new InlineQueryResultArticle(
 							id: Guid.NewGuid().ToString("N"),
-							title: fancyText,
-							inputMessageContent: new InputTextMessageContent(fancyText)
+							title: pasta,
+							inputMessageContent: new InputTextMessageContent(pasta)
 						));
 					}
+				}
 
-					// Generate brainfuck code
-					string brainfuckCode = brainfuckTranspiler.TranspileBrainfuck(query);
+				// Generate fancy texts
+				foreach (FancyTextStyle style in Enum.GetValues<FancyTextStyle>()) {
+					string fancyText = await FancyTextGenerator.GenerateAsync(query, style, cancellationToken);
 					results.Add(new InlineQueryResultArticle(
 						id: Guid.NewGuid().ToString("N"),
-						title: brainfuckCode,
-						inputMessageContent: new InputTextMessageContent(brainfuckCode)
+						title: fancyText,
+						inputMessageContent: new InputTextMessageContent(fancyText)
 					));
-
-					// Send results
-					await telegramBotClient.AnswerInlineQuery(
-						inlineQueryId: command.InlineQuery.Id,
-						results: results,
-						cancellationToken: cancellationToken
-					);
-				} catch (OperationCanceledException) {
-					// Terminate gracefully
-				} catch (Exception exc) {
-					logger.LogError(exc, "Could not handle inline query");
 				}
-			});
+
+				// Generate brainfuck code
+				string brainfuckCode = brainfuckTranspiler.TranspileBrainfuck(query);
+				results.Add(new InlineQueryResultArticle(
+					id: Guid.NewGuid().ToString("N"),
+					title: brainfuckCode,
+					inputMessageContent: new InputTextMessageContent(brainfuckCode)
+				));
+
+				// Send results
+				await telegramBotClient.AnswerInlineQuery(
+					inlineQueryId: command.InlineQuery.Id,
+					results: results,
+					cancellationToken: cancellationToken
+				);
+			}, logger);
 
 			return Task.CompletedTask;
 		}

@@ -2,13 +2,15 @@
 using BotNet.Commands.Privilege;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.RateLimit;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Privilege {
 	public sealed class PrivilegeCommandHandler(
-		ITelegramBotClient telegramBotClient
+		ITelegramBotClient telegramBotClient,
+		ILogger<PrivilegeCommandHandler> logger
 	) : ICommandHandler<PrivilegeCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(1, TimeSpan.FromMinutes(1));
 
@@ -21,7 +23,7 @@ namespace BotNet.CommandHandlers.Privilege {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				try {
 					switch (command) {
 						case { Chat: PrivateChat, Sender: VipSender }:
@@ -126,7 +128,7 @@ namespace BotNet.CommandHandlers.Privilege {
 				} catch (OperationCanceledException) {
 					// Terminate gracefully
 				}
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

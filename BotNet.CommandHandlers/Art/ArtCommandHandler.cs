@@ -6,6 +6,7 @@ using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -13,7 +14,8 @@ using Telegram.Bot.Types.Enums;
 namespace BotNet.CommandHandlers.Art {
 	public sealed class ArtCommandHandler(
 		ITelegramBotClient telegramBotClient,
-		ICommandQueue commandQueue
+		ICommandQueue commandQueue,
+		ILogger<ArtCommandHandler> logger
 	) : ICommandHandler<ArtCommand> {
 		internal static readonly RateLimiter ImageGenerationRateLimiter = RateLimiter.PerUser(2, TimeSpan.FromMinutes(3));
 
@@ -33,71 +35,67 @@ namespace BotNet.CommandHandlers.Art {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
-				try {
-					switch (command) {
-						case { Sender: VipSender }: {
-								Message busyMessage = await telegramBotClient.SendMessage(
-									chatId: command.Chat.Id,
-									text: "Generating image… ⏳",
-									parseMode: ParseMode.Markdown,
-									replyParameters: new ReplyParameters {
-										MessageId = command.PromptMessageId
-									},
-									cancellationToken: cancellationToken
-								);
-
-								await commandQueue.DispatchAsync(
-									new OpenAiImageGenerationPrompt(
-										callSign: "GPT",
-										prompt: command.Prompt,
-										promptMessageId: command.PromptMessageId,
-										responseMessageId: new(busyMessage.MessageId),
-										chat: command.Chat,
-										sender: command.Sender
-									)
-								);
-							}
-							break;
-						case { Chat: HomeGroupChat }: {
-								Message busyMessage = await telegramBotClient.SendMessage(
-									chatId: command.Chat.Id,
-									text: "Generating image… ⏳",
-									parseMode: ParseMode.Markdown,
-									replyParameters: new ReplyParameters {
-										MessageId = command.PromptMessageId
-									},
-									cancellationToken: cancellationToken
-								);
-
-								await commandQueue.DispatchAsync(
-									new StabilityTextToImagePrompt(
-										callSign: "GPT",
-										prompt: command.Prompt,
-										promptMessageId: command.PromptMessageId,
-										responseMessageId: new(busyMessage.MessageId),
-										chat: command.Chat,
-										sender: command.Sender
-									)
-								);
-							}
-							break;
-						default:
-							await telegramBotClient.SendMessage(
+			BackgroundTask.Run(async () => {
+				switch (command) {
+					case { Sender: VipSender }: {
+							Message busyMessage = await telegramBotClient.SendMessage(
 								chatId: command.Chat.Id,
-								text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
-								parseMode: ParseMode.MarkdownV2,
+								text: "Generating image… ⏳",
+								parseMode: ParseMode.Markdown,
 								replyParameters: new ReplyParameters {
 									MessageId = command.PromptMessageId
 								},
 								cancellationToken: cancellationToken
 							);
-							break;
-					}
-				} catch (OperationCanceledException) {
-					// Terminate gracefully
+
+							await commandQueue.DispatchAsync(
+								new OpenAiImageGenerationPrompt(
+									callSign: "GPT",
+									prompt: command.Prompt,
+									promptMessageId: command.PromptMessageId,
+									responseMessageId: new(busyMessage.MessageId),
+									chat: command.Chat,
+									sender: command.Sender
+								)
+							);
+						}
+						break;
+					case { Chat: HomeGroupChat }: {
+							Message busyMessage = await telegramBotClient.SendMessage(
+								chatId: command.Chat.Id,
+								text: "Generating image… ⏳",
+								parseMode: ParseMode.Markdown,
+								replyParameters: new ReplyParameters {
+									MessageId = command.PromptMessageId
+								},
+								cancellationToken: cancellationToken
+							);
+
+							await commandQueue.DispatchAsync(
+								new StabilityTextToImagePrompt(
+									callSign: "GPT",
+									prompt: command.Prompt,
+									promptMessageId: command.PromptMessageId,
+									responseMessageId: new(busyMessage.MessageId),
+									chat: command.Chat,
+									sender: command.Sender
+								)
+							);
+						}
+						break;
+					default:
+						await telegramBotClient.SendMessage(
+							chatId: command.Chat.Id,
+							text: MarkdownV2Sanitizer.Sanitize("Image generation tidak bisa dipakai di sini."),
+							parseMode: ParseMode.MarkdownV2,
+							replyParameters: new ReplyParameters {
+								MessageId = command.PromptMessageId
+							},
+							cancellationToken: cancellationToken
+						);
+						break;
 				}
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

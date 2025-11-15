@@ -29,7 +29,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				try {
 					(double lat, double lng) = await geoCode.SearchPlaceAsync(command.PlaceName);
 					string staticMapUrl = staticMap.SearchPlace(command.PlaceName);
@@ -42,8 +42,6 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: cancellationToken
 					);
-				} catch (OperationCanceledException) {
-					// Terminate gracefully
 				} catch (Exception exc) {
 					logger.LogError(exc, "Could not find place");
 					await telegramBotClient.SendMessage(
@@ -54,7 +52,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 						cancellationToken: CancellationToken.None
 					);
 				}
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

@@ -8,13 +8,27 @@ namespace BotNet.CommandHandlers {
 		IMemoryCache memoryCache
 	) : ITelegramMessageCache {
 		private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(1);
+		private int _cacheSize;
 
-		public void Add(MessageBase message) {
+	public void Add(MessageBase message) {
+		MemoryCacheEntryOptions cacheEntryOptions = new MemoryCacheEntryOptions()
+			.SetAbsoluteExpiration(CacheTtl)
+			.RegisterPostEvictionCallback((key, value, reason, state) => {
+				if (reason == EvictionReason.Expired || reason == EvictionReason.Capacity) {
+					MessageCacheMetrics.RecordEviction();
+					int newSize = Interlocked.Decrement(ref _cacheSize);
+					MessageCacheMetrics.SetSize(newSize);
+					}
+				});
+
 			memoryCache.Set(
 				key: new Key(message.MessageId, message.Chat.Id),
 				value: message,
-				absoluteExpirationRelativeToNow: CacheTtl
+				options: cacheEntryOptions
 			);
+			
+			int currentSize = Interlocked.Increment(ref _cacheSize);
+			MessageCacheMetrics.SetSize(currentSize);
 		}
 
 		public MessageBase? GetOrDefault(MessageId messageId, ChatId chatId) {
@@ -22,8 +36,10 @@ namespace BotNet.CommandHandlers {
 				key: new Key(messageId, chatId),
 				value: out MessageBase? message
 			)) {
+				MessageCacheMetrics.RecordHit();
 				return message;
 			} else {
+				MessageCacheMetrics.RecordMiss();
 				return null;
 			}
 		}

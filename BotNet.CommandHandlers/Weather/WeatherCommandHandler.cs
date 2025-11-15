@@ -28,7 +28,7 @@ namespace BotNet.CommandHandlers.Weather {
 			}
 
 			// Fire and forget
-			Task.Run(async () => {
+			BackgroundTask.Run(async () => {
 				try {
 					(string title, string icon) = await currentWeather.GetCurrentWeatherAsync(
 						place: command.CityName,
@@ -43,8 +43,6 @@ namespace BotNet.CommandHandlers.Weather {
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: cancellationToken
 					);
-				} catch (OperationCanceledException) {
-					// Terminate gracefully
 				} catch (Exception exc) {
 					logger.LogError(exc, "Could not get weather");
 					await telegramBotClient.SendMessage(
@@ -55,7 +53,7 @@ namespace BotNet.CommandHandlers.Weather {
 						cancellationToken: CancellationToken.None
 					);
 				}
-			});
+			}, logger);
 
 			return Task.CompletedTask;
 		}

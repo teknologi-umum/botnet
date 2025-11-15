@@ -22,21 +22,28 @@ namespace BotNet.Bot {
 			Update update,
 			CancellationToken cancellationToken
 		) {
+			string updateType = update.Type.ToString();
+			UpdateHandlerMetrics.RecordReceived(updateType);
+
 			try {
-				switch (update.Type) {
-					case UpdateType.Message:
-						await mediator.Send(new MessageUpdate(update.Message!), cancellationToken);
-						break;
-					case UpdateType.InlineQuery:
-						await mediator.Send(new InlineQueryUpdate(update.InlineQuery!), cancellationToken);
-						break;
-					case UpdateType.CallbackQuery:
-						await mediator.Send(new CallbackQueryUpdate(update.CallbackQuery!), cancellationToken);
-						break;
+				using (UpdateHandlerMetrics.MeasureProcessingDuration(updateType)) {
+					switch (update.Type) {
+						case UpdateType.Message:
+							await mediator.Send(new MessageUpdate(update.Message!), cancellationToken);
+							break;
+						case UpdateType.InlineQuery:
+							await mediator.Send(new InlineQueryUpdate(update.InlineQuery!), cancellationToken);
+							break;
+						case UpdateType.CallbackQuery:
+							await mediator.Send(new CallbackQueryUpdate(update.CallbackQuery!), cancellationToken);
+							break;
+					}
+					UpdateHandlerMetrics.RecordProcessed(updateType);
 				}
 			} catch (OperationCanceledException) {
 				throw;
 			} catch (Exception exc) {
+				UpdateHandlerMetrics.RecordError(updateType, exc.GetType().Name);
 				logger.LogError(exc, "{message}", exc.Message);
 			}
 		}

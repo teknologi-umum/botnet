@@ -75,8 +75,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 			}
 
 			// Fire and forget
-			// ReSharper disable once MethodSupportsCancellation
-			Task.Run(
+			BackgroundTask.Run(
 				async () => {
 					List<Content> messages = [
 						Content.FromText("user", "Act as an AI assistant. The assistant is helpful, creative, direct, concise, and always get to the point."),
@@ -162,7 +161,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 							commandPriorityCategorizer: commandPriorityCategorizer
 						)
 					);
-				}
+				}, logger
 			);
 
 			return Task.CompletedTask;

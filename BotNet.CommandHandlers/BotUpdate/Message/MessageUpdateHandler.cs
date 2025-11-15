@@ -4,6 +4,7 @@ using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
+using Microsoft.Extensions.Logging;
 using RG.Ninja;
 using SqlParser;
 using SqlParser.Ast;
@@ -17,7 +18,8 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache,
 		BotProfileAccessor botProfileAccessor,
-		CommandPriorityCategorizer commandPriorityCategorizer
+		CommandPriorityCategorizer commandPriorityCategorizer,
+		ILogger<MessageUpdateHandler> logger
 	) : ICommandHandler<MessageUpdate> {
 		public async Task Handle(
 			MessageUpdate update,
@@ -49,54 +51,42 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 
 				if (possibleUrls.Any()) {
 					// Fire and forget
-					Task _ = Task.Run(
-						async () => {
-							try {
-								foreach (Uri url in possibleUrls) {
-									Uri fixedUrl = SocialLinkEmbedFixer.Fix(url);
-									await telegramBotClient.SendMessage(
-										chatId: update.Message.Chat.Id,
-										text: $"Preview: {fixedUrl.OriginalString}",
-										replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
-										cancellationToken: cancellationToken
-									);
-								}
-							} catch (OperationCanceledException) {
-								// Terminate gracefully
-							}
+					BackgroundTask.Run(async () => {
+						foreach (Uri url in possibleUrls) {
+							Uri fixedUrl = SocialLinkEmbedFixer.Fix(url);
+							await telegramBotClient.SendMessage(
+								chatId: update.Message.Chat.Id,
+								text: $"Preview: {fixedUrl.OriginalString}",
+								replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
+								cancellationToken: cancellationToken
+							);
 						}
-					);
+					}, logger);
 					return;
 				}
 			}
 
 			// Handle reddit mirroring
-			if (update.Message.Entities?.FirstOrDefault(
-				    entity => entity is {
-					    Type: MessageEntityType.Url
-				    }
-			    ) is {
-				    Offset: var offset,
-				    Length: var length
-			    } &&
-			    update.Message.Text?.Substring(offset, length) is { } url &&
-			    url.StartsWith("https://www.reddit.com/", out string? remainingUrl)) {
+		if (update.Message.Entities?.FirstOrDefault(
+			    entity => entity is {
+				    Type: MessageEntityType.Url
+			    }
+		    ) is {
+			    Offset: int offset,
+			    Length: int length
+		    } &&
+		    update.Message.Text?.Substring(offset, length) is { } url &&
+		    url.StartsWith("https://www.reddit.com/", out string? remainingUrl)) {
 				// Fire and forget
-				Task _ = Task.Run(
-					async () => {
-						try {
-							await telegramBotClient.SendMessage(
-								chatId: update.Message.Chat.Id,
-								text: $"Mirror: https://libreddit.teknologiumum.com/{remainingUrl}",
-								replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
-								linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true },
-								cancellationToken: cancellationToken
-							);
-						} catch (OperationCanceledException) {
-							// Terminate gracefully
-						}
-					}
-				);
+				BackgroundTask.Run(async () => {
+					await telegramBotClient.SendMessage(
+						chatId: update.Message.Chat.Id,
+						text: $"Mirror: https://libreddit.teknologiumum.com/{remainingUrl}",
+						replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
+						linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true },
+						cancellationToken: cancellationToken
+					);
+				}, logger);
 				return;
 			}
 
@@ -107,21 +97,15 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			    ) is { Url: { } textUrl } &&
 			    textUrl.StartsWith("https://www.reddit.com/", out string? remainingTextUrl)) {
 				// Fire and forget
-				Task _ = Task.Run(
-					async () => {
-						try {
-							await telegramBotClient.SendMessage(
-								chatId: update.Message.Chat.Id,
-								text: $"Mirror: https://libreddit.teknologiumum.com/{remainingTextUrl}",
-								replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
-								linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true },
-								cancellationToken: cancellationToken
-							);
-						} catch (OperationCanceledException) {
-							// Terminate gracefully
-						}
-					}
-				);
+				BackgroundTask.Run(async () => {
+					await telegramBotClient.SendMessage(
+						chatId: update.Message.Chat.Id,
+						text: $"Mirror: https://libreddit.teknologiumum.com/{remainingTextUrl}",
+						replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
+						linkPreviewOptions: new LinkPreviewOptions { IsDisabled = true },
+						cancellationToken: cancellationToken
+					);
+				}, logger);
 				return;
 			}
 
@@ -187,41 +171,29 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					Sequence<Statement> ast = new Parser().ParseSql(text);
 					if (ast.Count > 1) {
 						// Fire and forget
-						Task _ = Task.Run(
-							async () => {
-								try {
-									await telegramBotClient.SendMessage(
-										chatId: update.Message.Chat.Id,
-										text: $"<code>Your SQL contains more than one statement.</code>",
-										parseMode: ParseMode.Html,
-										replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
-										cancellationToken: cancellationToken
-									);
-								} catch (OperationCanceledException) {
-									// Terminate gracefully
-								}
-							}
-						);
+						BackgroundTask.Run(async () => {
+							await telegramBotClient.SendMessage(
+								chatId: update.Message.Chat.Id,
+								text: $"<code>Your SQL contains more than one statement.</code>",
+								parseMode: ParseMode.Html,
+								replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
+								cancellationToken: cancellationToken
+							);
+						}, logger);
 						return;
 					}
 
 					if (ast[0] is not Statement.Select) {
 						// Fire and forget
-						Task _ = Task.Run(
-							async () => {
-								try {
-									await telegramBotClient.SendMessage(
-										chatId: update.Message.Chat.Id,
-										text: $"<code>Your SQL is not a SELECT statement.</code>",
-										parseMode: ParseMode.Html,
-										replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
-										cancellationToken: cancellationToken
-									);
-								} catch (OperationCanceledException) {
-									// Terminate gracefully
-								}
-							}
-						);
+						BackgroundTask.Run(async () => {
+							await telegramBotClient.SendMessage(
+								chatId: update.Message.Chat.Id,
+								text: $"<code>Your SQL is not a SELECT statement.</code>",
+								parseMode: ParseMode.Html,
+								replyParameters: new ReplyParameters { MessageId = update.Message.MessageId },
+								cancellationToken: cancellationToken
+							);
+						}, logger);
 						return;
 					}
 

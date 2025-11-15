@@ -41,7 +41,79 @@ await commandQueue.DispatchAsync(SomeCommand.FromSlashCommand(command));
 - **Commands** (`BotNet.Commands/`): Immutable records implementing `ICommand` (MediatR's `IRequest`)
 - **Handlers** (`BotNet.CommandHandlers/`): Implement `ICommandHandler<TCommand>` via MediatR
 - **Services** (`BotNet.Services/`): Business logic, external API clients, utilities
-- **Queue**: In-memory unbounded channel for async processing (`CommandQueue.cs`)
+- **Queue**: Bounded in-memory channel (capacity: 1000, DropOldest mode) for async processing (`BotNet.CommandHandlers/CommandQueue.cs`)
+
+## Observability & Monitoring
+
+### Prometheus Metrics
+
+All metrics are exposed at `/metrics` endpoint in Prometheus format.
+
+**Command Queue Metrics** (`CommandQueueMetrics.cs`):
+- `botnet_command_queue_depth` - Current number of commands waiting
+- `botnet_command_queue_enqueued_total` - Total commands enqueued
+- `botnet_command_queue_processed_total` - Total commands processed
+- `botnet_command_queue_dropped_total` - Commands dropped due to full queue
+- `botnet_command_processing_duration_seconds` - Processing time histogram
+- `botnet_command_queue_wait_time_seconds` - Queue wait time histogram
+
+**Command Statistics** (`CommandMetrics.cs`):
+- `botnet_command_invocations_total{command_type, sender_type, chat_type}` - Command invocations
+- `botnet_command_successes_total{command_type}` - Successful executions
+- `botnet_command_failures_total{command_type, error_type}` - Failed executions
+- `botnet_command_duration_seconds{command_type}` - Execution duration histogram
+
+**Message Processing** (`UpdateHandlerMetrics.cs`):
+- `botnet_updates_received_total{update_type}` - Telegram updates received
+- `botnet_updates_processed_total{update_type}` - Updates processed successfully
+- `botnet_update_errors_total{update_type, error_type}` - Processing errors
+- `botnet_update_processing_duration_seconds{update_type}` - Processing time histogram
+
+**Memory Cache Metrics** (`MessageCacheMetrics.cs`):
+- `botnet_message_cache_hits_total` - Cache hits
+- `botnet_message_cache_misses_total` - Cache misses
+- `botnet_message_cache_size` - Current cache size
+- `botnet_message_cache_evictions_total` - Cache evictions
+
+**Background Task Metrics** (`BackgroundTaskMetrics.cs`):
+- `botnet_background_tasks_active` - Current active background tasks
+- `botnet_background_tasks_started_total` - Tasks started
+- `botnet_background_tasks_completed_total` - Tasks completed successfully
+- `botnet_background_tasks_failed_total` - Failed tasks
+- `botnet_background_tasks_cancelled_total` - Cancelled tasks
+- `botnet_background_task_duration_seconds` - Task duration histogram
+
+**Rate Limiter Metrics** (`RateLimiterMetrics.cs`):
+- `botnet_rate_limiter_dictionary_size{limiter_type}` - Dictionary size for each limiter
+- `botnet_rate_limit_exceeded_total{limiter_type}` - Rate limit violations
+- `botnet_rate_limiter_cleanups_total{limiter_type}` - Cleanup operations performed
+- `botnet_rate_limiter_entries_removed{limiter_type}` - Entries removed in last cleanup
+
+### Memory Leak Prevention
+
+**Rate Limiter Cleanup**: All 5 rate limiter classes (`PerUserPerChatRateLimiter`, `PerChatRateLimiter`, `PerUserRateLimiter`, `PerUserPerDayRateLimiter`, `PerUserPerChatPerDayRateLimiter`) implement periodic cleanup of expired entries to prevent unbounded dictionary growth.
+
+**Bounded Command Queue**: Queue capacity limited to 1000 items with `DropOldest` strategy to prevent OOM during traffic spikes.
+
+**Cache Eviction Tracking**: `TelegramMessageCache` tracks evictions and reports cache size metrics.
+
+### Background Task Pattern
+
+Use `BackgroundTask.Run()` for fire-and-forget operations to ensure consistent exception handling:
+
+```csharp
+BackgroundTask.Run(async () => {
+    // Long-running operation
+    await SomeExpensiveOperation();
+}, logger);
+```
+
+This pattern:
+- Automatically logs exceptions
+- Tracks task metrics (active count, failures, duration)
+- Handles `OperationCanceledException` gracefully
+- Prevents unhandled exceptions from crashing the bot
+
 
 ## Adding New Bot Commands
 
@@ -216,8 +288,10 @@ model: command switch {
 2. **Records over Classes**: Use `record` for immutable commands and DTOs
 3. **Dependency Injection**: Constructor injection everywhere, avoid service locator
 4. **Sequential Processing**: Commands execute one at a time (no concurrency in queue)
-5. **Fire-and-Forget**: Long operations use `Task.Run()` to avoid webhook timeouts
+5. **Fire-and-Forget**: Long operations use `BackgroundTask.Run()` to avoid webhook timeouts
 6. **Rate Limiting**: Always check limits before expensive operations (AI, image gen, etc.)
+7. **Metrics Tracking**: All critical operations emit Prometheus metrics for observability
+8. **Explicit Type Declarations**: NEVER use `var` - always declare explicit types for clarity and maintainability
 
 ## Common Patterns
 
@@ -245,9 +319,11 @@ Each external API gets:
 - Development: Use VS/Rider debugger with `UseLongPolling: true`
 - Production: Sentry integration via `SENTRY_DSN` environment variable
 - Logs: `ILogger<T>` injected into services
+- Metrics: Monitor `/metrics` endpoint with Prometheus/Grafana for production insights
 
 ## Resources
 
 - Telegram Bot API: https://core.telegram.org/bots/api
 - MediatR: https://github.com/jbogard/MediatR
+- Prometheus Metrics: https://prometheus.io/docs/concepts/metric_types/
 - Project repo: teknologi-umum/botnet
