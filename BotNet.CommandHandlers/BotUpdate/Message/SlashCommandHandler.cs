@@ -11,6 +11,7 @@ using BotNet.Commands.Fuck;
 using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.Khodam;
+using BotNet.Commands.No;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
@@ -106,6 +107,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/khodam":
 						await commandQueue.DispatchAsync(KhodamCommand.FromSlashCommand(command));
+						break;
+					case "/no":
+						await commandQueue.DispatchAsync(NoCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
