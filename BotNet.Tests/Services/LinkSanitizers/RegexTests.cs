@@ -2,7 +2,7 @@
 using BotNet.Services.Tiktok;
 using BotNet.Services.Twitter;
 using BotNet.Services.Tokopedia;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,9 +17,9 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 		public void CanSanitizeTwitterLinks(string url, string? cleaned) {
 			if (TwitterLinkSanitizer.FindTrackedTwitterLink(url) is Uri trackedUrl) {
 				Uri cleanedUrl = TwitterLinkSanitizer.Sanitize(trackedUrl);
-				cleanedUrl.OriginalString.Should().Be(cleaned);
+				cleanedUrl.OriginalString.ShouldBe(cleaned);
 			} else {
-				cleaned.Should().BeNull();
+				cleaned.ShouldBeNull();
 			}
 		}
 
@@ -30,9 +30,9 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 		public void CanSanitizeXLinks(string url, string? cleaned) {
 			if (XLinkSanitizer.FindTrackedXLink(url) is Uri trackedUrl) {
 				Uri cleanedUrl = XLinkSanitizer.Sanitize(trackedUrl);
-				cleanedUrl.OriginalString.Should().Be(cleaned);
+				cleanedUrl.OriginalString.ShouldBe(cleaned);
 			} else {
-				cleaned.Should().BeNull();
+				cleaned.ShouldBeNull();
 			}
 		}
 
@@ -44,9 +44,9 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 		[InlineData("https://twitter.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19", null)]
 		public void CanDetectTrackedTiktokLinks(string url, string? trackedUrl) {
 			if (TiktokLinkSanitizer.FindShortenedTiktokLink(url) is Uri shortenedTiktokLink) {
-				shortenedTiktokLink.OriginalString.Should().Be(trackedUrl);
+				shortenedTiktokLink.OriginalString.ShouldBe(trackedUrl);
 			} else {
-				trackedUrl.Should().BeNull();
+				trackedUrl.ShouldBeNull();
 			}
 		}
 
@@ -58,9 +58,9 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 		[InlineData("https://www.tokopedia.com/tokomenulist/original-3d-wooden-puzzle-robotime-pendulum-clock-lk501", null)]
 		public void CanDetectTokopediaShortenedLink(string url, string? trackedLink) {
 			if (TokopediaLinkSanitizer.FindShortenedLink(url) is Uri shortenedLink) {
-				shortenedLink.OriginalString.Should().Be(trackedLink);
+				shortenedLink.OriginalString.ShouldBe(trackedLink);
 			} else {
-				trackedLink.Should().BeNull();
+				trackedLink.ShouldBeNull();
 			}
 		}
 
@@ -73,7 +73,7 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 			Uri trackedUrl = new(trackedLink);
 
 			Uri cleaned = await sanitizer.SanitizeAsync(trackedUrl, cancellation.Token);
-			cleaned.OriginalString.Should().Be(cleanedLink);
+			cleaned.OriginalString.ShouldBe(cleanedLink);
 		}
 
 		[Fact]

@@ -1,5 +1,5 @@
 ﻿using BotNet.Services.Json;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace BotNet.Tests.Services.Json {
@@ -13,7 +13,7 @@ namespace BotNet.Tests.Services.Json {
 		[InlineData("AaA", "aa_a")]
 		public void CanConvertPascalCaseToSnakeCase(string pascalCase, string expectedSnakeCase) {
 			string snakeCase = new SnakeCaseNamingPolicy().ConvertName(pascalCase);
-			snakeCase.Should().Be(expectedSnakeCase);
+			snakeCase.ShouldBe(expectedSnakeCase);
 		}
 	}
 }

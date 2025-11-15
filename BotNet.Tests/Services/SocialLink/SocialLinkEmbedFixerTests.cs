@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BotNet.Services.SocialLink;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace BotNet.Tests.Services.SocialLink {
@@ -16,7 +16,7 @@ namespace BotNet.Tests.Services.SocialLink {
 			"https://www.vxtwitter.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19")]
 		public void CanReplaceSocialLink(string url, string? replacedUrl) {
 			Uri resUrl = SocialLinkEmbedFixer.Fix(new Uri(url));
-			resUrl.OriginalString.Should().Be(replacedUrl);
+			resUrl.OriginalString.ShouldBe(replacedUrl);
 		}
 
 		[Theory]
@@ -43,9 +43,9 @@ namespace BotNet.Tests.Services.SocialLink {
 				SocialLinkEmbedFixer.GetPossibleUrls(message)
 					.Select(u => u.OriginalString).ToList();
 			if (urls == null) {
-				resUrls.Should().BeNull();
+				resUrls.ShouldBeNull();
 			} else {
-				resUrls.Should().BeEquivalentTo(urls);
+				resUrls.ShouldBe(urls);
 			}
 		}
 	}

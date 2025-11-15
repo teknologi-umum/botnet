@@ -2,7 +2,6 @@
 using BotNet.Services.ImageFlip;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using File = Telegram.Bot.Types.File;
 
 namespace BotNet.CommandHandlers.FlipFlop {
 	internal sealed class FlipFlopCommandHandler(
@@ -11,7 +10,7 @@ namespace BotNet.CommandHandlers.FlipFlop {
 		public async Task Handle(FlipFlopCommand command, CancellationToken cancellationToken) {
 			// Download original image
 			using MemoryStream originalImageStream = new();
-			File fileInfo = await telegramBotClient.GetInfoAndDownloadFile(
+			await telegramBotClient.GetInfoAndDownloadFile(
 				fileId: command.ImageFileId,
 				destination: originalImageStream,
 				cancellationToken: cancellationToken
@@ -32,15 +31,15 @@ namespace BotNet.CommandHandlers.FlipFlop {
 				case "/flap":
 					resultImage = Flipper.FlapImage(originalImageStream.ToArray());
 					break;
-				default:
-					throw new InvalidOperationException($"Unknown command: {command.Command}");
+			default:
+				throw new InvalidOperationException($"Unknown command: {command.Command}");
 			}
 
 			// Send result image
 			using MemoryStream resultImageStream = new(resultImage);
 			await telegramBotClient.SendPhoto(
 				chatId: command.Chat.Id,
-				photo: new InputFileStream(resultImageStream, new string(fileInfo.FileId.Reverse().ToArray()) + ".png"),
+				photo: new InputFileStream(resultImageStream, new string(command.ImageFileId.Reverse().ToArray()) + ".png"),
 				replyParameters: new ReplyParameters { MessageId = command.ImageMessageId },
 				cancellationToken: cancellationToken
 			);

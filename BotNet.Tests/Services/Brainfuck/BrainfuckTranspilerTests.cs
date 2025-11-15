@@ -1,5 +1,5 @@
 ﻿using BotNet.Services.Brainfuck;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace BotNet.Tests.Services.Brainfuck {
@@ -9,7 +9,7 @@ namespace BotNet.Tests.Services.Brainfuck {
 			BrainfuckTranspiler transpiler = new();
 			string s = "Hello world";
 			string fucked = transpiler.TranspileBrainfuck(s);
-			fucked.Should().Be("-[------->+<]>-.-[->+++++<]>++.+++++++..+++.[--->+<]>-----.--[->++++<]>-.--------.+++.------.--------.");
+			fucked.ShouldBe("-[------->+<]>-.-[->+++++<]>++.+++++++..+++.[--->+<]>-----.--[->++++<]>-.--------.+++.------.--------.");
 		}
 
 		[Fact]
@@ -18,8 +18,8 @@ namespace BotNet.Tests.Services.Brainfuck {
 			string s = "The quick brown fox 12345 jumps over the lazy dog 67890";
 			string fucked = transpiler.TranspileBrainfuck(s);
 			string unfucked = BrainfuckInterpreter.RunBrainfuck(fucked);
-			unfucked.Should().Be(s);
-			unfucked.Should().NotBe(fucked);
+			unfucked.ShouldBe(s);
+			unfucked.ShouldNotBe(fucked);
 		}
 	}
 }
