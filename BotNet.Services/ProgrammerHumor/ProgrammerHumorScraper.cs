@@ -9,7 +9,7 @@ using AngleSharp.Html.Dom;
 namespace BotNet.Services.ProgrammerHumor {
 	public class ProgrammerHumorScraper(HttpClient httpClient) {
 		public async Task<(string Title, byte[] Image)> GetRandomJokeAsync(CancellationToken cancellationToken) {
-			const string url = "https://programmerhumor.io/?bimber_random_post=true";
+			const string url = "https://programmerhumor.io/random";
 			using HttpRequestMessage httpRequest = new(HttpMethod.Get, url);
 			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
