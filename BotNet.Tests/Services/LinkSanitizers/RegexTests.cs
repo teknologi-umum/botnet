@@ -64,7 +64,7 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 			}
 		}
 
-		[Theory]
+		[Theory(Skip = "Flaky test - tokopedia.link redirects expire and break CI")]
 		[InlineData("https://tokopedia.link/S0B7SJVfLtb", "https://www.tokopedia.com/ceebstation/wrist-rest-keyboard-pinery-series-angled-tkl-by-patala")]
 		public async Task CanSanitizeTokopediaTrackedLinkAsync(string trackedLink, string? cleanedLink) {
 			using TokopediaLinkSanitizer sanitizer = new();
@@ -76,7 +76,7 @@ namespace BotNet.Tests.Services.LinkSanitizers {
 			cleaned.OriginalString.ShouldBe(cleanedLink);
 		}
 
-		[Fact]
+		[Fact(Skip = "Flaky test - depends on external HTTP requests to tokopedia.link")]
 		public async Task InvalidTokopediaTrackedLinkAsync() {
 			// Arange
 			using TokopediaLinkSanitizer sanitizer = new();
