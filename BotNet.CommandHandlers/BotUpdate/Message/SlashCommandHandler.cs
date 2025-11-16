@@ -16,6 +16,7 @@ using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
 using BotNet.Commands.Soundtrack;
+using BotNet.Commands.TimeZone;
 using BotNet.Commands.Weather;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -114,6 +115,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/soundtrack":
 						await commandQueue.DispatchAsync(SoundtrackCommand.FromSlashCommand(command));
+						break;
+					case "/time":
+						await commandQueue.DispatchAsync(TimeCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {

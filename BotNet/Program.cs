@@ -35,6 +35,7 @@ using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
 using BotNet.Services.Tokopedia;
 using BotNet.Services.Typography;
+using BotNet.Services.TimeZone;
 using BotNet.Services.Weather;
 using BotNet.Views.Clock;
 using BotNet.Views.DecimalClock;
@@ -102,6 +103,7 @@ builder.Services.AddPemilu2024();
 builder.Services.AddGoogleSheets();
 builder.Services.AddKokizzuVpsBenchmarkDataSource();
 builder.Services.AddSoundtrackProvider();
+builder.Services.AddTimeZoneService();
 
 // MediatR
 builder.Services.AddMediatR(config => {
