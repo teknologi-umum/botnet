@@ -184,7 +184,8 @@ namespace BotNet.Services.Weather {
 			// Night (9 PM - midnight) - use 9 PM data
 			if (day.hourly.Length > 7) {
 				HourlyForecast night = day.hourly[7];
-				string nightEmoji = GetWeatherEmoji(night.weatherCode);
+				string? moonPhase = day.astronomy?[0]?.moon_phase;
+				string nightEmoji = GetWeatherEmoji(night.weatherCode, isNight: true, moonPhase: moonPhase);
 				string windArrow = GetWindDirectionArrow(night.winddir16Point);
 				string precipMM = night.precipMM ?? "0.0";
 				string chanceOfRain = night.chanceofrain ?? "0";
@@ -195,7 +196,66 @@ namespace BotNet.Services.Weather {
 		/// <summary>
 		/// Get emoji for weather condition code
 		/// </summary>
-		private static string GetWeatherEmoji(string? weatherCode) {
+		/// <param name="weatherCode">Weather condition code</param>
+		/// <param name="isNight">Whether it's nighttime (default: false)</param>
+		/// <param name="moonPhase">Moon phase for clear nights (optional)</param>
+		private static string GetWeatherEmoji(string? weatherCode, bool isNight = false, string? moonPhase = null) {
+			// Night-specific emojis for clear/partly cloudy conditions
+			if (isNight) {
+				return weatherCode switch {
+					"113" => !string.IsNullOrEmpty(moonPhase) ? GetMoonPhaseEmoji(moonPhase) : "🌙",  // Clear night - use moon phase
+					"116" => "☁️",  // Partly cloudy night (could use 🌙 with cloud but keeping consistent)
+					"119" => "☁️",  // Cloudy
+					"122" => "☁️",  // Overcast
+					"143" => "🌫️",  // Mist
+					"176" => "🌦️",  // Patchy rain possible
+					"179" => "🌨️",  // Patchy snow possible
+					"182" => "🌧️",  // Patchy sleet possible
+					"185" => "🌧️",  // Patchy freezing drizzle possible
+					"200" => "⛈️",  // Thundery outbreaks possible
+					"227" => "🌨️",  // Blowing snow
+					"230" => "🌨️",  // Blizzard
+					"248" => "🌫️",  // Fog
+					"260" => "🌫️",  // Freezing fog
+					"263" => "🌧️",  // Patchy light drizzle
+					"266" => "🌧️",  // Light drizzle
+					"281" => "🌧️",  // Freezing drizzle
+					"284" => "🌧️",  // Heavy freezing drizzle
+					"293" => "🌦️",  // Patchy light rain
+					"296" => "🌧️",  // Light rain
+					"299" => "🌧️",  // Moderate rain at times
+					"302" => "🌧️",  // Moderate rain
+					"305" => "🌧️",  // Heavy rain at times
+					"308" => "🌧️",  // Heavy rain
+					"311" => "🌧️",  // Light freezing rain
+					"314" => "🌧️",  // Moderate or heavy freezing rain
+					"317" => "🌨️",  // Light sleet
+					"320" => "🌨️",  // Moderate or heavy sleet
+					"323" => "🌨️",  // Patchy light snow
+					"326" => "🌨️",  // Light snow
+					"329" => "🌨️",  // Patchy moderate snow
+					"332" => "🌨️",  // Moderate snow
+					"335" => "🌨️",  // Patchy heavy snow
+					"338" => "🌨️",  // Heavy snow
+					"350" => "🌨️",  // Ice pellets
+					"353" => "🌦️",  // Light rain shower
+					"356" => "🌧️",  // Moderate or heavy rain shower
+					"359" => "🌧️",  // Torrential rain shower
+					"362" => "🌨️",  // Light sleet showers
+					"365" => "🌨️",  // Moderate or heavy sleet showers
+					"368" => "🌨️",  // Light snow showers
+					"371" => "🌨️",  // Moderate or heavy snow showers
+					"374" => "🌨️",  // Light showers of ice pellets
+					"377" => "🌨️",  // Moderate or heavy showers of ice pellets
+					"386" => "⛈️",  // Patchy light rain with thunder
+					"389" => "⛈️",  // Moderate or heavy rain with thunder
+					"392" => "⛈️",  // Patchy light snow with thunder
+					"395" => "⛈️",  // Moderate or heavy snow with thunder
+					_ => "🌡️"      // Default
+				};
+			}
+			
+			// Day emojis
 			return weatherCode switch {
 				"113" => "☀️",  // Sunny
 				"116" => "🌤️",  // Partly cloudy
