@@ -18,8 +18,13 @@ namespace BotNet.Services.ProgrammerHumor {
 
 			IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default);
 			IDocument document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
-			IHtmlHeadingElement? titleElement = document.QuerySelector<IHtmlHeadingElement>(".post .post-header h2.post-title");
-			IHtmlImageElement? imageElement = document.QuerySelector<IHtmlImageElement>(".post .post-image img");
+
+			// Randomly select one of the first 10 posts
+			int postIndex = Random.Shared.Next(1, 11);
+			string postSelector = postIndex == 1 ? ".post:first-child" : $".post:nth-child({postIndex})";
+
+			IHtmlHeadingElement? titleElement = document.QuerySelector<IHtmlHeadingElement>($"{postSelector} .post-header h2.post-title");
+			IHtmlImageElement? imageElement = document.QuerySelector<IHtmlImageElement>($"{postSelector} .post-image img");
 
 			string? src = imageElement?.Dataset["src"] ?? imageElement?.Source;
 			if (string.IsNullOrWhiteSpace(src)) {
