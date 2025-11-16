@@ -15,6 +15,7 @@ using BotNet.Commands.No;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
+using BotNet.Commands.Soundtrack;
 using BotNet.Commands.Weather;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -110,6 +111,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/no":
 						await commandQueue.DispatchAsync(NoCommand.FromSlashCommand(command));
+						break;
+					case "/soundtrack":
+						await commandQueue.DispatchAsync(SoundtrackCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {

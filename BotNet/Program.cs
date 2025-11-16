@@ -28,6 +28,7 @@ using BotNet.Services.Piston;
 using BotNet.Services.Preview;
 using BotNet.Services.Primbon;
 using BotNet.Services.ProgrammerHumor;
+using BotNet.Services.Soundtrack;
 using BotNet.Services.Sqlite;
 using BotNet.Services.Stability;
 using BotNet.Services.ThisXDoesNotExist;
@@ -100,6 +101,7 @@ builder.Services.AddSqliteDatabases();
 builder.Services.AddPemilu2024();
 builder.Services.AddGoogleSheets();
 builder.Services.AddKokizzuVpsBenchmarkDataSource();
+builder.Services.AddSoundtrackProvider();
 
 // MediatR
 builder.Services.AddMediatR(config => {
