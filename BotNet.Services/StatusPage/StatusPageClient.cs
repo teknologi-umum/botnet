@@ -20,7 +20,6 @@ namespace BotNet.Services.StatusPage {
 			
 			// Developer Platforms
 			{ "npm", "https://status.npmjs.org/api/v2/status.json" },
-			{ "GitLab", "https://status.gitlab.com/api/v2/status.json" },
 			{ "Vercel", "https://www.vercel-status.com/api/v2/status.json" },
 			{ "Netlify", "https://www.netlifystatus.com/api/v2/status.json" },
 			{ "Atlassian", "https://status.atlassian.com/api/v2/status.json" },
