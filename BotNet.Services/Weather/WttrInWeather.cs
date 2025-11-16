@@ -155,51 +155,40 @@ namespace BotNet.Services.Weather {
 			if (day.hourly.Length > 2) {
 				HourlyForecast morning = day.hourly[2];
 				string morningEmoji = GetWeatherEmoji(morning.weatherCode);
-				string morningDesc = morning.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(morning.winddir16Point);
 				string precipMM = morning.precipMM ?? "0.0";
 				string chanceOfRain = morning.chanceofrain ?? "0";
-				report.AppendLine($"Morning: {morningEmoji} {morningDesc}");
-				report.AppendLine($"{morning.tempC}°C ({morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
-				report.AppendLine();
+				report.AppendLine($"Morning: {morningEmoji} {morning.tempC}°C ({morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
 			}
 			
 			// Noon (12 PM - 3 PM) - use 12 PM data
 			if (day.hourly.Length > 4) {
 				HourlyForecast noon = day.hourly[4];
 				string noonEmoji = GetWeatherEmoji(noon.weatherCode);
-				string noonDesc = noon.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(noon.winddir16Point);
 				string precipMM = noon.precipMM ?? "0.0";
 				string chanceOfRain = noon.chanceofrain ?? "0";
-				report.AppendLine($"Noon: {noonEmoji} {noonDesc}");
-				report.AppendLine($"{noon.tempC}°C ({noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
-				report.AppendLine();
+				report.AppendLine($"Noon: {noonEmoji} {noon.tempC}°C ({noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
 			}
 			
 			// Evening (6 PM) - use 6 PM data
 			if (day.hourly.Length > 6) {
 				HourlyForecast evening = day.hourly[6];
 				string eveningEmoji = GetWeatherEmoji(evening.weatherCode);
-				string eveningDesc = evening.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(evening.winddir16Point);
 				string precipMM = evening.precipMM ?? "0.0";
 				string chanceOfRain = evening.chanceofrain ?? "0";
-				report.AppendLine($"Evening: {eveningEmoji} {eveningDesc}");
-				report.AppendLine($"{evening.tempC}°C ({evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
-				report.AppendLine();
+				report.AppendLine($"Evening: {eveningEmoji} {evening.tempC}°C ({evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
 			}
 			
 			// Night (9 PM - midnight) - use 9 PM data
 			if (day.hourly.Length > 7) {
 				HourlyForecast night = day.hourly[7];
 				string nightEmoji = GetWeatherEmoji(night.weatherCode);
-				string nightDesc = night.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(night.winddir16Point);
 				string precipMM = night.precipMM ?? "0.0";
 				string chanceOfRain = night.chanceofrain ?? "0";
-				report.AppendLine($"Night: {nightEmoji} {nightDesc}");
-				report.AppendLine($"{night.tempC}°C ({night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
+				report.AppendLine($"Night: {nightEmoji} {night.tempC}°C ({night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
 			}
 		}
 
