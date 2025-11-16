@@ -12,6 +12,7 @@ using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.Khodam;
 using BotNet.Commands.No;
+using BotNet.Commands.Pick;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
@@ -122,6 +123,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/qr":
 						await commandQueue.DispatchAsync(QrCommand.FromSlashCommand(command));
+						break;
+					case "/pick":
+						await commandQueue.DispatchAsync(PickCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
