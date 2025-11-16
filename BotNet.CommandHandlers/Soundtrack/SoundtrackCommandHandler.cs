@@ -1,6 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Commands.Soundtrack;
+using BotNet.Services.RateLimit;
 using BotNet.Services.Soundtrack;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -10,11 +12,28 @@ namespace BotNet.CommandHandlers.Soundtrack {
 		ITelegramBotClient telegramBotClient,
 		SoundtrackProvider soundtrackProvider
 	) : ICommandHandler<SoundtrackCommand> {
+		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(10));
+
 		public async Task Handle(SoundtrackCommand command, CancellationToken cancellationToken) {
-			(SoundtrackSite first, SoundtrackSite second) = soundtrackProvider.GetHourlyPicks();
+			try {
+				RateLimiter.ValidateActionRate(command.Command.Chat.Id, command.Command.Sender.Id);
+			} catch (RateLimitExceededException exc) {
+				await telegramBotClient.SendMessage(
+					chatId: command.Command.Chat.Id,
+					text: $"<code>Coba lagi {exc.Cooldown}</code>",
+					parseMode: ParseMode.Html,
+					replyParameters: new() {
+						MessageId = command.Command.MessageId
+					},
+					cancellationToken: cancellationToken
+				);
+				return;
+			}
+
+			(SoundtrackSite first, SoundtrackSite second) = soundtrackProvider.GetRandomPicks();
 
 			string message = $"""
-				🎵 <b>This hour's coding soundtracks:</b>
+				🎵 <b>Your coding soundtracks:</b>
 
 				1️⃣ <b>{first.Name}</b>
 				{first.Url}
@@ -22,7 +41,7 @@ namespace BotNet.CommandHandlers.Soundtrack {
 				2️⃣ <b>{second.Name}</b>
 				{second.Url}
 
-				💡 <i>New picks every hour!</i>
+				💡 <i>Get new picks every 10 minutes!</i>
 				""";
 
 			await telegramBotClient.SendMessage(
