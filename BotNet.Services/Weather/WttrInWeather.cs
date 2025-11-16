@@ -101,7 +101,7 @@ namespace BotNet.Services.Weather {
 			report.AppendLine($"<b>Current Weather</b>");
 			report.AppendLine($"{weatherEmoji} {weatherCondition}");
 			report.AppendLine($"🌡️ {current.temp_C}°C (feels like {current.FeelsLikeC}°C)");
-			report.AppendLine($"💨 Wind: {current.windspeedKmph} km/h {current.winddir16Point}");
+			report.AppendLine($"💨 Wind: {current.windspeedKmph} km/h {GetWindDirectionArrow(current.winddir16Point)}");
 			report.AppendLine($"💧 Humidity: {current.humidity}%");
 			report.AppendLine($"👁️ Visibility: {current.visibility} km");
 			
@@ -157,7 +157,8 @@ namespace BotNet.Services.Weather {
 				HourlyForecast morning = day.hourly[2];
 				string morningEmoji = GetWeatherEmoji(morning.weatherCode);
 				string morningDesc = morning.weatherDesc?[0]?.value ?? "Unknown";
-				report.AppendLine($"� Morning: {morningEmoji} {morningDesc}, {morning.tempC}°C (feels {morning.FeelsLikeC}°C), 💨 {morning.windspeedKmph} km/h");
+				string windArrow = GetWindDirectionArrow(morning.winddir16Point);
+				report.AppendLine($"Morning: {morningEmoji} {morningDesc}, {morning.tempC}°C (feels {morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h");
 			}
 			
 			// Noon (12 PM - 3 PM) - use 12 PM data
@@ -165,7 +166,8 @@ namespace BotNet.Services.Weather {
 				HourlyForecast noon = day.hourly[4];
 				string noonEmoji = GetWeatherEmoji(noon.weatherCode);
 				string noonDesc = noon.weatherDesc?[0]?.value ?? "Unknown";
-				report.AppendLine($"☀️ Noon: {noonEmoji} {noonDesc}, {noon.tempC}°C (feels {noon.FeelsLikeC}°C), 💨 {noon.windspeedKmph} km/h");
+				string windArrow = GetWindDirectionArrow(noon.winddir16Point);
+				report.AppendLine($"Noon: {noonEmoji} {noonDesc}, {noon.tempC}°C (feels {noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h");
 			}
 			
 			// Evening (6 PM) - use 6 PM data
@@ -173,7 +175,8 @@ namespace BotNet.Services.Weather {
 				HourlyForecast evening = day.hourly[6];
 				string eveningEmoji = GetWeatherEmoji(evening.weatherCode);
 				string eveningDesc = evening.weatherDesc?[0]?.value ?? "Unknown";
-				report.AppendLine($"🌆 Evening: {eveningEmoji} {eveningDesc}, {evening.tempC}°C (feels {evening.FeelsLikeC}°C), 💨 {evening.windspeedKmph} km/h");
+				string windArrow = GetWindDirectionArrow(evening.winddir16Point);
+				report.AppendLine($"Evening: {eveningEmoji} {eveningDesc}, {evening.tempC}°C (feels {evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h");
 			}
 			
 			// Night (9 PM - midnight) - use 9 PM data
@@ -181,7 +184,8 @@ namespace BotNet.Services.Weather {
 				HourlyForecast night = day.hourly[7];
 				string nightEmoji = GetWeatherEmoji(night.weatherCode);
 				string nightDesc = night.weatherDesc?[0]?.value ?? "Unknown";
-				report.AppendLine($"🌙 Night: {nightEmoji} {nightDesc}, {night.tempC}°C (feels {night.FeelsLikeC}°C), 💨 {night.windspeedKmph} km/h");
+				string windArrow = GetWindDirectionArrow(night.winddir16Point);
+				report.AppendLine($"Night: {nightEmoji} {nightDesc}, {night.tempC}°C (feels {night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h");
 			}
 		}
 
@@ -256,6 +260,31 @@ namespace BotNet.Services.Weather {
 				string s when s.Contains("last quarter") => "🌗",
 				string s when s.Contains("waning crescent") => "🌘",
 				_ => "🌙"
+			};
+		}
+
+		/// <summary>
+		/// Get directional arrow emoji for wind direction
+		/// </summary>
+		private static string GetWindDirectionArrow(string? windDirection) {
+			return windDirection?.ToUpperInvariant() switch {
+				"N" => "⬇️",      // North wind blows down (from north to south)
+				"NNE" => "⬇️",
+				"NE" => "↙️",
+				"ENE" => "↙️",
+				"E" => "⬅️",
+				"ESE" => "↖️",
+				"SE" => "↖️",
+				"SSE" => "⬆️",
+				"S" => "⬆️",      // South wind blows up (from south to north)
+				"SSW" => "⬆️",
+				"SW" => "↗️",
+				"WSW" => "↗️",
+				"W" => "➡️",
+				"WNW" => "↘️",
+				"NW" => "↘️",
+				"NNW" => "⬇️",
+				_ => "💨"
 			};
 		}
 	}

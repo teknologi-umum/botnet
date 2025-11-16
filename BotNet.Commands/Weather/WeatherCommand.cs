@@ -29,17 +29,11 @@ namespace BotNet.Commands.Weather {
 				throw new ArgumentException("Command must be /weather.", nameof(slashCommand));
 			}
 
-			// City name must be non-empty
-			if (string.IsNullOrWhiteSpace(slashCommand.Text)) {
-				throw new UsageException(
-					message: "Silakan masukkan nama kota setelah perintah `/weather`\\.",
-					parseMode: ParseMode.MarkdownV2,
-					commandMessageId: slashCommand.MessageId
-				);
-			}
+			// Default to Jakarta if no city name provided
+			string cityName = string.IsNullOrWhiteSpace(slashCommand.Text) ? "Jakarta" : slashCommand.Text;
 
 			return new(
-				cityName: slashCommand.Text,
+				cityName: cityName,
 				commandMessageId: slashCommand.MessageId,
 				chat: slashCommand.Chat,
 				sender: slashCommand.Sender
