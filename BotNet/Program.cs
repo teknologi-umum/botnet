@@ -33,6 +33,7 @@ using BotNet.Services.QrCode;
 using BotNet.Services.Soundtrack;
 using BotNet.Services.Sqlite;
 using BotNet.Services.Stability;
+using BotNet.Services.StatusPage;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
 using BotNet.Services.Tokopedia;
@@ -109,6 +110,7 @@ builder.Services.AddSoundtrackProvider();
 builder.Services.AddTimeZoneService();
 builder.Services.AddQrCodeGenerator();
 builder.Services.AddOmdbClient();
+builder.Services.AddStatusPageClient();
 
 // MediatR
 builder.Services.AddMediatR(config => {

@@ -10,6 +10,7 @@ using BotNet.Commands.FlipFlop;
 using BotNet.Commands.Fuck;
 using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
+using BotNet.Commands.InternetStatus;
 using BotNet.Commands.Khodam;
 using BotNet.Commands.Movie;
 using BotNet.Commands.No;
@@ -130,6 +131,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/movie":
 						await commandQueue.DispatchAsync(MovieCommand.FromSlashCommand(command));
+						break;
+					case "/internetstatus":
+						await commandQueue.DispatchAsync(InternetStatusCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
