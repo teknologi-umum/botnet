@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
@@ -17,10 +18,13 @@ namespace BotNet.Services.ProgrammerHumor {
 
 			IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default);
 			IDocument document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
-			IHtmlHeadingElement? titleElement = document.QuerySelector<IHtmlHeadingElement>("article header.entry-header h1.entry-title");
-			IHtmlImageElement? imageElement = document.QuerySelector<IHtmlImageElement>("article div[itemprop=\"image\"] img");
+			IHtmlHeadingElement? titleElement = document.QuerySelector<IHtmlHeadingElement>(".post .post-header h2.post-title");
+			IHtmlImageElement? imageElement = document.QuerySelector<IHtmlImageElement>(".post .post-image img");
 
 			string? src = imageElement?.Dataset["src"] ?? imageElement?.Source;
+			if (string.IsNullOrWhiteSpace(src)) {
+				throw new InvalidOperationException("Could not find image source in the HTML response");
+			}
 
 			return (
 				Title: titleElement?.InnerHtml ?? "Humor",
