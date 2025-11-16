@@ -1,0 +1,262 @@
+using System;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using BotNet.Services.Weather.Models;
+
+namespace BotNet.Services.Weather {
+	/// <summary>
+	/// Client for wttr.in weather service
+	/// </summary>
+	public sealed class WttrInWeather(
+		HttpClient httpClient
+	) {
+		private const string BaseUrl = "https://wttr.in";
+
+		/// <summary>
+		/// Get weather information for a location
+		/// </summary>
+		/// <param name="location">Location name, can be city name, coordinates, airport code, etc.</param>
+		/// <param name="cancellationToken">Cancellation token</param>
+		/// <returns>Weather response from wttr.in</returns>
+		public async Task<WttrInResponse?> GetWeatherAsync(
+			string location,
+			CancellationToken cancellationToken
+		) {
+			if (string.IsNullOrWhiteSpace(location)) {
+				throw new ArgumentException("Location cannot be empty", nameof(location));
+			}
+
+			// URL encode the location
+			string encodedLocation = Uri.EscapeDataString(location);
+			
+			// Use ?format=j1 for JSON output
+			// Use ?m for metric units
+			string url = $"{BaseUrl}/{encodedLocation}?format=j1&m";
+
+			HttpResponseMessage response = await httpClient.GetAsync(url, cancellationToken);
+			response.EnsureSuccessStatusCode();
+
+			string json = await response.Content.ReadAsStringAsync(cancellationToken);
+			
+			WttrInResponse? weatherResponse = JsonSerializer.Deserialize<WttrInResponse>(
+				json,
+				new JsonSerializerOptions {
+					PropertyNameCaseInsensitive = true
+				}
+			);
+
+			return weatherResponse;
+		}
+
+		/// <summary>
+		/// Format weather information for display
+		/// </summary>
+		public static string FormatWeatherReport(WttrInResponse response, string searchedLocation) {
+			if (response.current_condition == null || response.current_condition.Length == 0) {
+				throw new InvalidOperationException("No current weather data available");
+			}
+
+			if (response.weather == null || response.weather.Length < 3) {
+				throw new InvalidOperationException("Not enough forecast data available");
+			}
+
+			CurrentCondition current = response.current_condition[0];
+			
+			// Get location information
+			string locationName = searchedLocation;
+			string coordinates = "";
+			if (response.nearest_area != null && response.nearest_area.Length > 0) {
+				NearestArea area = response.nearest_area[0];
+				string? areaName = area.areaName?[0]?.value;
+				string? regionName = area.region?[0]?.value;
+				string? countryName = area.country?[0]?.value;
+				
+				if (!string.IsNullOrEmpty(areaName)) {
+					locationName = areaName;
+					if (!string.IsNullOrEmpty(regionName) && regionName != areaName) {
+						locationName += $", {regionName}";
+					}
+					if (!string.IsNullOrEmpty(countryName)) {
+						locationName += $", {countryName}";
+					}
+				}
+				
+				if (!string.IsNullOrEmpty(area.latitude) && !string.IsNullOrEmpty(area.longitude)) {
+					coordinates = $" [{area.latitude},{area.longitude}]";
+				}
+			}
+
+			System.Text.StringBuilder report = new();
+			
+			// Location
+			report.AppendLine($"📍 <b>Location: {locationName}{coordinates}</b>");
+			report.AppendLine();
+			
+			// Current weather
+			string weatherCondition = current.weatherDesc?[0]?.value ?? "Unknown";
+			string weatherEmoji = GetWeatherEmoji(current.weatherCode);
+			
+			report.AppendLine($"<b>Current Weather</b>");
+			report.AppendLine($"{weatherEmoji} {weatherCondition}");
+			report.AppendLine($"🌡️ {current.temp_C}°C (feels like {current.FeelsLikeC}°C)");
+			report.AppendLine($"💨 Wind: {current.windspeedKmph} km/h {current.winddir16Point}");
+			report.AppendLine($"💧 Humidity: {current.humidity}%");
+			report.AppendLine($"👁️ Visibility: {current.visibility} km");
+			
+			if (!string.IsNullOrEmpty(current.precipMM) && current.precipMM != "0.0") {
+				report.AppendLine($"🌧️ Precipitation: {current.precipMM} mm");
+			}
+			
+			report.AppendLine();
+			
+			// Day 1
+			if (response.weather.Length > 1) {
+				WeatherForecast day1 = response.weather[1];
+				report.AppendLine($"<b>{day1.date}</b>");
+				AppendDayForecast(report, day1);
+				report.AppendLine();
+			}
+			
+			// Day 2
+			if (response.weather.Length > 2) {
+				WeatherForecast day2 = response.weather[2];
+				report.AppendLine($"<b>{day2.date}</b>");
+				AppendDayForecast(report, day2);
+				report.AppendLine();
+			}
+			
+			// Day 3
+			if (response.weather.Length > 3) {
+				WeatherForecast day3 = response.weather[3];
+				report.AppendLine($"<b>{day3.date}</b>");
+				AppendDayForecast(report, day3);
+				report.AppendLine();
+			}
+			
+			report.AppendLine($"<i>Powered by wttr.in</i>");
+
+			return report.ToString();
+		}
+
+		/// <summary>
+		/// Append forecast for a specific day (morning, noon, evening, night)
+		/// </summary>
+		private static void AppendDayForecast(System.Text.StringBuilder report, WeatherForecast day) {
+			if (day.hourly == null || day.hourly.Length < 8) {
+				report.AppendLine($"🌡️ {day.mintempC}°C - {day.maxtempC}°C");
+				return;
+			}
+
+			// wttr.in provides hourly data in 3-hour intervals (0, 3, 6, 9, 12, 15, 18, 21)
+			// Morning: 6-9 (index 2-3), Noon: 12-15 (index 4-5), Evening: 18 (index 6), Night: 21 (index 7)
+			
+			// Morning (6 AM - 9 AM) - use 6 AM data
+			if (day.hourly.Length > 2) {
+				HourlyForecast morning = day.hourly[2];
+				string morningEmoji = GetWeatherEmoji(morning.weatherCode);
+				string morningDesc = morning.weatherDesc?[0]?.value ?? "Unknown";
+				report.AppendLine($"� Morning: {morningEmoji} {morningDesc}, {morning.tempC}°C (feels {morning.FeelsLikeC}°C), 💨 {morning.windspeedKmph} km/h");
+			}
+			
+			// Noon (12 PM - 3 PM) - use 12 PM data
+			if (day.hourly.Length > 4) {
+				HourlyForecast noon = day.hourly[4];
+				string noonEmoji = GetWeatherEmoji(noon.weatherCode);
+				string noonDesc = noon.weatherDesc?[0]?.value ?? "Unknown";
+				report.AppendLine($"☀️ Noon: {noonEmoji} {noonDesc}, {noon.tempC}°C (feels {noon.FeelsLikeC}°C), 💨 {noon.windspeedKmph} km/h");
+			}
+			
+			// Evening (6 PM) - use 6 PM data
+			if (day.hourly.Length > 6) {
+				HourlyForecast evening = day.hourly[6];
+				string eveningEmoji = GetWeatherEmoji(evening.weatherCode);
+				string eveningDesc = evening.weatherDesc?[0]?.value ?? "Unknown";
+				report.AppendLine($"🌆 Evening: {eveningEmoji} {eveningDesc}, {evening.tempC}°C (feels {evening.FeelsLikeC}°C), 💨 {evening.windspeedKmph} km/h");
+			}
+			
+			// Night (9 PM - midnight) - use 9 PM data
+			if (day.hourly.Length > 7) {
+				HourlyForecast night = day.hourly[7];
+				string nightEmoji = GetWeatherEmoji(night.weatherCode);
+				string nightDesc = night.weatherDesc?[0]?.value ?? "Unknown";
+				report.AppendLine($"🌙 Night: {nightEmoji} {nightDesc}, {night.tempC}°C (feels {night.FeelsLikeC}°C), 💨 {night.windspeedKmph} km/h");
+			}
+		}
+
+		/// <summary>
+		/// Get emoji for weather condition code
+		/// </summary>
+		private static string GetWeatherEmoji(string? weatherCode) {
+			return weatherCode switch {
+				"113" => "☀️",  // Sunny
+				"116" => "🌤️",  // Partly cloudy
+				"119" => "☁️",  // Cloudy
+				"122" => "☁️",  // Overcast
+				"143" => "🌫️",  // Mist
+				"176" => "🌦️",  // Patchy rain possible
+				"179" => "🌨️",  // Patchy snow possible
+				"182" => "🌧️",  // Patchy sleet possible
+				"185" => "🌧️",  // Patchy freezing drizzle possible
+				"200" => "⛈️",  // Thundery outbreaks possible
+				"227" => "🌨️",  // Blowing snow
+				"230" => "🌨️",  // Blizzard
+				"248" => "🌫️",  // Fog
+				"260" => "🌫️",  // Freezing fog
+				"263" => "🌧️",  // Patchy light drizzle
+				"266" => "🌧️",  // Light drizzle
+				"281" => "🌧️",  // Freezing drizzle
+				"284" => "🌧️",  // Heavy freezing drizzle
+				"293" => "🌦️",  // Patchy light rain
+				"296" => "🌧️",  // Light rain
+				"299" => "🌧️",  // Moderate rain at times
+				"302" => "🌧️",  // Moderate rain
+				"305" => "🌧️",  // Heavy rain at times
+				"308" => "🌧️",  // Heavy rain
+				"311" => "🌧️",  // Light freezing rain
+				"314" => "🌧️",  // Moderate or heavy freezing rain
+				"317" => "🌨️",  // Light sleet
+				"320" => "🌨️",  // Moderate or heavy sleet
+				"323" => "🌨️",  // Patchy light snow
+				"326" => "🌨️",  // Light snow
+				"329" => "🌨️",  // Patchy moderate snow
+				"332" => "🌨️",  // Moderate snow
+				"335" => "🌨️",  // Patchy heavy snow
+				"338" => "🌨️",  // Heavy snow
+				"350" => "🌨️",  // Ice pellets
+				"353" => "🌦️",  // Light rain shower
+				"356" => "🌧️",  // Moderate or heavy rain shower
+				"359" => "🌧️",  // Torrential rain shower
+				"362" => "🌨️",  // Light sleet showers
+				"365" => "🌨️",  // Moderate or heavy sleet showers
+				"368" => "🌨️",  // Light snow showers
+				"371" => "🌨️",  // Moderate or heavy snow showers
+				"374" => "🌨️",  // Light showers of ice pellets
+				"377" => "🌨️",  // Moderate or heavy showers of ice pellets
+				"386" => "⛈️",  // Patchy light rain with thunder
+				"389" => "⛈️",  // Moderate or heavy rain with thunder
+				"392" => "⛈️",  // Patchy light snow with thunder
+				"395" => "⛈️",  // Moderate or heavy snow with thunder
+				_ => "🌡️"      // Default
+			};
+		}
+
+		/// <summary>
+		/// Get emoji for moon phase
+		/// </summary>
+		private static string GetMoonPhaseEmoji(string moonPhase) {
+			return moonPhase.ToLowerInvariant() switch {
+				string s when s.Contains("new moon") => "🌑",
+				string s when s.Contains("waxing crescent") => "🌒",
+				string s when s.Contains("first quarter") => "🌓",
+				string s when s.Contains("waxing gibbous") => "🌔",
+				string s when s.Contains("full moon") => "🌕",
+				string s when s.Contains("waning gibbous") => "🌖",
+				string s when s.Contains("last quarter") => "🌗",
+				string s when s.Contains("waning crescent") => "🌘",
+				_ => "🌙"
+			};
+		}
+	}
+}

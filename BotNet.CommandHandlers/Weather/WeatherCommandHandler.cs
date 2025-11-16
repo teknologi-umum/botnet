@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands.Weather;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Weather;
+using BotNet.Services.Weather.Models;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,7 +10,7 @@ using Telegram.Bot.Types.Enums;
 namespace BotNet.CommandHandlers.Weather {
 	public sealed class WeatherCommandHandler(
 		ITelegramBotClient telegramBotClient,
-		CurrentWeather currentWeather,
+		WttrInWeather wttrInWeather,
 		ILogger<WeatherCommandHandler> logger
 	) : ICommandHandler<WeatherCommand> {
 		private static readonly RateLimiter GetWeatherRateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
@@ -30,15 +31,27 @@ namespace BotNet.CommandHandlers.Weather {
 			// Fire and forget
 			BackgroundTask.Run(async () => {
 				try {
-					(string title, string icon) = await currentWeather.GetCurrentWeatherAsync(
-						place: command.CityName,
+					WttrInResponse? weatherResponse = await wttrInWeather.GetWeatherAsync(
+						location: command.CityName,
 						cancellationToken: cancellationToken
 					);
 
-					await telegramBotClient.SendPhoto(
+					if (weatherResponse == null) {
+						await telegramBotClient.SendMessage(
+							chatId: command.Chat.Id,
+							text: "<code>Tidak dapat mengambil data cuaca</code>",
+							parseMode: ParseMode.Html,
+							replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
+							cancellationToken: CancellationToken.None
+						);
+						return;
+					}
+
+					string weatherReport = WttrInWeather.FormatWeatherReport(weatherResponse, command.CityName);
+
+					await telegramBotClient.SendMessage(
 						chatId: command.Chat.Id,
-						photo: new InputFileUrl(icon),
-						caption: title,
+						text: weatherReport,
 						parseMode: ParseMode.Html,
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: cancellationToken

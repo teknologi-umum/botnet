@@ -119,7 +119,6 @@ Required secrets (via User Secrets or environment variables):
   "GeminiOptions:ApiKey": "your-gemini-key",
   "StabilityOptions:ApiKey": "your-stability-key",
   "GoogleMapOptions:ApiKey": "your-google-maps-key",
-  "WeatherOptions:ApiKey": "your-weather-api-key",
   "OmdbOptions:ApiKey": "your-omdb-api-key"
 }
 ```

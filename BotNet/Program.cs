@@ -69,7 +69,6 @@ builder.Services.Configure<PestoOptions>(builder.Configuration.GetSection("Pesto
 builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection("OpenAIOptions"));
 builder.Services.Configure<StabilityOptions>(builder.Configuration.GetSection("StabilityOptions"));
 builder.Services.Configure<GoogleMapOptions>(builder.Configuration.GetSection("GoogleMapOptions"));
-builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("WeatherOptions"));
 builder.Services.Configure<CommandPrioritizationOptions>(builder.Configuration.GetSection("CommandPrioritizationOptions"));
 builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("GeminiOptions"));
 builder.Services.Configure<GoogleSheetsOptions>(builder.Configuration.GetSection("GoogleSheetsOptions"));
