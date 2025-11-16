@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.CommandHandlers;
@@ -35,8 +34,8 @@ namespace BotNet.Bot {
 						
 						// Track command invocation metrics
 						string commandType = command.GetType().Name;
-						string senderType = GetSenderType(command);
-						string chatType = GetChatType(command);
+						string senderType = CommandTypeExtractor.GetSenderType(command);
+						string chatType = CommandTypeExtractor.GetChatType(command);
 						CommandMetrics.RecordInvocation(commandType, senderType, chatType);
 						
 						using (CommandQueueMetrics.MeasureProcessingDuration())
@@ -75,31 +74,7 @@ namespace BotNet.Bot {
 			return Task.CompletedTask;
 		}
 
-	private static string GetSenderType(ICommand command) {
-		// Use BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
-		// to avoid AmbiguousMatchException when derived types have same-named properties
-		PropertyInfo? senderProperty = command.GetType().GetProperty(
-			"Sender", 
-			BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
-		);
-		if (senderProperty == null) return "Unknown";
-		
-		object? sender = senderProperty.GetValue(command);
-		return sender?.GetType().Name ?? "Unknown";
-	}
-
-	private static string GetChatType(ICommand command) {
-		// Use BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
-		// to avoid AmbiguousMatchException when derived types have same-named properties
-		PropertyInfo? chatProperty = command.GetType().GetProperty(
-			"Chat",
-			BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy
-		);
-		if (chatProperty == null) return "Unknown";
-		
-		object? chat = chatProperty.GetValue(command);
-		return chat?.GetType().Name ?? "Unknown";
-	}		public async Task StopAsync(CancellationToken cancellationToken) {
+		public async Task StopAsync(CancellationToken cancellationToken) {
 			if (_cancellationTokenSource != null) {
 				await _cancellationTokenSource.CancelAsync();
 			}
