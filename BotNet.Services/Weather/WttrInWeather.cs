@@ -105,33 +105,32 @@ namespace BotNet.Services.Weather {
 			report.AppendLine($"💧 Humidity: {current.humidity}%");
 			report.AppendLine($"👁️ Visibility: {current.visibility} km");
 			
-			if (!string.IsNullOrEmpty(current.precipMM) && current.precipMM != "0.0") {
-				report.AppendLine($"🌧️ Precipitation: {current.precipMM} mm");
-			}
+			string currentPrecipMM = current.precipMM ?? "0.0";
+			report.AppendLine($"🌧️ Precipitation: {currentPrecipMM} mm");
 			
 			report.AppendLine();
 			
-			// Day 1
+			// Today (Day 0)
+			if (response.weather.Length > 0) {
+				WeatherForecast today = response.weather[0];
+				report.AppendLine($"<b>{today.date}</b>");
+				AppendDayForecast(report, today);
+				report.AppendLine();
+			}
+			
+			// Tomorrow (Day 1)
 			if (response.weather.Length > 1) {
-				WeatherForecast day1 = response.weather[1];
-				report.AppendLine($"<b>{day1.date}</b>");
-				AppendDayForecast(report, day1);
+				WeatherForecast tomorrow = response.weather[1];
+				report.AppendLine($"<b>{tomorrow.date}</b>");
+				AppendDayForecast(report, tomorrow);
 				report.AppendLine();
 			}
 			
-			// Day 2
+			// Day after tomorrow (Day 2)
 			if (response.weather.Length > 2) {
-				WeatherForecast day2 = response.weather[2];
-				report.AppendLine($"<b>{day2.date}</b>");
-				AppendDayForecast(report, day2);
-				report.AppendLine();
-			}
-			
-			// Day 3
-			if (response.weather.Length > 3) {
-				WeatherForecast day3 = response.weather[3];
-				report.AppendLine($"<b>{day3.date}</b>");
-				AppendDayForecast(report, day3);
+				WeatherForecast dayAfterTomorrow = response.weather[2];
+				report.AppendLine($"<b>{dayAfterTomorrow.date}</b>");
+				AppendDayForecast(report, dayAfterTomorrow);
 				report.AppendLine();
 			}
 			
@@ -158,14 +157,11 @@ namespace BotNet.Services.Weather {
 				string morningEmoji = GetWeatherEmoji(morning.weatherCode);
 				string morningDesc = morning.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(morning.winddir16Point);
-				string precipInfo = "";
-				if (!string.IsNullOrEmpty(morning.precipMM) && morning.precipMM != "0.0") {
-					precipInfo = $", 🌧️ {morning.precipMM} mm";
-				}
-				if (!string.IsNullOrEmpty(morning.chanceofrain) && morning.chanceofrain != "0") {
-					precipInfo += $" ({morning.chanceofrain}%)";
-				}
-				report.AppendLine($"Morning: {morningEmoji} {morningDesc}, {morning.tempC}°C ({morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h{precipInfo}");
+				string precipMM = morning.precipMM ?? "0.0";
+				string chanceOfRain = morning.chanceofrain ?? "0";
+				report.AppendLine($"Morning: {morningEmoji} {morningDesc}");
+				report.AppendLine($"{morning.tempC}°C ({morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
+				report.AppendLine();
 			}
 			
 			// Noon (12 PM - 3 PM) - use 12 PM data
@@ -174,14 +170,11 @@ namespace BotNet.Services.Weather {
 				string noonEmoji = GetWeatherEmoji(noon.weatherCode);
 				string noonDesc = noon.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(noon.winddir16Point);
-				string precipInfo = "";
-				if (!string.IsNullOrEmpty(noon.precipMM) && noon.precipMM != "0.0") {
-					precipInfo = $", 🌧️ {noon.precipMM} mm";
-				}
-				if (!string.IsNullOrEmpty(noon.chanceofrain) && noon.chanceofrain != "0") {
-					precipInfo += $" ({noon.chanceofrain}%)";
-				}
-				report.AppendLine($"Noon: {noonEmoji} {noonDesc}, {noon.tempC}°C ({noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h{precipInfo}");
+				string precipMM = noon.precipMM ?? "0.0";
+				string chanceOfRain = noon.chanceofrain ?? "0";
+				report.AppendLine($"Noon: {noonEmoji} {noonDesc}");
+				report.AppendLine($"{noon.tempC}°C ({noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
+				report.AppendLine();
 			}
 			
 			// Evening (6 PM) - use 6 PM data
@@ -190,14 +183,11 @@ namespace BotNet.Services.Weather {
 				string eveningEmoji = GetWeatherEmoji(evening.weatherCode);
 				string eveningDesc = evening.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(evening.winddir16Point);
-				string precipInfo = "";
-				if (!string.IsNullOrEmpty(evening.precipMM) && evening.precipMM != "0.0") {
-					precipInfo = $", 🌧️ {evening.precipMM} mm";
-				}
-				if (!string.IsNullOrEmpty(evening.chanceofrain) && evening.chanceofrain != "0") {
-					precipInfo += $" ({evening.chanceofrain}%)";
-				}
-				report.AppendLine($"Evening: {eveningEmoji} {eveningDesc}, {evening.tempC}°C ({evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h{precipInfo}");
+				string precipMM = evening.precipMM ?? "0.0";
+				string chanceOfRain = evening.chanceofrain ?? "0";
+				report.AppendLine($"Evening: {eveningEmoji} {eveningDesc}");
+				report.AppendLine($"{evening.tempC}°C ({evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
+				report.AppendLine();
 			}
 			
 			// Night (9 PM - midnight) - use 9 PM data
@@ -206,14 +196,10 @@ namespace BotNet.Services.Weather {
 				string nightEmoji = GetWeatherEmoji(night.weatherCode);
 				string nightDesc = night.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(night.winddir16Point);
-				string precipInfo = "";
-				if (!string.IsNullOrEmpty(night.precipMM) && night.precipMM != "0.0") {
-					precipInfo = $", 🌧️ {night.precipMM} mm";
-				}
-				if (!string.IsNullOrEmpty(night.chanceofrain) && night.chanceofrain != "0") {
-					precipInfo += $" ({night.chanceofrain}%)";
-				}
-				report.AppendLine($"Night: {nightEmoji} {nightDesc}, {night.tempC}°C ({night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h{precipInfo}");
+				string precipMM = night.precipMM ?? "0.0";
+				string chanceOfRain = night.chanceofrain ?? "0";
+				report.AppendLine($"Night: {nightEmoji} {nightDesc}");
+				report.AppendLine($"{night.tempC}°C ({night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h, 🌧️ {precipMM} mm ({chanceOfRain}%)");
 			}
 		}
 
