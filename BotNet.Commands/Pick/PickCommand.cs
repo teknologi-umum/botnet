@@ -35,8 +35,19 @@ namespace BotNet.Commands.Pick {
 				);
 			}
 
-			// Split by whitespace and filter out empty entries
-			string[] options = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+			string[] options;
+
+			// Check if comma-separated format is used (commas outside quotes)
+			if (ContainsCommaOutsideQuotes(text)) {
+				// Split by comma and trim each option
+				options = SplitByCommaOutsideQuotes(text)
+					.Select(opt => opt.Trim().Trim('"'))
+					.Where(opt => !string.IsNullOrWhiteSpace(opt))
+					.ToArray();
+			} else {
+				// Parse with support for quoted strings
+				options = ParseOptions(text);
+			}
 
 			if (options.Length < 2) {
 				throw new UsageException(
@@ -52,6 +63,85 @@ namespace BotNet.Commands.Pick {
 				messageId: slashCommand.MessageId,
 				sender: slashCommand.Sender
 			);
+		}
+
+		internal static bool ContainsCommaOutsideQuotes(string text) {
+			bool inQuotes = false;
+			for (int i = 0; i < text.Length; i++) {
+				if (text[i] == '"') {
+					inQuotes = !inQuotes;
+				} else if (text[i] == ',' && !inQuotes) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		internal static string[] SplitByCommaOutsideQuotes(string text) {
+			List<string> parts = new();
+			bool inQuotes = false;
+			int startIndex = 0;
+
+			for (int i = 0; i < text.Length; i++) {
+				if (text[i] == '"') {
+					inQuotes = !inQuotes;
+				} else if (text[i] == ',' && !inQuotes) {
+					parts.Add(text.Substring(startIndex, i - startIndex));
+					startIndex = i + 1;
+				}
+			}
+
+			// Add the last part
+			if (startIndex < text.Length) {
+				parts.Add(text.Substring(startIndex));
+			}
+
+			return parts.ToArray();
+		}
+
+		internal static string[] ParseOptions(string text) {
+			List<string> options = new();
+			bool inQuotes = false;
+			int startIndex = 0;
+
+			for (int i = 0; i < text.Length; i++) {
+				char c = text[i];
+
+				if (c == '"') {
+					if (inQuotes) {
+						// End of quoted string
+						string option = text.Substring(startIndex + 1, i - startIndex - 1).Trim();
+						if (!string.IsNullOrWhiteSpace(option)) {
+							options.Add(option);
+						}
+						startIndex = i + 1;
+						inQuotes = false;
+					} else {
+						// Start of quoted string
+						inQuotes = true;
+						startIndex = i;
+					}
+				} else if (char.IsWhiteSpace(c) && !inQuotes) {
+					// Space outside quotes - end of option
+					if (i > startIndex) {
+						string option = text.Substring(startIndex, i - startIndex).Trim();
+						if (!string.IsNullOrWhiteSpace(option)) {
+							options.Add(option);
+						}
+					}
+					startIndex = i + 1;
+				}
+			}
+
+			// Add last option
+			if (startIndex < text.Length) {
+				string lastOption = text.Substring(startIndex).Trim().Trim('"');
+				if (!string.IsNullOrWhiteSpace(lastOption)) {
+					options.Add(lastOption);
+				}
+			}
+
+			return options.ToArray();
 		}
 	}
 }
