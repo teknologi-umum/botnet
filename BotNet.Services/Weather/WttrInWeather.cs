@@ -101,7 +101,7 @@ namespace BotNet.Services.Weather {
 			report.AppendLine($"<b>Current Weather</b>");
 			report.AppendLine($"{weatherEmoji} {weatherCondition}");
 			report.AppendLine($"🌡️ {current.temp_C}°C (feels like {current.FeelsLikeC}°C)");
-			report.AppendLine($"💨 Wind: {current.windspeedKmph} km/h {GetWindDirectionArrow(current.winddir16Point)}");
+			report.AppendLine($"{GetWindDirectionArrow(current.winddir16Point)} Wind: {current.windspeedKmph} km/h");
 			report.AppendLine($"💧 Humidity: {current.humidity}%");
 			report.AppendLine($"👁️ Visibility: {current.visibility} km");
 			
@@ -158,7 +158,14 @@ namespace BotNet.Services.Weather {
 				string morningEmoji = GetWeatherEmoji(morning.weatherCode);
 				string morningDesc = morning.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(morning.winddir16Point);
-				report.AppendLine($"Morning: {morningEmoji} {morningDesc}, {morning.tempC}°C (feels {morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h");
+				string precipInfo = "";
+				if (!string.IsNullOrEmpty(morning.precipMM) && morning.precipMM != "0.0") {
+					precipInfo = $", 🌧️ {morning.precipMM} mm";
+				}
+				if (!string.IsNullOrEmpty(morning.chanceofrain) && morning.chanceofrain != "0") {
+					precipInfo += $" ({morning.chanceofrain}%)";
+				}
+				report.AppendLine($"Morning: {morningEmoji} {morningDesc}, {morning.tempC}°C ({morning.FeelsLikeC}°C), {windArrow} {morning.windspeedKmph} km/h{precipInfo}");
 			}
 			
 			// Noon (12 PM - 3 PM) - use 12 PM data
@@ -167,7 +174,14 @@ namespace BotNet.Services.Weather {
 				string noonEmoji = GetWeatherEmoji(noon.weatherCode);
 				string noonDesc = noon.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(noon.winddir16Point);
-				report.AppendLine($"Noon: {noonEmoji} {noonDesc}, {noon.tempC}°C (feels {noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h");
+				string precipInfo = "";
+				if (!string.IsNullOrEmpty(noon.precipMM) && noon.precipMM != "0.0") {
+					precipInfo = $", 🌧️ {noon.precipMM} mm";
+				}
+				if (!string.IsNullOrEmpty(noon.chanceofrain) && noon.chanceofrain != "0") {
+					precipInfo += $" ({noon.chanceofrain}%)";
+				}
+				report.AppendLine($"Noon: {noonEmoji} {noonDesc}, {noon.tempC}°C ({noon.FeelsLikeC}°C), {windArrow} {noon.windspeedKmph} km/h{precipInfo}");
 			}
 			
 			// Evening (6 PM) - use 6 PM data
@@ -176,7 +190,14 @@ namespace BotNet.Services.Weather {
 				string eveningEmoji = GetWeatherEmoji(evening.weatherCode);
 				string eveningDesc = evening.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(evening.winddir16Point);
-				report.AppendLine($"Evening: {eveningEmoji} {eveningDesc}, {evening.tempC}°C (feels {evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h");
+				string precipInfo = "";
+				if (!string.IsNullOrEmpty(evening.precipMM) && evening.precipMM != "0.0") {
+					precipInfo = $", 🌧️ {evening.precipMM} mm";
+				}
+				if (!string.IsNullOrEmpty(evening.chanceofrain) && evening.chanceofrain != "0") {
+					precipInfo += $" ({evening.chanceofrain}%)";
+				}
+				report.AppendLine($"Evening: {eveningEmoji} {eveningDesc}, {evening.tempC}°C ({evening.FeelsLikeC}°C), {windArrow} {evening.windspeedKmph} km/h{precipInfo}");
 			}
 			
 			// Night (9 PM - midnight) - use 9 PM data
@@ -185,7 +206,14 @@ namespace BotNet.Services.Weather {
 				string nightEmoji = GetWeatherEmoji(night.weatherCode);
 				string nightDesc = night.weatherDesc?[0]?.value ?? "Unknown";
 				string windArrow = GetWindDirectionArrow(night.winddir16Point);
-				report.AppendLine($"Night: {nightEmoji} {nightDesc}, {night.tempC}°C (feels {night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h");
+				string precipInfo = "";
+				if (!string.IsNullOrEmpty(night.precipMM) && night.precipMM != "0.0") {
+					precipInfo = $", 🌧️ {night.precipMM} mm";
+				}
+				if (!string.IsNullOrEmpty(night.chanceofrain) && night.chanceofrain != "0") {
+					precipInfo += $" ({night.chanceofrain}%)";
+				}
+				report.AppendLine($"Night: {nightEmoji} {nightDesc}, {night.tempC}°C ({night.FeelsLikeC}°C), {windArrow} {night.windspeedKmph} km/h{precipInfo}");
 			}
 		}
 
