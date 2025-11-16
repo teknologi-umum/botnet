@@ -15,6 +15,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 		ITelegramBotClient telegramBotClient,
 		GeoCode geoCode,
 		StaticMap staticMap,
+		PlacesClient placesClient,
 		ILogger<MapCommandHandler> logger
 	) : ICommandHandler<MapCommand> {
 		private static readonly RateLimiter SearchPlaceRateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(2));
@@ -53,6 +54,19 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 					double lat = primaryResult.Geometry!.Location!.Lat;
 					double lng = primaryResult.Geometry!.Location!.Lng;
 
+					// Try to get detailed place information from Places API
+					PlaceDetails? placeDetails = null;
+					if (!string.IsNullOrEmpty(primaryResult.Place_Id)) {
+						try {
+							placeDetails = await placesClient.GetPlaceDetailsAsync(
+								primaryResult.Place_Id,
+								CancellationToken.None
+							);
+						} catch (Exception exc) {
+							logger.LogWarning(exc, "Could not get place details for {PlaceId}", primaryResult.Place_Id);
+						}
+					}
+
 					// Calculate zoom level from viewport, default to 13
 					int zoom = StaticMap.CalculateZoomLevel(primaryResult.Geometry.Viewport);
 
@@ -61,12 +75,57 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 
 					// Build caption with place information
 					StringBuilder caption = new();
-					caption.AppendLine($"📍 <b>{command.PlaceName}</b>");
-					caption.AppendLine($"{primaryResult.Formatted_Address}");
+					
+					// Use place name from Places API if available, otherwise extract from formatted_address
+					string placeName = placeDetails?.Name 
+						?? primaryResult.Formatted_Address?.Split(',')[0].Trim() 
+						?? command.PlaceName;
+					caption.AppendLine($"📍 <b>{placeName}</b>");
+					
+					// Show address
+					string address = primaryResult.Formatted_Address ?? "";
+					caption.AppendLine($"{address}");
+					caption.AppendLine();
+
+					// Add rating if available
+					if (placeDetails?.Rating != null && placeDetails.User_Ratings_Total != null) {
+						string stars = new string('⭐', (int)Math.Round(placeDetails.Rating.Value));
+						caption.AppendLine($"{stars} {placeDetails.Rating:F1} ({placeDetails.User_Ratings_Total:N0} reviews)");
+					}
+
+					// Add business status if available
+					if (!string.IsNullOrEmpty(placeDetails?.Business_Status)) {
+						string statusEmoji = placeDetails.Business_Status switch {
+							"OPERATIONAL" => "✅",
+							"CLOSED_TEMPORARILY" => "⏸️",
+							"CLOSED_PERMANENTLY" => "❌",
+							_ => "ℹ️"
+						};
+						caption.AppendLine($"{statusEmoji} {placeDetails.Business_Status.Replace("_", " ").ToLowerInvariant()}");
+					}
+
+					// Add opening hours if available
+					if (placeDetails?.Opening_Hours?.Open_Now != null) {
+						string openStatus = placeDetails.Opening_Hours.Open_Now.Value ? "🟢 Open now" : "🔴 Closed";
+						caption.AppendLine(openStatus);
+					}
+
+					// Add price level if available
+					if (placeDetails?.Price_Level != null) {
+						string priceSymbol = string.Concat(Enumerable.Repeat("💰", placeDetails.Price_Level.Value));
+						caption.AppendLine($"{priceSymbol}");
+					}
+
+					// Add editorial summary if available
+					if (!string.IsNullOrEmpty(placeDetails?.Editorial_Summary?.Overview)) {
+						caption.AppendLine();
+						caption.AppendLine($"<i>{placeDetails.Editorial_Summary.Overview}</i>");
+					}
+
 					caption.AppendLine();
 					
-					// Add place types if available
-					if (primaryResult.Types != null && primaryResult.Types.Length > 0) {
+					// Add place types if available (and no detailed info from Places API)
+					if (placeDetails == null && primaryResult.Types != null && primaryResult.Types.Length > 0) {
 						string placeTypes = string.Join(", ", primaryResult.Types
 							.Take(3)
 							.Select(t => t.Replace("_", " "))
@@ -75,10 +134,29 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 						caption.AppendLine();
 					}
 
-					caption.AppendLine($"📐 Coordinates: <code>{lat:F6}, {lng:F6}</code>");
+					// Add contact information if available
+					if (!string.IsNullOrEmpty(placeDetails?.Formatted_Phone_Number)) {
+						caption.AppendLine($"� {placeDetails.Formatted_Phone_Number}");
+					}
+
+					if (!string.IsNullOrEmpty(placeDetails?.Website)) {
+						caption.AppendLine($"🌐 <a href=\"{placeDetails.Website}\">Website</a>");
+					}
+
+					if (!string.IsNullOrEmpty(placeDetails?.Formatted_Phone_Number) || !string.IsNullOrEmpty(placeDetails?.Website)) {
+						caption.AppendLine();
+					}
+
+					caption.AppendLine($"�📐 Coordinates: <code>{lat:F6}, {lng:F6}</code>");
 					caption.AppendLine($"🔍 Zoom Level: {zoom}");
 					caption.AppendLine();
-					caption.AppendLine($"<a href=\"https://www.google.com/maps/search/{lat},{lng}\">🗺️ View in Google Maps</a>");
+					
+					// Link to Google Maps page if available from Places API
+					if (!string.IsNullOrEmpty(placeDetails?.Url)) {
+						caption.AppendLine($"<a href=\"{placeDetails.Url}\">🗺️ View in Google Maps</a>");
+					} else {
+						caption.AppendLine($"<a href=\"https://www.google.com/maps/search/{lat},{lng}\">🗺️ View in Google Maps</a>");
+					}
 
 					// Add other results if multiple places found
 					if (results.Count > 1) {
@@ -91,7 +169,10 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 							double otherLat = otherResult.Geometry!.Location!.Lat;
 							double otherLng = otherResult.Geometry!.Location!.Lng;
 							
-							caption.AppendLine($"{i}. <b>{command.PlaceName}</b>");
+							// Extract place name from formatted address
+							string otherPlaceName = otherResult.Formatted_Address?.Split(',')[0].Trim() ?? command.PlaceName;
+							
+							caption.AppendLine($"{i}. <b>{otherPlaceName}</b>");
 							caption.AppendLine($"   {otherResult.Formatted_Address}");
 							caption.AppendLine($"   <a href=\"https://www.google.com/maps/search/{otherLat},{otherLng}\">View on map</a>");
 						}
