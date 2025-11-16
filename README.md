@@ -29,6 +29,8 @@ Execute code in **20+ programming languages** directly in Telegram:
 - **Weather Forecasts** - Current weather and forecasts
 - **BMKG Updates** - Indonesian weather agency alerts
 - **Google Maps** - Location search and maps
+- **Movie Database** - Look up movies and TV series with ratings
+- **Internet Status** - Monitor status of major internet services
 - **Primbon** - Indonesian horoscope and predictions
 
 ### 🔧 Available Commands
@@ -44,9 +46,12 @@ Execute code in **20+ programming languages** directly in Telegram:
 - `/weather [location]` - Get current weather and forecasts
 - `/map [query]` - Search locations on Google Maps
 - `/bmkg` - Get Indonesian weather agency (BMKG) updates
+- `/movie [title]` - Look up movie/TV series info, ratings, and poster
+- `/internetstatus` - Check status of major internet services
 
 #### Fun & Misc
-- `/humor` - Get random programming jokes from r/ProgrammerHumor
+- `/humor` - Get random programming jokes from programmerhumor.io
+- `/pick [options]` - Random picker (supports space/comma/quoted formats)
 - `/primbon [query]` - Indonesian horoscope and predictions
 - `/khodam [name]` - Check your spiritual companion (Indonesian meme)
 
@@ -114,7 +119,8 @@ Required secrets (via User Secrets or environment variables):
   "GeminiOptions:ApiKey": "your-gemini-key",
   "StabilityOptions:ApiKey": "your-stability-key",
   "GoogleMapOptions:ApiKey": "your-google-maps-key",
-  "WeatherOptions:ApiKey": "your-weather-api-key"
+  "WeatherOptions:ApiKey": "your-weather-api-key",
+  "OmdbOptions:ApiKey": "your-omdb-api-key"
 }
 ```
 
