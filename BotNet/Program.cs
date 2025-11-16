@@ -28,6 +28,7 @@ using BotNet.Services.Piston;
 using BotNet.Services.Preview;
 using BotNet.Services.Primbon;
 using BotNet.Services.ProgrammerHumor;
+using BotNet.Services.QrCode;
 using BotNet.Services.Soundtrack;
 using BotNet.Services.Sqlite;
 using BotNet.Services.Stability;
@@ -104,6 +105,7 @@ builder.Services.AddGoogleSheets();
 builder.Services.AddKokizzuVpsBenchmarkDataSource();
 builder.Services.AddSoundtrackProvider();
 builder.Services.AddTimeZoneService();
+builder.Services.AddQrCodeGenerator();
 
 // MediatR
 builder.Services.AddMediatR(config => {

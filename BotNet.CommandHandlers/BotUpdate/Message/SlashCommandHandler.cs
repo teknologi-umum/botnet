@@ -15,6 +15,7 @@ using BotNet.Commands.No;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
+using BotNet.Commands.QrCode;
 using BotNet.Commands.Soundtrack;
 using BotNet.Commands.TimeZone;
 using BotNet.Commands.Weather;
@@ -118,6 +119,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/time":
 						await commandQueue.DispatchAsync(TimeCommand.FromSlashCommand(command));
+						break;
+					case "/qr":
+						await commandQueue.DispatchAsync(QrCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
