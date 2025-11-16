@@ -11,6 +11,7 @@ using BotNet.Commands.Fuck;
 using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.Khodam;
+using BotNet.Commands.Movie;
 using BotNet.Commands.No;
 using BotNet.Commands.Pick;
 using BotNet.Commands.Pop;
@@ -126,6 +127,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/pick":
 						await commandQueue.DispatchAsync(PickCommand.FromSlashCommand(command));
+						break;
+					case "/movie":
+						await commandQueue.DispatchAsync(MovieCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {

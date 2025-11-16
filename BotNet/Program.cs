@@ -21,6 +21,7 @@ using BotNet.Services.Hosting;
 using BotNet.Services.ImageConverter;
 using BotNet.Services.KokizzuVPSBenchmark;
 using BotNet.Services.NoAsAService;
+using BotNet.Services.OMDb;
 using BotNet.Services.OpenAI;
 using BotNet.Services.Pemilu2024;
 using BotNet.Services.Pesto;
@@ -71,6 +72,7 @@ builder.Services.Configure<WeatherOptions>(builder.Configuration.GetSection("Wea
 builder.Services.Configure<CommandPrioritizationOptions>(builder.Configuration.GetSection("CommandPrioritizationOptions"));
 builder.Services.Configure<GeminiOptions>(builder.Configuration.GetSection("GeminiOptions"));
 builder.Services.Configure<GoogleSheetsOptions>(builder.Configuration.GetSection("GoogleSheetsOptions"));
+builder.Services.Configure<OmdbOptions>(builder.Configuration.GetSection("OmdbOptions"));
 builder.Services.AddHttpClient();
 builder.Services.AddFontService();
 builder.Services.AddColorCardRenderer();
@@ -106,6 +108,7 @@ builder.Services.AddKokizzuVpsBenchmarkDataSource();
 builder.Services.AddSoundtrackProvider();
 builder.Services.AddTimeZoneService();
 builder.Services.AddQrCodeGenerator();
+builder.Services.AddOmdbClient();
 
 // MediatR
 builder.Services.AddMediatR(config => {
