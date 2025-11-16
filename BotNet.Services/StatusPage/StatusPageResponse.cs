@@ -14,6 +14,14 @@ namespace BotNet.Services.StatusPage {
 		public string? Description { get; init; }
 	}
 
+	public sealed record SlackStatusResponse {
+		[JsonPropertyName("status")]
+		public string? Status { get; init; }
+
+		[JsonPropertyName("active_incidents")]
+		public object[]? ActiveIncidents { get; init; }
+	}
+
 	public sealed record ServiceStatus {
 		public string ServiceName { get; init; } = default!;
 		public bool IsOperational { get; init; }
