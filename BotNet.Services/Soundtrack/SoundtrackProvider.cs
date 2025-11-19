@@ -29,9 +29,21 @@ namespace BotNet.Services.Soundtrack {
 		public (SoundtrackSite First, SoundtrackSite Second) GetRandomPicks() {
 			Random rng = Random.Shared;
 
-			// Shuffle and take first 2
+			// Shuffle and take first 2, ensuring at most one Lofi Girl stream
 			List<SoundtrackSite> shuffled = Sites.OrderBy(_ => rng.Next()).ToList();
-			return (shuffled[0], shuffled[1]);
+			SoundtrackSite first = shuffled[0];
+			SoundtrackSite second = shuffled[1];
+
+			// If both are Lofi Girl streams, replace the second one with a non-Lofi Girl stream
+			if (IsLofiGirl(first) && IsLofiGirl(second)) {
+				second = shuffled.Skip(2).First(site => !IsLofiGirl(site));
+			}
+
+			return (first, second);
+		}
+
+		private static bool IsLofiGirl(SoundtrackSite site) {
+			return site.Name.StartsWith("Lofi Girl -");
 		}
 	}
 

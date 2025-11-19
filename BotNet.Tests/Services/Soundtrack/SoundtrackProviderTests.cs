@@ -45,5 +45,22 @@ namespace BotNet.Tests.Services.Soundtrack {
 			
 			hasDifference.ShouldBeTrue();
 		}
+
+		[Fact]
+		public void GetRandomPicks_ReturnsAtMostOneLofiGirlStream() {
+			// Act - test multiple times to ensure consistency
+			for (int i = 0; i < 100; i++) {
+				(SoundtrackSite first, SoundtrackSite second) = _soundtrackProvider.GetRandomPicks();
+
+				// Assert - at most one should be a Lofi Girl stream
+				bool firstIsLofiGirl = first.Name.StartsWith("Lofi Girl -");
+				bool secondIsLofiGirl = second.Name.StartsWith("Lofi Girl -");
+
+				// Both cannot be Lofi Girl streams
+				(firstIsLofiGirl && secondIsLofiGirl).ShouldBeFalse(
+					$"Both picks were Lofi Girl streams on iteration {i}: First={first.Name}, Second={second.Name}"
+				);
+			}
+		}
 	}
 }
