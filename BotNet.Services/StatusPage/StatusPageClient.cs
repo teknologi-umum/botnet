@@ -49,14 +49,6 @@ namespace BotNet.Services.StatusPage {
 			{ "Slack", "https://status.slack.com/api/v2.0.0/current" }
 		};
 
-		// Meta services - use HTTP availability check (no public status API)
-		private static readonly Dictionary<string, string> HttpAvailabilityServices = new() {
-			{ "Facebook", "https://www.facebook.com" },
-			{ "Instagram", "https://www.instagram.com" },
-			{ "WhatsApp", "https://www.whatsapp.com" },
-			{ "Threads", "https://www.threads.net" }
-		};
-
 		public async Task<List<ServiceStatus>> CheckAllServicesAsync(CancellationToken cancellationToken) {
 			List<Task<ServiceStatus>> tasks = new();
 
@@ -68,11 +60,6 @@ namespace BotNet.Services.StatusPage {
 			// Add custom format services
 			tasks.AddRange(
 				CustomFormatServices.Select(kvp => CheckCustomServiceAsync(kvp.Key, kvp.Value, cancellationToken))
-			);
-
-			// Add HTTP availability services
-			tasks.AddRange(
-				HttpAvailabilityServices.Select(kvp => CheckHttpAvailabilityAsync(kvp.Key, kvp.Value, cancellationToken))
 			);
 
 			ServiceStatus[] results = await Task.WhenAll(tasks);
@@ -122,45 +109,6 @@ namespace BotNet.Services.StatusPage {
 					ServiceName = serviceName,
 					IsOperational = false,
 					Description = "Unknown custom format"
-				};
-			} catch (Exception) {
-				return new ServiceStatus {
-					ServiceName = serviceName,
-					IsOperational = false,
-					Description = "Failed to check status"
-				};
-			}
-		}
-
-		private async Task<ServiceStatus> CheckHttpAvailabilityAsync(string serviceName, string url, CancellationToken cancellationToken) {
-			try {
-				using HttpRequestMessage request = new(HttpMethod.Head, url);
-				request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; BotNet/1.0)");
-				
-				using CancellationTokenSource timeoutCts = new(TimeSpan.FromSeconds(10));
-				using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-				
-				using HttpResponseMessage response = await httpClient.SendAsync(request, linkedCts.Token);
-				
-				// Consider 2xx and 3xx as operational
-				bool isOperational = (int)response.StatusCode >= 200 && (int)response.StatusCode < 400;
-				
-				return new ServiceStatus {
-					ServiceName = serviceName,
-					IsOperational = isOperational,
-					Description = isOperational ? "Service Reachable" : $"HTTP {(int)response.StatusCode}"
-				};
-			} catch (OperationCanceledException) {
-				return new ServiceStatus {
-					ServiceName = serviceName,
-					IsOperational = false,
-					Description = "Request Timeout"
-				};
-			} catch (HttpRequestException) {
-				return new ServiceStatus {
-					ServiceName = serviceName,
-					IsOperational = false,
-					Description = "Connection Failed"
 				};
 			} catch (Exception) {
 				return new ServiceStatus {
