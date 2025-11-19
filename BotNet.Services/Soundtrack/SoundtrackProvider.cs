@@ -7,8 +7,8 @@ namespace BotNet.Services.Soundtrack {
 		private static readonly List<SoundtrackSite> Sites = new() {
 			new("musicForProgramming()", "https://musicforprogramming.net/latest"),
 			new("Poolsuite FM", "https://poolsuite.net/"),
-			new("Lofi Cafe", "https://lofi.cafe/"),
-			new("LofiCafe", "https://loficafe.net/"),
+			new("Lofi.Cafe", "https://lofi.cafe/"),
+			new("LofiCafe.net", "https://loficafe.net/"),
 			new("Radio Garden", "https://radio.garden/"),
 			new("Chillhop", "https://app.chillhop.com/"),
 			new("DevTunes FM", "https://radio.madza.dev/"),
