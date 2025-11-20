@@ -76,7 +76,7 @@ namespace BotNet.Services.TechEmpower {
 				.FirstOrDefault();
 		}
 
-		public BenchmarkResult[] GetTopResultsForLanguage(BenchmarkResult[] results, string languageName, int count = 2) {
+		public BenchmarkResult[] GetTopResultsForLanguage(BenchmarkResult[] results, string languageName, int count = 3) {
 			// Find the top N results for a given language
 			// Case-insensitive match
 			return results
@@ -91,6 +91,20 @@ namespace BotNet.Services.TechEmpower {
 			// Case-insensitive match
 			return results
 				.FirstOrDefault(r => r.Framework.Equals(frameworkName, StringComparison.OrdinalIgnoreCase));
+		}
+
+		public BenchmarkResult[] GetResultsByFrameworkNamePrefix(BenchmarkResult[] results, string frameworkNamePrefix) {
+			// Find frameworks that start with the given prefix
+			// Case-insensitive match, ordered by rank
+			return results
+				.Where(r => r.Framework.StartsWith(frameworkNamePrefix, StringComparison.OrdinalIgnoreCase))
+				.OrderBy(r => r.Rank)
+				.ToArray();
+		}
+
+		public bool IsLanguageName(BenchmarkResult[] results, string query) {
+			// Check if the query matches any language name
+			return results.Any(r => r.Language.Equals(query, StringComparison.OrdinalIgnoreCase));
 		}
 	}
 

@@ -31,25 +31,37 @@ namespace BotNet.CommandHandlers.Benchmark {
 				// Fetch benchmark results
 				BenchmarkResult[] allResults = await techEmpowerScraper.GetCompositeScoresAsync(cancellationToken);
 
-				// Get top 2 results for each requested language/framework
+				// Get top 3 results for each requested language/framework
 				List<BenchmarkResult> selectedResults = new();
 				List<string> notFound = new();
 
 				foreach (string query in command.Languages) {
-					// First try exact framework name match
+					// Priority 1: Check if it's a language name
+					if (techEmpowerScraper.IsLanguageName(allResults, query)) {
+						// Get top 3 for the language
+						BenchmarkResult[] topResults = techEmpowerScraper.GetTopResultsForLanguage(allResults, query, 3);
+						if (topResults.Length > 0) {
+							selectedResults.AddRange(topResults);
+							continue;
+						}
+					}
+
+					// Priority 2: Try partial framework name match (starts with)
+					BenchmarkResult[] partialMatches = techEmpowerScraper.GetResultsByFrameworkNamePrefix(allResults, query);
+					if (partialMatches.Length > 0) {
+						selectedResults.AddRange(partialMatches);
+						continue;
+					}
+
+					// Priority 3: Try exact framework name match
 					BenchmarkResult? exactMatch = techEmpowerScraper.GetResultByFrameworkName(allResults, query);
 					if (exactMatch is not null) {
 						selectedResults.Add(exactMatch);
 						continue;
 					}
 
-					// Otherwise, get top 2 for the language
-					BenchmarkResult[] topResults = techEmpowerScraper.GetTopResultsForLanguage(allResults, query, 2);
-					if (topResults.Length > 0) {
-						selectedResults.AddRange(topResults);
-					} else {
-						notFound.Add(query);
-					}
+					// Not found
+					notFound.Add(query);
 				}
 
 				if (notFound.Count > 0) {
@@ -114,6 +126,8 @@ namespace BotNet.CommandHandlers.Benchmark {
 
 			// If only 1 result, no comparison needed
 			if (sortedResults.Count == 1) {
+				sb.AppendLine();
+				sb.AppendLine("[View full results](https://www\\.techempower\\.com/benchmarks/)");
 				return sb.ToString();
 			}
 
@@ -131,6 +145,9 @@ namespace BotNet.CommandHandlers.Benchmark {
 				
 				sb.AppendLine($"*{fastestFramework}* is *{percentage}%* faster than *{currentFramework}*");
 			}
+
+			sb.AppendLine();
+			sb.AppendLine("[View full results](https://www\\.techempower\\.com/benchmarks/)");
 
 			return sb.ToString();
 		}
