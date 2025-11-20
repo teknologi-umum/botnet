@@ -1,12 +1,11 @@
 using System;
-using System.Security.Cryptography;
 using Shouldly;
 
 namespace BotNet.Tests.Assertions {
 	public static class ImageAssertionExtensions {
 		/// <summary>
-		/// Asserts that two byte arrays contain the same image data by comparing their SHA256 hashes.
-		/// This is much faster than comparing every byte in the array.
+		/// Asserts that two byte arrays contain the same image data by comparing their lengths and bytes.
+		/// Short-circuits on the first difference found.
 		/// </summary>
 		public static void ShouldContainSameImageAs(this byte[] actual, byte[] expected) {
 			if (actual == null) {
@@ -17,23 +16,30 @@ namespace BotNet.Tests.Assertions {
 				throw new ShouldAssertException("Expected image data should not be null");
 			}
 
-			string actualHash = ComputeHash(actual);
-			string expectedHash = ComputeHash(expected);
-
-			if (actualHash != expectedHash) {
+			// Short circuit if lengths differ
+			if (actual.Length != expected.Length) {
 				throw new ShouldAssertException(
-					$"Images should contain the same data\n" +
-					$"Expected hash: {expectedHash}\n" +
-					$"Actual hash:   {actualHash}\n" +
-					$"Expected size: {expected.Length} bytes\n" +
-					$"Actual size:   {actual.Length} bytes"
+					$"Images should contain the same data but lengths differ\n" +
+					$"Expected length: {expected.Length} bytes\n" +
+					$"Actual length:   {actual.Length} bytes"
 				);
+			}
+
+			// Compare byte by byte, short circuit on first difference
+			for (int i = 0; i < actual.Length; i++) {
+				if (actual[i] != expected[i]) {
+					throw new ShouldAssertException(
+						$"Images should contain the same data but differ at index {i}\n" +
+						$"Expected value: {expected[i]}\n" +
+						$"Actual value:   {actual[i]}"
+					);
+				}
 			}
 		}
 
 		/// <summary>
-		/// Asserts that two byte arrays contain different image data by comparing their SHA256 hashes.
-		/// This is much faster than comparing every byte in the array.
+		/// Asserts that two byte arrays contain different image data by comparing their lengths and bytes.
+		/// Short-circuits on the first difference found.
 		/// </summary>
 		public static void ShouldNotContainSameImageAs(this byte[] actual, byte[] expected) {
 			if (actual == null) {
@@ -44,21 +50,23 @@ namespace BotNet.Tests.Assertions {
 				throw new ShouldAssertException("Expected image data should not be null");
 			}
 
-			string actualHash = ComputeHash(actual);
-			string expectedHash = ComputeHash(expected);
-
-			if (actualHash == expectedHash) {
-				throw new ShouldAssertException(
-					$"Images should contain different data but hashes match\n" +
-					$"Hash: {actualHash}\n" +
-					$"Size: {actual.Length} bytes"
-				);
+			// Short circuit if lengths differ - images are different
+			if (actual.Length != expected.Length) {
+				return; // Images are different, assertion passes
 			}
-		}
 
-		private static string ComputeHash(byte[] data) {
-			byte[] hashBytes = SHA256.HashData(data);
-			return Convert.ToHexString(hashBytes);
+			// Compare byte by byte, short circuit on first difference
+			for (int i = 0; i < actual.Length; i++) {
+				if (actual[i] != expected[i]) {
+					return; // Images are different, assertion passes
+				}
+			}
+
+			// If we got here, all bytes match - images are the same
+			throw new ShouldAssertException(
+				$"Images should contain different data but all bytes match\n" +
+				$"Length: {actual.Length} bytes"
+			);
 		}
 	}
 }
