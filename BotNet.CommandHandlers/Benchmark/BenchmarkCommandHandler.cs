@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BotNet.Commands.Benchmark;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
@@ -50,7 +50,7 @@ namespace BotNet.CommandHandlers.Benchmark {
 					}
 
 					// Priority 2: Try partial framework name match (starts with)
-					BenchmarkResult[] partialMatches = techEmpowerScraper.GetResultsByFrameworkNamePrefix(allResults, query);
+					BenchmarkResult[] partialMatches = techEmpowerScraper.GetResultsByFrameworkNamePrefix(allResults, query, 3);
 					if (partialMatches.Length > 0) {
 						selectedResults.AddRange(partialMatches);
 						continue;

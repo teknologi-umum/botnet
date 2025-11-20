@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -93,12 +93,13 @@ namespace BotNet.Services.TechEmpower {
 				.FirstOrDefault(r => r.Framework.Equals(frameworkName, StringComparison.OrdinalIgnoreCase));
 		}
 
-		public BenchmarkResult[] GetResultsByFrameworkNamePrefix(BenchmarkResult[] results, string frameworkNamePrefix) {
+		public BenchmarkResult[] GetResultsByFrameworkNamePrefix(BenchmarkResult[] results, string frameworkNamePrefix, int count = 3) {
 			// Find frameworks that start with the given prefix
 			// Case-insensitive match, ordered by rank
 			return results
 				.Where(r => r.Framework.StartsWith(frameworkNamePrefix, StringComparison.OrdinalIgnoreCase))
 				.OrderBy(r => r.Rank)
+				.Take(count)
 				.ToArray();
 		}
 
