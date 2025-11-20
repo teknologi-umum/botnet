@@ -1,15 +1,18 @@
+using System.IO;
 using BotNet.Commands.Benchmark;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
 using BotNet.Services.TechEmpower;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace BotNet.CommandHandlers.Benchmark {
 	public sealed class BenchmarkCommandHandler(
 		ITelegramBotClient telegramBotClient,
 		TechEmpowerScraper techEmpowerScraper,
+		BenchmarkChartRenderer benchmarkChartRenderer,
 		ILogger<BenchmarkCommandHandler> logger
 	) : ICommandHandler<BenchmarkCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(5));
@@ -70,7 +73,7 @@ namespace BotNet.CommandHandlers.Benchmark {
 						chatId: command.Chat.Id,
 						text: $"Could not find benchmark results for: {notFoundList}",
 						parseMode: ParseMode.MarkdownV2,
-						replyParameters: new Telegram.Bot.Types.ReplyParameters {
+						replyParameters: new ReplyParameters {
 							MessageId = command.MessageId
 						},
 						cancellationToken: cancellationToken
@@ -78,14 +81,20 @@ namespace BotNet.CommandHandlers.Benchmark {
 					return;
 				}
 
-				// Format and send response
+				// Generate chart visualization
+				byte[] chartImage = benchmarkChartRenderer.RenderBenchmarkChart(selectedResults.ToArray());
+
+				// Format text response
 				string response = FormatBenchmarkResponse(selectedResults);
 
-				await telegramBotClient.SendMessage(
+				// Send chart image with text caption
+				using MemoryStream stream = new(chartImage);
+				await telegramBotClient.SendPhoto(
 					chatId: command.Chat.Id,
-					text: response,
+					photo: new InputFileStream(stream, "benchmark.png"),
+					caption: response,
 					parseMode: ParseMode.MarkdownV2,
-					replyParameters: new Telegram.Bot.Types.ReplyParameters {
+					replyParameters: new ReplyParameters {
 						MessageId = command.MessageId
 					},
 					cancellationToken: cancellationToken
