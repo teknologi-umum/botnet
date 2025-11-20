@@ -31,18 +31,26 @@ namespace BotNet.CommandHandlers.Benchmark {
 				// Fetch benchmark results
 				BenchmarkResult[] allResults = await techEmpowerScraper.GetCompositeScoresAsync(cancellationToken);
 
-				// Get best results for each requested language
-				List<(string Language, BenchmarkResult? Result)> languageResults = new();
-				foreach (string language in command.Languages) {
-					BenchmarkResult? result = techEmpowerScraper.GetBestResultForLanguage(allResults, language);
-					languageResults.Add((language, result));
-				}
+				// Get top 2 results for each requested language/framework
+				List<BenchmarkResult> selectedResults = new();
+				List<string> notFound = new();
 
-				// Check if any languages were not found
-				List<string> notFound = languageResults
-					.Where(lr => lr.Result is null)
-					.Select(lr => lr.Language)
-					.ToList();
+				foreach (string query in command.Languages) {
+					// First try exact framework name match
+					BenchmarkResult? exactMatch = techEmpowerScraper.GetResultByFrameworkName(allResults, query);
+					if (exactMatch is not null) {
+						selectedResults.Add(exactMatch);
+						continue;
+					}
+
+					// Otherwise, get top 2 for the language
+					BenchmarkResult[] topResults = techEmpowerScraper.GetTopResultsForLanguage(allResults, query, 2);
+					if (topResults.Length > 0) {
+						selectedResults.AddRange(topResults);
+					} else {
+						notFound.Add(query);
+					}
+				}
 
 				if (notFound.Count > 0) {
 					string notFoundList = string.Join(", ", notFound.Select(MarkdownV2Sanitizer.Sanitize));
@@ -58,8 +66,8 @@ namespace BotNet.CommandHandlers.Benchmark {
 					return;
 				}
 
-				// Compare the languages
-				string response = FormatComparisonResponse(languageResults);
+				// Format and send response
+				string response = FormatBenchmarkResponse(selectedResults);
 
 				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
@@ -80,44 +88,48 @@ namespace BotNet.CommandHandlers.Benchmark {
 			}
 		}
 
-		private static string FormatComparisonResponse(List<(string Language, BenchmarkResult? Result)> languageResults) {
-			// Sort by score (descending)
-			List<(string Language, BenchmarkResult Result)> validResults = languageResults
-				.Where(lr => lr.Result is not null)
-				.Select(lr => (Language: lr.Language, Result: lr.Result!))
-				.OrderByDescending(lr => lr.Result.Score)
-				.ToList();
-
-			if (validResults.Count < 2) {
-				return "Need at least 2 valid languages to compare.";
+		private static string FormatBenchmarkResponse(List<BenchmarkResult> results) {
+			if (results.Count == 0) {
+				return "No results found.";
 			}
 
-			// Calculate comparison
-			(string Language, BenchmarkResult Result) fastest = validResults[0];
-			(string Language, BenchmarkResult Result) slowest = validResults[^1];
+			// Sort by score descending
+			List<BenchmarkResult> sortedResults = results
+				.OrderByDescending(r => r.Score)
+				.ToList();
 
-			double percentageFaster = ((fastest.Result.Score - slowest.Result.Score) / slowest.Result.Score) * 100;
-
-			// Build response
 			System.Text.StringBuilder sb = new();
 			sb.AppendLine("*TechEmpower Benchmark Results:*");
 			sb.AppendLine();
 
-			foreach ((string Language, BenchmarkResult Result) item in validResults) {
-				string languageName = MarkdownV2Sanitizer.Sanitize(item.Language);
-				string framework = MarkdownV2Sanitizer.Sanitize(item.Result.Framework);
-				string score = MarkdownV2Sanitizer.Sanitize(item.Result.Score.ToString("N0"));
-				string rank = MarkdownV2Sanitizer.Sanitize($"#{item.Result.Rank}");
+			// Display all results
+			foreach (BenchmarkResult result in sortedResults) {
+				string language = MarkdownV2Sanitizer.Sanitize(result.Language);
+				string framework = MarkdownV2Sanitizer.Sanitize(result.Framework);
+				string score = MarkdownV2Sanitizer.Sanitize(result.Score.ToString("N0"));
+				string rank = MarkdownV2Sanitizer.Sanitize($"#{result.Rank}");
 				
-				sb.AppendLine($"• {languageName} \\({framework}\\): {score} req/s {rank}");
+				sb.AppendLine($"• {language} \\({framework}\\): {score} req/s {rank}");
 			}
 
-			if (validResults.Count >= 2) {
-				sb.AppendLine();
-				string fastestLang = MarkdownV2Sanitizer.Sanitize(fastest.Language);
-				string slowestLang = MarkdownV2Sanitizer.Sanitize(slowest.Language);
+			// If only 1 result, no comparison needed
+			if (sortedResults.Count == 1) {
+				return sb.ToString();
+			}
+
+			// If 2+ results, compare fastest against each other
+			sb.AppendLine();
+			BenchmarkResult fastest = sortedResults[0];
+			
+			for (int i = 1; i < sortedResults.Count; i++) {
+				BenchmarkResult current = sortedResults[i];
+				double percentageFaster = ((fastest.Score - current.Score) / current.Score) * 100;
+				
+				string fastestFramework = MarkdownV2Sanitizer.Sanitize(fastest.Framework);
+				string currentFramework = MarkdownV2Sanitizer.Sanitize(current.Framework);
 				string percentage = MarkdownV2Sanitizer.Sanitize(percentageFaster.ToString("F1"));
-				sb.AppendLine($"*{fastestLang}* is *{percentage}%* faster than *{slowestLang}*");
+				
+				sb.AppendLine($"*{fastestFramework}* is *{percentage}%* faster than *{currentFramework}*");
 			}
 
 			return sb.ToString();

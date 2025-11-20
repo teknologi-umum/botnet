@@ -26,25 +26,17 @@ namespace BotNet.Commands.Benchmark {
 		public static BenchmarkCommand FromSlashCommand(SlashCommand slashCommand) {
 			string text = slashCommand.Text.Trim();
 
-			// Validate that languages are provided
+			// Validate that at least one language/framework is provided
 			if (string.IsNullOrWhiteSpace(text)) {
 				throw new UsageException(
-					message: "Please provide languages to compare. Usage: /benchmark C# C++",
+					message: "Please provide at least one language or framework. Usage: /benchmark C# or /benchmark C# C++ or /benchmark aspcore",
 					parseMode: ParseMode.Html,
 					commandMessageId: slashCommand.MessageId
 				);
 			}
 
-			// Split by whitespace to get language names
+			// Split by whitespace to get language/framework names
 			string[] languages = text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-			if (languages.Length < 2) {
-				throw new UsageException(
-					message: "Please provide at least 2 languages to compare.",
-					parseMode: ParseMode.Html,
-					commandMessageId: slashCommand.MessageId
-				);
-			}
 
 			return new BenchmarkCommand(
 				languages: languages,

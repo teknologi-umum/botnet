@@ -75,6 +75,23 @@ namespace BotNet.Services.TechEmpower {
 				.OrderBy(r => r.Rank)
 				.FirstOrDefault();
 		}
+
+		public BenchmarkResult[] GetTopResultsForLanguage(BenchmarkResult[] results, string languageName, int count = 2) {
+			// Find the top N results for a given language
+			// Case-insensitive match
+			return results
+				.Where(r => r.Language.Equals(languageName, StringComparison.OrdinalIgnoreCase))
+				.OrderBy(r => r.Rank)
+				.Take(count)
+				.ToArray();
+		}
+
+		public BenchmarkResult? GetResultByFrameworkName(BenchmarkResult[] results, string frameworkName) {
+			// Find exact framework/stack by name
+			// Case-insensitive match
+			return results
+				.FirstOrDefault(r => r.Framework.Equals(frameworkName, StringComparison.OrdinalIgnoreCase));
+		}
 	}
 
 	internal sealed record TechEmpowerBenchmarkData {
