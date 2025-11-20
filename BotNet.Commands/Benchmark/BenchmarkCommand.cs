@@ -1,4 +1,4 @@
-using BotNet.Commands.BotUpdate.Message;
+﻿using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Common;
 using BotNet.Commands.SenderAggregate;
@@ -29,7 +29,7 @@ namespace BotNet.Commands.Benchmark {
 			// Validate that at least one language/framework is provided
 			if (string.IsNullOrWhiteSpace(text)) {
 				throw new UsageException(
-					message: "Please provide at least one language or framework. Usage: /benchmark C# or /benchmark C# C++ or /benchmark aspcore",
+					message: "Please provide at least one language or framework. Usage: /benchmark C# or /benchmark C# C++ or /benchmark aspnetcore",
 					parseMode: ParseMode.Html,
 					commandMessageId: slashCommand.MessageId
 				);
