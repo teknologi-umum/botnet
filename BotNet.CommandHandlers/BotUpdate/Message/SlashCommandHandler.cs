@@ -1,6 +1,7 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.Art;
+using BotNet.Commands.Benchmark;
 using BotNet.Commands.BMKG;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.Common;
@@ -136,6 +137,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/internetstatus":
 						await commandQueue.DispatchAsync(InternetStatusCommand.FromSlashCommand(command));
 						break;
+					case "/benchmark":
+						await commandQueue.DispatchAsync(BenchmarkCommand.FromSlashCommand(command));
+            break;
 					case "/plot":
 						await commandQueue.DispatchAsync(PlotCommand.FromSlashCommand(command));
 						break;
