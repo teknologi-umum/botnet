@@ -26,6 +26,7 @@ using BotNet.Services.OpenAI;
 using BotNet.Services.Pemilu2024;
 using BotNet.Services.Pesto;
 using BotNet.Services.Piston;
+using BotNet.Services.Plot;
 using BotNet.Services.Preview;
 using BotNet.Services.Primbon;
 using BotNet.Services.ProgrammerHumor;
@@ -108,6 +109,7 @@ builder.Services.AddKokizzuVpsBenchmarkDataSource();
 builder.Services.AddSoundtrackProvider();
 builder.Services.AddTimeZoneService();
 builder.Services.AddQrCodeGenerator();
+builder.Services.AddMathPlotRenderer();
 builder.Services.AddOmdbClient();
 builder.Services.AddStatusPageClient();
 
