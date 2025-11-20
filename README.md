@@ -123,6 +123,104 @@ Required secrets (via User Secrets or environment variables):
 }
 ```
 
+## 💻 Visual Studio Code
+
+### Prerequisites
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit) (recommended) or [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+
+### Opening the Project
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/teknologi-umum/botnet.git
+   cd botnet
+   ```
+
+2. Initialize submodules:
+   ```bash
+   git submodule update --init --recursive
+   ```
+
+3. Open the project in VSCode:
+   ```bash
+   code .
+   ```
+
+### Setting Up User Secrets
+VSCode doesn't have a built-in UI for user secrets, so use the command line:
+
+```bash
+dotnet user-secrets init --project BotNet
+dotnet user-secrets set "BotOptions:AccessToken" "your-bot-token" --project BotNet
+dotnet user-secrets set "HostingOptions:UseLongPolling" "true" --project BotNet
+```
+
+Optional API keys (add as needed):
+```bash
+dotnet user-secrets set "OpenAiOptions:ApiKey" "your-openai-key" --project BotNet
+dotnet user-secrets set "GeminiOptions:ApiKey" "your-gemini-key" --project BotNet
+dotnet user-secrets set "StabilityOptions:ApiKey" "your-stability-key" --project BotNet
+dotnet user-secrets set "GoogleMapOptions:ApiKey" "your-google-maps-key" --project BotNet
+dotnet user-secrets set "OmdbOptions:ApiKey" "your-omdb-api-key" --project BotNet
+```
+
+### Building the Project
+**Using the integrated terminal (Ctrl+`):**
+```bash
+dotnet restore
+dotnet build
+```
+
+**Using VSCode tasks (Ctrl+Shift+B):**
+- Select "build" from the task list
+
+### Running the Bot
+**Using the integrated terminal:**
+```bash
+dotnet run --project BotNet
+```
+
+**Using the debugger (F5):**
+1. Open the "Run and Debug" panel (Ctrl+Shift+D)
+2. Select ".NET Core Launch (BotNet)" from the dropdown
+3. Press F5 or click "Start Debugging"
+
+The bot will start and connect to Telegram. You'll see log output in the Debug Console.
+
+### Running Tests
+**Using the integrated terminal:**
+```bash
+dotnet test BotNet.Tests/BotNet.Tests.csproj
+```
+
+**Using Test Explorer:**
+1. Open the Testing panel (beaker icon in the sidebar)
+2. Click "Run All Tests" or run individual tests
+
+### Recommended Extensions
+- **[C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)** - Complete C# development experience
+- **[C#](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)** - C# language support (included with C# Dev Kit)
+- **[EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)** - Maintains consistent coding styles
+- **[GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)** - Enhanced Git capabilities
+- **[Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)** - Docker support for containerization
+
+### Troubleshooting
+**IntelliSense not working:**
+- Restart the C# extension: Open Command Palette (Ctrl+Shift+P) → "OmniSharp: Restart OmniSharp"
+- Reload VSCode window: Ctrl+Shift+P → "Developer: Reload Window"
+
+**Build errors after git pull:**
+```bash
+git submodule update --init --recursive
+dotnet restore
+dotnet build
+```
+
+**Debugger not starting:**
+- Ensure `launch.json` is configured (VSCode should auto-generate it)
+- Check that the `BotOptions:AccessToken` user secret is set
+
 ## 🛠️ Development
 
 ### Project Structure
