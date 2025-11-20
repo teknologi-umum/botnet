@@ -38,6 +38,15 @@ namespace BotNet.Commands.Benchmark {
 			// Split by whitespace to get language/framework names
 			string[] languages = text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+			// Limit to maximum 3 parameters
+			if (languages.Length > 3) {
+				throw new UsageException(
+					message: "Please provide up to 3 languages or frameworks. Usage: /benchmark C# C++ Python",
+					parseMode: ParseMode.Html,
+					commandMessageId: slashCommand.MessageId
+				);
+			}
+
 			return new BenchmarkCommand(
 				languages: languages,
 				chat: slashCommand.Chat,
