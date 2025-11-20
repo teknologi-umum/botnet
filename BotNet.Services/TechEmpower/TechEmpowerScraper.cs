@@ -2,65 +2,69 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp;
-using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
 
 namespace BotNet.Services.TechEmpower {
 	public sealed class TechEmpowerScraper(
 		HttpClient httpClient
 	) {
-		private const string BenchmarkUrl = "https://www.techempower.com/benchmarks/#section=data-r22&test=composite";
+		private const string BenchmarkUrl = "https://www.techempower.com/benchmarks/results/round23/ph.json";
 
 		public async Task<BenchmarkResult[]> GetCompositeScoresAsync(CancellationToken cancellationToken) {
 			using HttpRequestMessage httpRequest = new(HttpMethod.Get, BenchmarkUrl);
 			using HttpResponseMessage httpResponse = await httpClient.SendAsync(httpRequest, cancellationToken);
 			httpResponse.EnsureSuccessStatusCode();
 
-			string html = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-
-			IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default);
-			IDocument document = await browsingContext.OpenAsync(req => req.Content(html), cancellationToken);
-
-			// The TechEmpower benchmark page uses a table structure
-			// We need to find the results table and extract framework, language, and scores
-			IHtmlTableElement? resultsTable = document.QuerySelector<IHtmlTableElement>("table.results");
+			TechEmpowerBenchmarkData? data = await httpResponse.Content.ReadFromJsonAsync<TechEmpowerBenchmarkData>(cancellationToken);
 			
-			if (resultsTable is null) {
-				throw new InvalidOperationException("Could not find benchmark results table on TechEmpower page.");
+			if (data is null) {
+				throw new InvalidOperationException("Could not parse TechEmpower benchmark JSON data.");
 			}
 
+			// Build a mapping of framework name to metadata
+			Dictionary<string, FrameworkMetadata> metadataMap = data.TestMetadata
+				.ToDictionary(m => m.Name, m => m);
+
 			List<BenchmarkResult> results = new();
-			IHtmlCollection<IHtmlTableRowElement> rows = resultsTable.Rows;
-			
-			// Skip header row (index 0)
-			for (int i = 1; i < rows.Length; i++) {
-				IHtmlTableRowElement row = rows[i];
-				IHtmlCollection<IHtmlTableCellElement> cells = row.Cells;
+
+			// Use plaintext test as it's a common baseline for raw performance
+			if (data.RawData?.Plaintext is null) {
+				throw new InvalidOperationException("Plaintext test data not found in benchmark results.");
+			}
+
+			foreach (KeyValuePair<string, List<TestResult>?> kvp in data.RawData.Plaintext) {
+				string frameworkName = kvp.Key;
+				List<TestResult>? testResults = kvp.Value;
+
+				if (testResults is null || testResults.Count == 0) continue;
+				if (!metadataMap.TryGetValue(frameworkName, out FrameworkMetadata? metadata)) continue;
+
+				// Use the highest concurrency level result (last in array) for best performance
+				TestResult bestResult = testResults[testResults.Count - 1];
 				
-				if (cells.Length < 4) continue;
-
-				// Typical structure: Rank | Framework | Language | Score
-				// Adjust indices based on actual table structure
-				string rankText = cells[0].TextContent.Trim();
-				string framework = cells[1].TextContent.Trim();
-				string language = cells[2].TextContent.Trim();
-				string scoreText = cells[3].TextContent.Trim();
-
-				if (!int.TryParse(rankText, out int rank)) continue;
-				if (!double.TryParse(scoreText.Replace(",", ""), out double score)) continue;
+				// Calculate requests per second: totalRequests / duration (15 seconds per test)
+				double requestsPerSecond = bestResult.TotalRequests / 15.0;
 
 				results.Add(new BenchmarkResult {
-					Rank = rank,
-					Framework = framework,
-					Language = language,
-					Score = score
+					Framework = metadata.DisplayName ?? frameworkName,
+					Language = metadata.Language ?? "Unknown",
+					Score = requestsPerSecond,
+					Rank = 0 // Will be set after sorting
 				});
 			}
 
-			return results.ToArray();
+			// Sort by score descending and assign ranks
+			BenchmarkResult[] sortedResults = results
+				.OrderByDescending(r => r.Score)
+				.ToArray();
+
+			for (int i = 0; i < sortedResults.Length; i++) {
+				sortedResults[i] = sortedResults[i] with { Rank = i + 1 };
+			}
+
+			return sortedResults;
 		}
 
 		public BenchmarkResult? GetBestResultForLanguage(BenchmarkResult[] results, string languageName) {
@@ -71,5 +75,25 @@ namespace BotNet.Services.TechEmpower {
 				.OrderBy(r => r.Rank)
 				.FirstOrDefault();
 		}
+	}
+
+	internal sealed record TechEmpowerBenchmarkData {
+		public FrameworkMetadata[] TestMetadata { get; init; } = Array.Empty<FrameworkMetadata>();
+		public RawDataContainer? RawData { get; init; }
+	}
+
+	internal sealed record RawDataContainer {
+		public Dictionary<string, List<TestResult>?>? Plaintext { get; init; }
+	}
+
+	internal sealed record FrameworkMetadata {
+		public string Name { get; init; } = null!;
+		public string? Language { get; init; }
+		public string? Framework { get; init; }
+		public string? DisplayName { get; init; }
+	}
+
+	internal sealed record TestResult {
+		public long TotalRequests { get; init; }
 	}
 }
