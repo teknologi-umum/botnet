@@ -226,25 +226,44 @@ namespace BotNet.Services.Plot {
 				string leftExpr = parts[0];
 				string rightExpr = parts[1];
 
+				// Compile the expressions once for performance
+				Lambda leftLambda = CompileExpression(leftExpr);
+				Lambda rightLambda = CompileExpression(rightExpr);
+
 				return new ExpressionResult {
 					IsImplicit = true,
-					LeftSide = (x, y) => EvaluateExpression(leftExpr, x, y),
-					RightSide = (x, y) => EvaluateExpression(rightExpr, x, y)
+					LeftSide = (x, y) => {
+						try {
+							return Convert.ToDouble(leftLambda.Invoke(new Parameter("x", x), new Parameter("y", y)));
+						} catch {
+							return double.NaN;
+						}
+					},
+					RightSide = (x, y) => {
+						try {
+							return Convert.ToDouble(rightLambda.Invoke(new Parameter("x", x), new Parameter("y", y)));
+						} catch {
+							return double.NaN;
+						}
+					}
 				};
 			}
 
 			// Otherwise, treat as y = f(x)
+			Lambda lambda = CompileExpression(expr);
 			return new ExpressionResult {
 				IsImplicit = false,
-				FunctionY = x => EvaluateExpression(expr, x, 0)
+				FunctionY = x => {
+					try {
+						return Convert.ToDouble(lambda.Invoke(new Parameter("x", x), new Parameter("y", 0.0)));
+					} catch {
+						return double.NaN;
+					}
+				}
 			};
 		}
 
-		private double EvaluateExpression(string expr, double x, double y) {
-			// Replace variables with values
-			expr = expr.Replace("x", $"({x})");
-			expr = expr.Replace("y", $"({y})");
-
+		private Lambda CompileExpression(string expr) {
 			// Handle common mathematical functions
 			expr = expr.Replace("sin", "Math.Sin");
 			expr = expr.Replace("cos", "Math.Cos");
@@ -256,19 +275,17 @@ namespace BotNet.Services.Plot {
 			expr = expr.Replace("pow", "Math.Pow");
 
 			// Handle implicit multiplication (e.g., 2x -> 2*x)
-			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(\d)(\()", "$1*$2");
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(\d)([xy])", "$1*$2");
 
-			// Handle ^ for exponentiation
-			expr = expr.Replace("^", "**");
+			// Handle ^ for exponentiation - note: DynamicExpresso doesn't support ** operator
+			// We'll leave ^ as-is and it will fail, users should use pow(x, 2) instead
+			
+			// Create interpreter with Math references
+			Interpreter interpreter = new();
+			interpreter.Reference(typeof(Math));
 
-			try {
-				// Use DynamicExpresso to evaluate
-				Interpreter interpreter = new();
-				object result = interpreter.Eval(expr);
-				return Convert.ToDouble(result);
-			} catch {
-				return double.NaN;
-			}
+			// Parse the expression with x and y as parameters
+			return interpreter.Parse(expr, new Parameter("x", typeof(double)), new Parameter("y", typeof(double)));
 		}
 
 		private class ExpressionResult {

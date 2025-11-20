@@ -1,6 +1,7 @@
 using System;
 using BotNet.Services.Plot;
 using BotNet.Services.Typography;
+using BotNet.Tests.Assertions;
 using Shouldly;
 using SkiaSharp;
 using Xunit;
@@ -95,7 +96,7 @@ namespace BotNet.Tests.Services.Plot {
 			byte[] result2 = _mathPlotRenderer.RenderPlot("x + y = 5");
 
 			// Assert
-			result1.ShouldNotBe(result2);
+			result1.ShouldNotContainSameImageAs(result2);
 		}
 
 		[Fact]
@@ -105,7 +106,7 @@ namespace BotNet.Tests.Services.Plot {
 			byte[] result2 = _mathPlotRenderer.RenderPlot("x + y = 1");
 
 			// Assert
-			result1.ShouldBe(result2);
+			result1.ShouldContainSameImageAs(result2);
 		}
 
 		[Fact]
