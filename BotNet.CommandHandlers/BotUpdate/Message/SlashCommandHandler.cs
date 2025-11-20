@@ -16,6 +16,7 @@ using BotNet.Commands.Khodam;
 using BotNet.Commands.Movie;
 using BotNet.Commands.No;
 using BotNet.Commands.Pick;
+using BotNet.Commands.Plot;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
 using BotNet.Commands.Privilege;
@@ -138,6 +139,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/benchmark":
 						await commandQueue.DispatchAsync(BenchmarkCommand.FromSlashCommand(command));
+            break;
+					case "/plot":
+						await commandQueue.DispatchAsync(PlotCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {

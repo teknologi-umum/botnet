@@ -123,6 +123,66 @@ Required secrets (via User Secrets or environment variables):
 }
 ```
 
+## 💻 Using Visual Studio Code
+
+### Prerequisites
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [vscode-solution-explorer extension](https://marketplace.visualstudio.com/items?itemName=fernandoescolar.vscode-solution-explorer)
+
+### Setting Up User Secrets
+1. Open the Solution Explorer in VSCode
+2. Right-click on the **BotNet** project
+3. Select **Manage User Secrets**
+4. Add the required secrets:
+
+```json
+{
+  "BotOptions:AccessToken": "your-bot-token",
+  "HostingOptions:UseLongPolling": true
+}
+```
+
+Optional API keys (add as needed):
+```json
+{
+  "BotOptions:AccessToken": "your-bot-token",
+  "HostingOptions:UseLongPolling": true,
+  "OpenAiOptions:ApiKey": "your-openai-key",
+  "GeminiOptions:ApiKey": "your-gemini-key",
+  "StabilityOptions:ApiKey": "your-stability-key",
+  "GoogleMapOptions:ApiKey": "your-google-maps-key",
+  "OmdbOptions:ApiKey": "your-omdb-api-key"
+}
+```
+
+### Building the Project
+1. Open the Solution Explorer in VSCode
+2. Right-click on the **BotNet** project
+3. Select **Build**
+
+### Running the Bot
+1. Open the Solution Explorer in VSCode
+2. Right-click on the **BotNet** project
+3. Select **Run** or **Debug**
+
+The bot will start and connect to Telegram. You'll see log output in the Debug Console.
+
+### Running Tests
+1. Open the Solution Explorer in VSCode
+2. Right-click on the **BotNet.Tests** project
+3. Select **Test**
+
+Alternatively, use the Test Explorer panel (beaker icon in the sidebar).
+
+### Recommended Extensions
+- **[vscode-solution-explorer](https://marketplace.visualstudio.com/items?itemName=fernandoescolar.vscode-solution-explorer)** - Solution Explorer for .NET projects
+- **[C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)** - Complete C# development experience
+- **[C#](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)** - C# language support (included with C# Dev Kit)
+- **[EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)** - Maintains consistent coding styles
+- **[GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)** - Enhanced Git capabilities
+- **[Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)** - Docker support for containerization
+
 ## 🛠️ Development
 
 ### Project Structure
