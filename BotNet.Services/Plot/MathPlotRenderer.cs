@@ -335,7 +335,7 @@ namespace BotNet.Services.Plot {
 			interpreter.Reference(typeof(Math));
 			
 			// Register custom functions
-			interpreter.SetFunction("Mod", (Func<double, double, double>)((a, b) => a % b));
+			interpreter.SetFunction("Mod", (Func<double, double, double>)((a, b) => b == 0 ? double.NaN : a % b));
 			interpreter.SetFunction("Clamp", (Func<double, double, double, double>)((value, min, max) => Math.Max(min, Math.Min(max, value))));
 			interpreter.SetFunction("Rand", (Func<double>)(() => Random.Shared.NextDouble()));
 			interpreter.SetFunction("Lerp", (Func<double, double, double, double>)((a, b, t) => a + (b - a) * t));
@@ -344,9 +344,9 @@ namespace BotNet.Services.Plot {
 			interpreter.SetFunction("Sec", (Func<double, double>)(x => 1.0 / Math.Cos(x)));
 			interpreter.SetFunction("Csc", (Func<double, double>)(x => 1.0 / Math.Sin(x)));
 			interpreter.SetFunction("Cot", (Func<double, double>)(x => 1.0 / Math.Tan(x)));
-			interpreter.SetFunction("Asec", (Func<double, double>)(x => Math.Acos(1.0 / x)));
-			interpreter.SetFunction("Acsc", (Func<double, double>)(x => Math.Asin(1.0 / x)));
-			interpreter.SetFunction("Acot", (Func<double, double>)(x => Math.Atan(1.0 / x)));
+			interpreter.SetFunction("Asec", (Func<double, double>)(x => Math.Abs(x) < 1 ? double.NaN : Math.Acos(1.0 / x)));
+			interpreter.SetFunction("Acsc", (Func<double, double>)(x => Math.Abs(x) < 1 ? double.NaN : Math.Asin(1.0 / x)));
+			interpreter.SetFunction("Acot", (Func<double, double>)(x => Math.PI / 2.0 - Math.Atan(x)));
 			
 			// Angle conversion functions
 			interpreter.SetFunction("Rad", (Func<double, double>)(deg => deg * Math.PI / 180.0));
