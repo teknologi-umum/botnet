@@ -13,6 +13,7 @@ using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.InternetStatus;
 using BotNet.Commands.Khodam;
+using BotNet.Commands.Mermaid;
 using BotNet.Commands.Movie;
 using BotNet.Commands.No;
 using BotNet.Commands.Pick;
@@ -142,6 +143,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
             break;
 					case "/plot":
 						await commandQueue.DispatchAsync(PlotCommand.FromSlashCommand(command));
+						break;
+					case "/mermaid":
+						await commandQueue.DispatchAsync(MermaidCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
