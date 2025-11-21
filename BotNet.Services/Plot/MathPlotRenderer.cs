@@ -264,25 +264,93 @@ namespace BotNet.Services.Plot {
 		}
 
 		private Lambda CompileExpression(string expr) {
-			// Handle common mathematical functions
-			expr = expr.Replace("sin", "Math.Sin");
-			expr = expr.Replace("cos", "Math.Cos");
-			expr = expr.Replace("tan", "Math.Tan");
-			expr = expr.Replace("sqrt", "Math.Sqrt");
-			expr = expr.Replace("abs", "Math.Abs");
-			expr = expr.Replace("exp", "Math.Exp");
-			expr = expr.Replace("log", "Math.Log");
-			expr = expr.Replace("pow", "Math.Pow");
-
 			// Handle implicit multiplication (e.g., 2x -> 2*x)
 			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(\d)([xy])", "$1*$2");
 
-			// Handle ^ for exponentiation - note: DynamicExpresso doesn't support ** operator
-			// We'll leave ^ as-is and it will fail, users should use pow(x, 2) instead
+			// Map function names to Math.* methods using word boundaries
+			// Use negative lookbehind to avoid matching already-replaced patterns
+			// Order matters: longer patterns first to avoid partial matches
+			
+			// Logarithmic functions (longer patterns first)
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\blog10\b", "Math.Log10", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\blog2\b", "Math.Log2", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bln\b", "Math.Log", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\blog\b", "Math.Log", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Hyperbolic trig functions (must come before basic trig to avoid sinh->Math.Sinh->Math.SinMath.H)
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\basinh\b", "Math.Asinh", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bacosh\b", "Math.Acosh", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\batanh\b", "Math.Atanh", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bsinh\b", "Math.Sinh", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bcosh\b", "Math.Cosh", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\btanh\b", "Math.Tanh", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Inverse trig functions (before basic trig)
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\basin\b", "Math.Asin", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bacos\b", "Math.Acos", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\batan\b", "Math.Atan", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Reciprocal trig functions (before basic trig)
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\basec\b", "Asec", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bacsc\b", "Acsc", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bacot\b", "Acot", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bsec\b", "Sec", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bcsc\b", "Csc", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bcot\b", "Cot", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Basic trigonometric functions
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bsin\b", "Math.Sin", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bcos\b", "Math.Cos", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\btan\b", "Math.Tan", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Arithmetic functions
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bsqrt\b", "Math.Sqrt", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bcbrt\b", "Math.Cbrt", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bpow\b", "Math.Pow", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bexp\b", "Math.Exp", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\babs\b", "Math.Abs", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Rounding and comparison functions
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bmax\b", "Math.Max", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bmin\b", "Math.Min", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bround\b", "Math.Round", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bfloor\b", "Math.Floor", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bceil\b", "Math.Ceiling", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bmod\b", "Mod", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bclamp\b", "Clamp", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\brand\b", "Rand", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\blerp\b", "Lerp", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Angle conversion functions
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\brad\b", "Rad", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\bdeg\b", "Deg", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			
+			// Constants
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\bpi\b", "Math.PI", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"(?<!Math\.)\be\b", "Math.E", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+			expr = System.Text.RegularExpressions.Regex.Replace(expr, @"\binf\b", "double.PositiveInfinity", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 			
 			// Create interpreter with Math references
 			Interpreter interpreter = new();
 			interpreter.Reference(typeof(Math));
+			
+			// Register custom functions
+			interpreter.SetFunction("Mod", (Func<double, double, double>)((a, b) => b == 0 ? double.NaN : a % b));
+			interpreter.SetFunction("Clamp", (Func<double, double, double, double>)((value, min, max) => Math.Max(min, Math.Min(max, value))));
+			interpreter.SetFunction("Rand", (Func<double>)(() => Random.Shared.NextDouble()));
+			interpreter.SetFunction("Lerp", (Func<double, double, double, double>)((a, b, t) => a + (b - a) * t));
+			
+			// Reciprocal trigonometric functions
+			interpreter.SetFunction("Sec", (Func<double, double>)(x => 1.0 / Math.Cos(x)));
+			interpreter.SetFunction("Csc", (Func<double, double>)(x => 1.0 / Math.Sin(x)));
+			interpreter.SetFunction("Cot", (Func<double, double>)(x => 1.0 / Math.Tan(x)));
+			interpreter.SetFunction("Asec", (Func<double, double>)(x => Math.Abs(x) < 1 ? double.NaN : Math.Acos(1.0 / x)));
+			interpreter.SetFunction("Acsc", (Func<double, double>)(x => Math.Abs(x) < 1 ? double.NaN : Math.Asin(1.0 / x)));
+			interpreter.SetFunction("Acot", (Func<double, double>)(x => Math.PI / 2.0 - Math.Atan(x)));
+			
+			// Angle conversion functions
+			interpreter.SetFunction("Rad", (Func<double, double>)(deg => deg * Math.PI / 180.0));
+			interpreter.SetFunction("Deg", (Func<double, double>)(rad => rad * 180.0 / Math.PI));
 
 			// Parse the expression with x and y as parameters
 			return interpreter.Parse(expr, new Parameter("x", typeof(double)), new Parameter("y", typeof(double)));
