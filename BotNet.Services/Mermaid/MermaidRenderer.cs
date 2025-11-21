@@ -10,7 +10,7 @@ namespace BotNet.Services.Mermaid {
 	) {
 		public async Task<byte[]> RenderMermaidAsync(string mermaidCode, CancellationToken cancellationToken) {
 			if (string.IsNullOrWhiteSpace(mermaidCode)) {
-				throw new ArgumentNullException(nameof(mermaidCode));
+				throw new ArgumentException("Mermaid code cannot be null or whitespace.", nameof(mermaidCode));
 			}
 
 			// Use Kroki API to render mermaid diagrams
