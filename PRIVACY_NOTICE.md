@@ -94,28 +94,17 @@ This bot is an open-source Telegram bot that provides various services including
 
 **Purpose:** To execute your code in a sandboxed environment and return the output.
 
-**Service Type:** Self-hosted service (not operated by a third-party company)
+**Service Type:** Community-hosted service
+
+**Privacy Policy:** https://github.com/engineer-man/piston (open source project)
 
 **Data Retention:** Code is executed in ephemeral containers and not persisted after execution completes.
 
----
-
-### 7. Pesto Code Execution Service
-
-**Commands:** Code execution features  
-**Data Sent:**
-- Your source code
-- Programming language and version information
-
-**Purpose:** To execute your code and return results.
-
-**Service Type:** Hosted service requiring authentication token
-
-**Data Retention:** Consult with Pesto service provider for data retention policies.
+**Note:** The bot currently uses Piston for all code execution commands. Pesto is configured as an alternative service but is not actively used at this time.
 
 ---
 
-### 8. OMDb API (omdbapi.com)
+### 7. OMDb API (omdbapi.com)
 
 **Commands:** `/movie`  
 **Data Sent:**
@@ -129,7 +118,7 @@ This bot is an open-source Telegram bot that provides various services including
 
 ---
 
-### 9. wttr.in Weather Service (wttr.in)
+### 8. wttr.in Weather Service (wttr.in)
 
 **Commands:** `/weather`  
 **Data Sent:**
@@ -145,7 +134,7 @@ This bot is an open-source Telegram bot that provides various services including
 
 ---
 
-### 10. Google Sheets API
+### 9. Google Sheets API
 
 **Commands:** Internal data sources  
 **Data Sent:**
@@ -170,6 +159,7 @@ The following services are used by the bot but do **not** receive any personal d
 - **KPU Sirekap** - Indonesian election data (public data only)
 - **Status Page** services - Service status monitoring (no user input)
 - **Various public website scrapers** - Programmer humor, tech benchmarks, etc.
+- **Pesto** - Alternative code execution service (configured but not currently in use)
 
 ---
 

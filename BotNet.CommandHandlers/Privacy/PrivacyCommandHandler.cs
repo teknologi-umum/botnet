@@ -36,7 +36,7 @@ namespace BotNet.CommandHandlers.Privacy {
 
 						<b>Other Services:</b>
 						• Google Maps - /map (location searches)
-						• Piston/Pesto - code execution (/python, /java, etc.)
+						• Piston - code execution (/python, /java, etc.)
 						• OMDb - /movie (movie searches)
 						• wttr.in - /weather (location queries)
 
