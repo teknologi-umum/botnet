@@ -1,6 +1,10 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.CommandPrioritization;
+using BotNet.Commands.Common;
+using BotNet.Commands.Mermaid;
+using BotNet.Commands.SenderAggregate;
 using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
@@ -40,6 +44,58 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						command: slashCommand
 					);
 				}
+
+				return;
+			}
+
+			// Handle mermaid code blocks
+			if (update.Message.Entities?.FirstOrDefault(
+				    entity => entity is {
+					    Type: MessageEntityType.Pre
+				    } && entity.Language?.ToLowerInvariant() == "mermaid"
+			    ) is {
+				    Offset: int mermaidOffset,
+				    Length: int mermaidLength
+			    } &&
+			    update.Message.Text?.Substring(mermaidOffset, mermaidLength) is { } mermaidCode) {
+				// Only process if it's a slash command, a reply to the bot, or mentions the bot
+				bool isSlashCommand = update.Message.Entities?.FirstOrDefault() is {
+					Type: MessageEntityType.BotCommand,
+					Offset: 0
+				};
+
+				User botProfile = await botProfileAccessor.GetBotProfileAsync(cancellationToken);
+				bool isReplyToBot = update.Message.ReplyToMessage?.From?.IsBot == true &&
+				                     update.Message.ReplyToMessage?.From?.Id == botProfile.Id;
+
+				bool mentionsBot = false;
+				if (update.Message.Entities is not null && update.Message.Text is not null) {
+					foreach (MessageEntity entity in update.Message.Entities) {
+						if (entity.Type == MessageEntityType.Mention) {
+							string mention = update.Message.Text.Substring(entity.Offset, entity.Length);
+							if (mention == $"@{botProfile.Username}") {
+								mentionsBot = true;
+								break;
+							}
+						}
+					}
+				}
+
+				if (isSlashCommand || isReplyToBot || mentionsBot) {
+					if (ChatBase.TryCreate(update.Message.Chat, commandPriorityCategorizer, out ChatBase? chat) &&
+					    update.Message.From is { } from &&
+					    HumanSender.TryCreate(from, commandPriorityCategorizer, out HumanSender? sender)) {
+						await commandQueue.DispatchAsync(
+							MermaidCommand.FromCodeBlock(
+								mermaidCode: mermaidCode,
+								messageId: new Commands.BotUpdate.Message.MessageId(update.Message.MessageId),
+								chat: chat,
+								sender: sender
+							)
+						);
+					}
+				}
+				// Otherwise, fail silently as per requirements
 
 				return;
 			}
