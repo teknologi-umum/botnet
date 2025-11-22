@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.Primbon;
+using Mediator;
 using BotNet.Services.ChineseCalendar;
 using BotNet.Services.Primbon;
 using BotNet.Services.RateLimit;
@@ -14,7 +15,7 @@ namespace BotNet.CommandHandlers.Primbon {
 	) : ICommandHandler<PrimbonCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
 
-		public async Task Handle(PrimbonCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(PrimbonCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 
@@ -70,7 +71,9 @@ namespace BotNet.CommandHandlers.Primbon {
 					replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
+		return default;
 			}
+	return default;
 		}
 	}
 }

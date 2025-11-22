@@ -1,4 +1,5 @@
 using BotNet.Commands.Plot;
+using Mediator;
 using BotNet.Services.Plot;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ namespace BotNet.CommandHandlers.Plot {
 	) : ICommandHandler<PlotCommand> {
 		internal static readonly RateLimiter PlotRateLimiter = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(5));
 
-		public async Task Handle(PlotCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(PlotCommand command, CancellationToken cancellationToken) {
 			try {
 				PlotRateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
@@ -27,7 +28,7 @@ namespace BotNet.CommandHandlers.Plot {
 					},
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			// Fire and forget
@@ -71,6 +72,7 @@ namespace BotNet.CommandHandlers.Plot {
 					);
 				}
 			}, logger);
+	return default;
 		}
 	}
 }

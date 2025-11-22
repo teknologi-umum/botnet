@@ -1,4 +1,6 @@
 ﻿using BotNet.CommandHandlers.AI.RateLimit;
+using Mediator;
+using Mediator;
 using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
 using BotNet.Commands.BotUpdate.Message;
@@ -28,7 +30,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 
-		public Task Handle(
+		public async ValueTask<Unit> Handle(
 			GeminiTextPrompt textPrompt,
 			CancellationToken cancellationToken
 		) {
@@ -39,7 +41,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 						userId: textPrompt.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					return _telegramBotClient.SendMessage(
+					await _telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
@@ -49,6 +51,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 						),
 						cancellationToken: cancellationToken
 					);
+	return default;
 				}
 			} else {
 				try {
@@ -64,13 +67,14 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 						);
 					}
 				} catch (RateLimitExceededException exc) {
-					return _telegramBotClient.SendMessage(
+					await _telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 						parseMode: ParseMode.Html,
 						replyParameters: new ReplyParameters { MessageId = textPrompt.Command.MessageId },
 						cancellationToken: cancellationToken
 					);
+	return default;
 				}
 			}
 
@@ -149,7 +153,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 							replyParameters: new ReplyParameters { MessageId = textPrompt.Command.MessageId },
 							cancellationToken: cancellationToken
 						);
-						return;
+					return;
 					}
 
 					// Track thread
@@ -164,7 +168,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 				}, logger
 			);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

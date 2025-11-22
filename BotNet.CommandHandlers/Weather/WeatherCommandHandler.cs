@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.Weather;
+using Mediator;
 using BotNet.Services.RateLimit;
 using BotNet.Services.Weather;
 using BotNet.Services.Weather.Models;
@@ -15,17 +16,18 @@ namespace BotNet.CommandHandlers.Weather {
 	) : ICommandHandler<WeatherCommand> {
 		private static readonly RateLimiter GetWeatherRateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
 
-		public Task Handle(WeatherCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(WeatherCommand command, CancellationToken cancellationToken) {
 			try {
 				GetWeatherRateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
+						return default;
 			}
 
 			// Fire and forget
@@ -44,6 +46,7 @@ namespace BotNet.CommandHandlers.Weather {
 							replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 							cancellationToken: CancellationToken.None
 						);
+
 						return;
 					}
 
@@ -56,6 +59,7 @@ namespace BotNet.CommandHandlers.Weather {
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: cancellationToken
 					);
+
 				} catch (Exception exc) {
 					logger.LogError(exc, "Could not get weather");
 					await telegramBotClient.SendMessage(
@@ -65,10 +69,11 @@ namespace BotNet.CommandHandlers.Weather {
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: CancellationToken.None
 					);
+
 				}
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

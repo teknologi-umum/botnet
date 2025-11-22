@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands.GoogleMaps;
 using BotNet.Services.GoogleMap;
+using Mediator;
 using BotNet.Services.GoogleMap.Models;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.Logging;
@@ -20,17 +21,18 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 	) : ICommandHandler<MapCommand> {
 		private static readonly RateLimiter SearchPlaceRateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(2));
 
-		public Task Handle(MapCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(MapCommand command, CancellationToken cancellationToken) {
 			try {
 				SearchPlaceRateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
+				return default;
 			}
 
 			// Fire and forget
@@ -202,7 +204,7 @@ namespace BotNet.CommandHandlers.GoogleMaps {
 				}
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

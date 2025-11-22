@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Mediator;
 using BotNet.Commands.Benchmark;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
@@ -17,7 +18,7 @@ namespace BotNet.CommandHandlers.Benchmark {
 	) : ICommandHandler<BenchmarkCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(5));
 
-		public async Task Handle(BenchmarkCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(BenchmarkCommand command, CancellationToken cancellationToken) {
 			// Rate limiting
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
@@ -27,7 +28,7 @@ namespace BotNet.CommandHandlers.Benchmark {
 					text: $"Rate limit exceeded. Try again {exc.Cooldown}.",
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			try {
@@ -78,7 +79,7 @@ namespace BotNet.CommandHandlers.Benchmark {
 						},
 						cancellationToken: cancellationToken
 					);
-					return;
+					return default;
 				}
 
 				// Generate chart visualization
@@ -107,6 +108,7 @@ namespace BotNet.CommandHandlers.Benchmark {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 
 		private static string FormatBenchmarkResponse(List<BenchmarkResult> results) {

@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using Mediator;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.Art;
@@ -19,11 +20,11 @@ namespace BotNet.CommandHandlers.Art {
 	) : ICommandHandler<ArtCommand> {
 		internal static readonly RateLimiter ImageGenerationRateLimiter = RateLimiter.PerUser(2, TimeSpan.FromMinutes(3));
 
-		public Task Handle(ArtCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(ArtCommand command, CancellationToken cancellationToken) {
 			try {
 				ImageGenerationRateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Anda belum mendapat giliran. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
@@ -32,6 +33,7 @@ namespace BotNet.CommandHandlers.Art {
 					},
 					cancellationToken: cancellationToken
 				);
+						return default;
 			}
 
 			// Fire and forget
@@ -93,11 +95,12 @@ namespace BotNet.CommandHandlers.Art {
 							},
 							cancellationToken: cancellationToken
 						);
+
 						break;
 				}
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

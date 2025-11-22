@@ -1,4 +1,5 @@
 using System;
+using Mediator;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Commands.Soundtrack;
@@ -14,7 +15,7 @@ namespace BotNet.CommandHandlers.Soundtrack {
 	) : ICommandHandler<SoundtrackCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(10));
 
-		public async Task Handle(SoundtrackCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(SoundtrackCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Command.Chat.Id, command.Command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
@@ -27,7 +28,7 @@ namespace BotNet.CommandHandlers.Soundtrack {
 					},
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			(SoundtrackSite first, SoundtrackSite second) = soundtrackProvider.GetRandomPicks();
@@ -53,6 +54,7 @@ namespace BotNet.CommandHandlers.Soundtrack {
 				},
 				cancellationToken: cancellationToken
 			);
+	return default;
 		}
 	}
 }

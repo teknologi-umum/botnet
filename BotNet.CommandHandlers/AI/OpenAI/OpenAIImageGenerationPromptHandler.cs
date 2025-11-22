@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using Mediator;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
@@ -17,7 +18,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<OpenAiImageGenerationPromptHandler> logger
 	) : ICommandHandler<OpenAiImageGenerationPrompt> {
-		public Task Handle(OpenAiImageGenerationPrompt command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(OpenAiImageGenerationPrompt command, CancellationToken cancellationToken) {
 			// Fire and forget
 			BackgroundTask.Run(async () => {
 				Uri generatedImageUrl;
@@ -71,7 +72,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

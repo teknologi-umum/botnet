@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.BMKG;
+using Mediator;
 using BotNet.Services.BMKG;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.Logging;
@@ -14,11 +15,11 @@ namespace BotNet.CommandHandlers.BMKG {
 	) : ICommandHandler<BmkgCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(3, TimeSpan.FromMinutes(2));
 
-		public Task Handle(BmkgCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(BmkgCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Sabar dulu ya, tunggu giliran yang lain. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
@@ -27,6 +28,7 @@ namespace BotNet.CommandHandlers.BMKG {
 					},
 					cancellationToken: cancellationToken
 				);
+						return default;
 			}
 
 			// Fire and forget
@@ -43,7 +45,7 @@ namespace BotNet.CommandHandlers.BMKG {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

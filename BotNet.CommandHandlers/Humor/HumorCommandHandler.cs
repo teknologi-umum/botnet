@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands.Humor;
 using BotNet.Services.ProgrammerHumor;
+using Mediator;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -14,17 +15,18 @@ namespace BotNet.CommandHandlers.Humor {
 	) : ICommandHandler<HumorCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(2, TimeSpan.FromMinutes(2));
 
-		public Task Handle(HumorCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(HumorCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: command.Chat.Id,
 					text: $"Bentar ya saya mikir dulu jokenya. Coba lagi {exc.Cooldown}.",
 					parseMode: ParseMode.Html,
 					replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
+				return default;
 			}
 
 			// Fire and forget
@@ -40,7 +42,7 @@ namespace BotNet.CommandHandlers.Humor {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

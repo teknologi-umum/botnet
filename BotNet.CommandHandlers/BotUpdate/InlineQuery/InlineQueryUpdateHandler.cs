@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using BotNet.Commands.BotUpdate.InlineQuery;
+using Mediator;
 using BotNet.Services.Brainfuck;
 using BotNet.Services.CopyPasta;
 using BotNet.Services.FancyText;
@@ -13,7 +14,7 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 		BrainfuckTranspiler brainfuckTranspiler,
 		ILogger<InlineQueryUpdateHandler> logger
 	) : ICommandHandler<InlineQueryUpdate> {
-		public Task Handle(InlineQueryUpdate command, CancellationToken cancellationToken) {
+		public ValueTask<Unit> Handle(InlineQueryUpdate command, CancellationToken cancellationToken) {
 			// Fire and forget
 			BackgroundTask.Run(async () => {
 				// Query must not be empty
@@ -63,7 +64,7 @@ namespace BotNet.CommandHandlers.BotUpdate.InlineQuery {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

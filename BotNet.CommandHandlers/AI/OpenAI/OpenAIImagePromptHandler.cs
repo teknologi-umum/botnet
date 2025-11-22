@@ -1,4 +1,5 @@
 ﻿using BotNet.CommandHandlers.Art;
+using Mediator;
 using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.AI.Stability;
@@ -30,10 +31,10 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		private static readonly RateLimiter VisionRateLimiter = RateLimiter.PerUserPerChat(1, TimeSpan.FromMinutes(15));
 		private static readonly RateLimiter VipVisionRateLimiter = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(2));
 
-		public Task Handle(OpenAiImagePrompt imagePrompt, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(OpenAiImagePrompt imagePrompt, CancellationToken cancellationToken) {
 			if (imagePrompt.Command.Sender is not VipSender
 				&& imagePrompt.Command.Chat is not HomeGroupChat) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: MarkdownV2Sanitizer.Sanitize("Vision tidak bisa dipakai di sini."),
 					parseMode: ParseMode.MarkdownV2,
@@ -42,6 +43,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					},
 					cancellationToken: cancellationToken
 				);
+						return default;
 			}
 
 			try {
@@ -57,7 +59,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					);
 				}
 			} catch (RateLimitExceededException exc) {
-				return telegramBotClient.SendMessage(
+				await telegramBotClient.SendMessage(
 					chatId: imagePrompt.Command.Chat.Id,
 					text: $"<code>Anda terlalu banyak menggunakan vision. Coba lagi {exc.Cooldown}.</code>",
 					parseMode: ParseMode.Html,
@@ -66,6 +68,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					},
 					cancellationToken: cancellationToken
 				);
+						return default;
 			}
 
 			// Fire and forget
@@ -86,6 +89,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						},
 						cancellationToken: cancellationToken
 					);
+
 					return;
 				}
 
@@ -136,6 +140,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 								},
 								cancellationToken: cancellationToken
 							);
+
 							return;
 						}
 					}
@@ -217,7 +222,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 
 		private static async Task<(string? ImageBase64, string? Error)> GetImageBase64Async(ITelegramBotClient botClient, string fileId, CancellationToken cancellationToken) {

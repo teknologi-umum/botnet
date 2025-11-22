@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
+using Mediator;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 
@@ -8,7 +9,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache
 	) : ICommandHandler<AiCallCommand> {
-		public async Task Handle(AiCallCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(AiCallCommand command, CancellationToken cancellationToken) {
 			switch (command.CallSign) {
 				case "GPT" when command.ImageFileId is null && command.ReplyToMessage?.ImageFileId is null: {
 						await commandQueue.DispatchAsync(
@@ -20,6 +21,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 							)
 						);
 						break;
+		return default;
 					}
 				case "GPT" when command.ImageFileId is not null || command.ReplyToMessage?.ImageFileId is not null: {
 						await commandQueue.DispatchAsync(
@@ -44,6 +46,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					}
 			}
+	return default;
 		}
 	}
 }

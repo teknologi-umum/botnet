@@ -1,13 +1,14 @@
 ﻿using BotNet.Commands.FlipFlop;
 using BotNet.Services.ImageFlip;
+using Mediator;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace BotNet.CommandHandlers.FlipFlop {
-	internal sealed class FlipFlopCommandHandler(
+	public sealed class FlipFlopCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<FlipFlopCommand> {
-		public async Task Handle(FlipFlopCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(FlipFlopCommand command, CancellationToken cancellationToken) {
 			// Download original image
 			using MemoryStream originalImageStream = new();
 			await telegramBotClient.GetInfoAndDownloadFile(
@@ -33,6 +34,7 @@ namespace BotNet.CommandHandlers.FlipFlop {
 					break;
 			default:
 				throw new InvalidOperationException($"Unknown command: {command.Command}");
+		return default;
 			}
 
 			// Send result image
@@ -43,6 +45,7 @@ namespace BotNet.CommandHandlers.FlipFlop {
 				replyParameters: new ReplyParameters { MessageId = command.ImageMessageId },
 				cancellationToken: cancellationToken
 			);
+	return default;
 		}
 	}
 }

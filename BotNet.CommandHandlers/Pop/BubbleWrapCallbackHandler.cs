@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands.Pop;
+using Mediator;
 using BotNet.Services.BubbleWrap;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -10,7 +11,7 @@ namespace BotNet.CommandHandlers.Pop {
 		BubbleWrapKeyboardGenerator bubbleWrapKeyboardGenerator,
 		ILogger<BubbleWrapCallbackHandler> logger
 	) : ICommandHandler<BubbleWrapCallback> {
-		public Task Handle(BubbleWrapCallback command, CancellationToken cancellationToken) {
+		public ValueTask<Unit> Handle(BubbleWrapCallback command, CancellationToken cancellationToken) {
 			InlineKeyboardMarkup poppedKeyboardMarkup = bubbleWrapKeyboardGenerator.HandleCallback(
 				chatId: command.ChatId,
 				messageId: command.MessageId,
@@ -27,7 +28,7 @@ namespace BotNet.CommandHandlers.Pop {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

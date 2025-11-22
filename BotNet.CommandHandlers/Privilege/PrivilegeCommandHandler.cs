@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Privilege;
+using Mediator;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.Logging;
@@ -14,12 +15,12 @@ namespace BotNet.CommandHandlers.Privilege {
 	) : ICommandHandler<PrivilegeCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(1, TimeSpan.FromMinutes(1));
 
-		public Task Handle(PrivilegeCommand command, CancellationToken cancellationToken) {
+		public ValueTask<Unit> Handle(PrivilegeCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException) {
 				// Silently reject commands after rate limit exceeded
-				return Task.CompletedTask;
+				return default;
 			}
 
 			// Fire and forget
@@ -130,7 +131,7 @@ namespace BotNet.CommandHandlers.Privilege {
 				}
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

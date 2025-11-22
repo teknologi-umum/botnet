@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Mediator;
 using BotNet.Commands.ChatAggregate;
 using BotNet.Commands.Exec;
 using BotNet.Services.MarkdownV2;
@@ -15,11 +16,11 @@ namespace BotNet.CommandHandlers.Exec {
 		PistonClient pistonClient,
 		ILogger<ExecCommandHandler> logger
 	) : ICommandHandler<ExecCommand> {
-		public Task Handle(ExecCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(ExecCommand command, CancellationToken cancellationToken) {
 			// Ignore non-mentioned commands in home group
 			if (command.Chat is HomeGroupChat
 				&& !command.IsMentioned) {
-				return Task.CompletedTask;
+				return default;
 			}
 
 			// Fire and forget
@@ -87,7 +88,7 @@ namespace BotNet.CommandHandlers.Exec {
 				}
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using BotNet.Commands.Fuck;
+using Mediator;
 using BotNet.Services.Brainfuck;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,7 +10,7 @@ namespace BotNet.CommandHandlers.Fuck {
 	public sealed class FuckCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<FuckCommand> {
-		public async Task Handle(FuckCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(FuckCommand command, CancellationToken cancellationToken) {
 			try {
 				string stdout = BrainfuckInterpreter.RunBrainfuck(
 					code: command.Code
@@ -45,7 +46,9 @@ namespace BotNet.CommandHandlers.Fuck {
 					replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 					cancellationToken: cancellationToken
 				);
+		return default;
 			}
+	return default;
 		}
 	}
 }

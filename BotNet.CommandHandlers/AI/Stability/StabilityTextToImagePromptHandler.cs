@@ -1,4 +1,5 @@
 ﻿using BotNet.Commands;
+using Mediator;
 using BotNet.Commands.AI.Stability;
 using BotNet.Commands.BotUpdate.Message;
 using BotNet.Commands.CommandPrioritization;
@@ -18,7 +19,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<StabilityTextToImagePromptHandler> logger
 	) : ICommandHandler<StabilityTextToImagePrompt> {
-		public Task Handle(StabilityTextToImagePrompt command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(StabilityTextToImagePrompt command, CancellationToken cancellationToken) {
 			// Fire and forget
 			BackgroundTask.Run(async () => {
 				byte[] generatedImage;
@@ -81,7 +82,7 @@ namespace BotNet.CommandHandlers.AI.Stability {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

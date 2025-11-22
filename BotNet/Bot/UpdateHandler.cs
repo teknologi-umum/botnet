@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using BotNet.Commands.BotUpdate.CallbackQuery;
 using BotNet.Commands.BotUpdate.InlineQuery;
 using BotNet.Commands.BotUpdate.Message;
-using MediatR;
+using Mediator;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;

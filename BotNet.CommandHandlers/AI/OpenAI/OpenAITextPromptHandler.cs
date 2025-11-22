@@ -1,4 +1,5 @@
 ﻿using BotNet.CommandHandlers.AI.RateLimit;
+using Mediator;
 using BotNet.CommandHandlers.Art;
 using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
@@ -29,7 +30,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 	) : ICommandHandler<OpenAiTextPrompt> {
 		internal static readonly RateLimiter ChatRateLimiter = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(15));
 
-		public Task Handle(OpenAiTextPrompt textPrompt, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(OpenAiTextPrompt textPrompt, CancellationToken cancellationToken) {
 			if (textPrompt.Command.Chat is GroupChat) {
 				try {
 					AiRateLimiters.GroupChatRateLimiter.ValidateActionRate(
@@ -37,7 +38,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						userId: textPrompt.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					return telegramBotClient.SendMessage(
+					await telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown} atau lanjutkan di private chat.</code>",
 						parseMode: ParseMode.Html,
@@ -49,6 +50,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						),
 						cancellationToken: cancellationToken
 					);
+							return default;
 				}
 			} else {
 				try {
@@ -57,7 +59,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						userId: textPrompt.Command.Sender.Id
 					);
 				} catch (RateLimitExceededException exc) {
-					return telegramBotClient.SendMessage(
+					await telegramBotClient.SendMessage(
 						chatId: textPrompt.Command.Chat.Id,
 						text: $"<code>Anda terlalu banyak memanggil AI. Coba lagi {exc.Cooldown}.</code>",
 						parseMode: ParseMode.Html,
@@ -66,6 +68,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						},
 						cancellationToken: cancellationToken
 					);
+							return default;
 				}
 			}
 
@@ -121,6 +124,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 								},
 								cancellationToken: cancellationToken
 							);
+
 							return;
 						}
 					}
@@ -205,7 +209,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 				);
 			}, logger);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }
