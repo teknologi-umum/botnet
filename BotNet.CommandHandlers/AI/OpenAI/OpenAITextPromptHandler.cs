@@ -98,7 +98,6 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						MessageId = textPrompt.Command.MessageId
 					}
 				);
-						return default;
 
 				string response = await openAiClient.ChatAsync(
 					model: textPrompt switch {
@@ -125,7 +124,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 								},
 								cancellationToken: cancellationToken
 							);
-									return default;
+
 							return;
 						}
 					}

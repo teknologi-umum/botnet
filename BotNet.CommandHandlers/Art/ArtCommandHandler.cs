@@ -49,7 +49,6 @@ namespace BotNet.CommandHandlers.Art {
 								},
 								cancellationToken: cancellationToken
 							);
-									return default;
 
 							await commandQueue.DispatchAsync(
 								new OpenAiImageGenerationPrompt(
@@ -73,7 +72,6 @@ namespace BotNet.CommandHandlers.Art {
 								},
 								cancellationToken: cancellationToken
 							);
-									return default;
 
 							await commandQueue.DispatchAsync(
 								new StabilityTextToImagePrompt(
@@ -97,7 +95,7 @@ namespace BotNet.CommandHandlers.Art {
 							},
 							cancellationToken: cancellationToken
 						);
-								return default;
+
 						break;
 				}
 			}, logger);

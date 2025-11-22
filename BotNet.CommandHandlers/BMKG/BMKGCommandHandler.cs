@@ -15,7 +15,7 @@ namespace BotNet.CommandHandlers.BMKG {
 	) : ICommandHandler<BmkgCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(3, TimeSpan.FromMinutes(2));
 
-		public ValueTask<Unit> Handle(BmkgCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(BmkgCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {

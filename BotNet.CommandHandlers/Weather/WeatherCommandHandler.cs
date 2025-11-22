@@ -46,7 +46,7 @@ namespace BotNet.CommandHandlers.Weather {
 							replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 							cancellationToken: CancellationToken.None
 						);
-								return default;
+
 						return;
 					}
 
@@ -59,7 +59,7 @@ namespace BotNet.CommandHandlers.Weather {
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: cancellationToken
 					);
-							return default;
+
 				} catch (Exception exc) {
 					logger.LogError(exc, "Could not get weather");
 					await telegramBotClient.SendMessage(
@@ -69,7 +69,7 @@ namespace BotNet.CommandHandlers.Weather {
 						replyParameters: new ReplyParameters { MessageId = command.CommandMessageId },
 						cancellationToken: CancellationToken.None
 					);
-							return default;
+
 				}
 			}, logger);
 

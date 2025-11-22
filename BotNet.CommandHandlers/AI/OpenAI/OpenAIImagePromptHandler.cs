@@ -89,7 +89,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						},
 						cancellationToken: cancellationToken
 					);
-							return default;
+
 					return;
 				}
 
@@ -117,7 +117,6 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						MessageId = imagePrompt.Command.MessageId
 					}
 				);
-						return default;
 
 				string response = await openAiClient.ChatAsync(
 					model: "gpt-4-vision-preview",
@@ -141,7 +140,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 								},
 								cancellationToken: cancellationToken
 							);
-									return default;
+
 							return;
 						}
 					}
