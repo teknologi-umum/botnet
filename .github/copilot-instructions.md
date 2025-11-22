@@ -327,3 +327,47 @@ Each external API gets:
 - MediatR: https://github.com/jbogard/MediatR
 - Prometheus Metrics: https://prometheus.io/docs/concepts/metric_types/
 - Project repo: teknologi-umum/botnet
+
+## Privacy Notice Maintenance
+
+**IMPORTANT**: Whenever a new third-party service is added to the bot, you MUST update the privacy notice.
+
+### Privacy Notice Update Checklist
+
+When adding a new service that makes HTTP requests to external APIs:
+
+1. **Audit the new service:**
+   - Identify what user data is sent to the API
+   - Determine if the data is sensitive (user messages, code, images, location, etc.)
+   - Find the service's privacy policy URL
+
+2. **Update PRIVACY_NOTICE.md:**
+   - Add the new service under the appropriate section
+   - Include: service name, commands that use it, data sent, purpose, privacy policy link
+   - If the service receives user-generated content, add it to "Third-Party Services That Receive Your Data"
+   - If the service only fetches public data, add it to "Services That DO NOT Receive User-Generated Content"
+
+3. **Update the /privacy command:**
+   - Edit `BotNet.CommandHandlers/Privacy/PrivacyCommandHandler.cs`
+   - Add the new service to the summarized message if it handles sensitive data
+   - Keep the summary brief enough to fit in a Telegram message
+
+4. **Test:**
+   - Run the /privacy command to ensure the message displays correctly
+   - Verify the PRIVACY_NOTICE.md link is accessible
+   - Ensure all new service integrations are documented
+
+### Privacy Audit Guidelines
+
+**Services that MUST be documented:**
+- Any service receiving user text input (messages, prompts, queries)
+- Any service receiving user code for execution
+- Any service receiving user images or files
+- Any service receiving location data or personal information
+
+**Services that may be skipped:**
+- Internal services (self-hosted, no data sent externally)
+- Services that only fetch public data without user input
+- Services that receive only non-sensitive technical parameters
+
+**When in doubt, document it.** Transparency is key to user trust.

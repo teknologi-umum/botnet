@@ -19,6 +19,7 @@ using BotNet.Commands.Pick;
 using BotNet.Commands.Plot;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
+using BotNet.Commands.Privacy;
 using BotNet.Commands.Privilege;
 using BotNet.Commands.QrCode;
 using BotNet.Commands.Soundtrack;
@@ -112,6 +113,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					case "/privilege":
 					case "/start":
 						await commandQueue.DispatchAsync(PrivilegeCommand.FromSlashCommand(command));
+						break;
+					case "/privacy":
+						await commandQueue.DispatchAsync(PrivacyCommand.FromSlashCommand(command));
 						break;
 					case "/khodam":
 						await commandQueue.DispatchAsync(KhodamCommand.FromSlashCommand(command));
