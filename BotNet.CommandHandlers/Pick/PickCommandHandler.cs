@@ -1,4 +1,5 @@
 using BotNet.Commands.Pick;
+using Mediator;
 using BotNet.Services.MarkdownV2;
 using BotNet.Services.RateLimit;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ namespace BotNet.CommandHandlers.Pick {
 	) : ICommandHandler<PickCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(5, TimeSpan.FromMinutes(1));
 
-		public async Task Handle(PickCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(PickCommand command, CancellationToken cancellationToken) {
 			// Rate limiting
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
@@ -22,7 +23,8 @@ namespace BotNet.CommandHandlers.Pick {
 					text: $"Rate limit exceeded. Try again {exc.Cooldown}.",
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
+		return default;
 			}
 
 			try {
@@ -49,6 +51,7 @@ namespace BotNet.CommandHandlers.Pick {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 	}
 }

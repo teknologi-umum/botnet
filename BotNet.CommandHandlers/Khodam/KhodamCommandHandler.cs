@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using BotNet.Commands.Khodam;
+using Mediator;
 using BotNet.Services.Khodam;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,7 +10,7 @@ namespace BotNet.CommandHandlers.Khodam {
 	public sealed class KhodamCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<KhodamCommand> {
-		public async Task Handle(KhodamCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(KhodamCommand command, CancellationToken cancellationToken) {
 			string khodam = KhodamCalculator.CalculateKhodam(
 				name: command.Name,
 				userId: command.UserId
@@ -25,6 +26,7 @@ namespace BotNet.CommandHandlers.Khodam {
 				replyParameters: new ReplyParameters { MessageId = command.TargetMessageId },
 				cancellationToken: cancellationToken
 			);
+		return default;
 		}
 	}
 }

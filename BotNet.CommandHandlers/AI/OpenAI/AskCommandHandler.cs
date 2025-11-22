@@ -1,4 +1,5 @@
 ﻿using BotNet.CommandHandlers.AI.RateLimit;
+using Mediator;
 using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
@@ -24,7 +25,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<AskCommandHandler> logger
 	) : ICommandHandler<AskCommand> {
-		public async Task Handle(AskCommand askCommand, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(AskCommand askCommand, CancellationToken cancellationToken) {
 			if (askCommand.Command.Chat is GroupChat) {
 				try {
 					AiRateLimiters.GroupChatRateLimiter.ValidateActionRate(
@@ -61,7 +62,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						},
 						cancellationToken: cancellationToken
 					);
-					return;
+					return default;
 				}
 			}
 
@@ -126,7 +127,6 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 						parseMode: ParseMode.Html,
 						cancellationToken: cancellationToken
 					);
-					return;
 				}
 
 				// Track thread
@@ -139,6 +139,7 @@ namespace BotNet.CommandHandlers.AI.OpenAI {
 					)
 				);
 			}, logger);
+	return default;
 		}
 	}
 }

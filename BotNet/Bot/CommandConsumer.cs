@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BotNet.CommandHandlers;
 using BotNet.Commands;
-using MediatR;
+using Mediator;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 

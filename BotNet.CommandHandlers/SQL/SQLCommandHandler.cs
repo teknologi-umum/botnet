@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using Mediator;
 using BotNet.Commands.SQL;
 using BotNet.Services.SQL;
 using BotNet.Services.Sqlite;
@@ -15,7 +16,7 @@ namespace BotNet.CommandHandlers.SQL {
 		ITelegramBotClient telegramBotClient,
 		IServiceProvider serviceProvider
 	) : ICommandHandler<SqlCommand> {
-		public async Task Handle(SqlCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(SqlCommand command, CancellationToken cancellationToken) {
 			if (command.SelectStatement.Query.Body.AsSelectExpression().Select.From is not { } froms
 				|| froms.Count == 0) {
 				await telegramBotClient.SendMessage(
@@ -25,7 +26,7 @@ namespace BotNet.CommandHandlers.SQL {
 					replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			// Collect table names from query
@@ -66,7 +67,7 @@ namespace BotNet.CommandHandlers.SQL {
 						replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 						cancellationToken: cancellationToken
 					);
-					return;
+					return default;
 				}
 
 				await dataSource.LoadTableAsync(cancellationToken);
@@ -133,7 +134,7 @@ namespace BotNet.CommandHandlers.SQL {
 					replyParameters: new ReplyParameters { MessageId = command.SqlMessageId },
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			// Send result
@@ -155,6 +156,7 @@ namespace BotNet.CommandHandlers.SQL {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 
 		private static void CollectTableNames(ref HashSet<string> tables, TableFactor tableFactor) {

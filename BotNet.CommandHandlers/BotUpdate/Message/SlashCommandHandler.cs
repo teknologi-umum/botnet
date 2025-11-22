@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.OpenAI;
+using Mediator;
 using BotNet.Commands.Art;
 using BotNet.Commands.Benchmark;
 using BotNet.Commands.BMKG;
@@ -34,7 +35,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache
 	) : ICommandHandler<SlashCommand> {
-		public async Task Handle(SlashCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(SlashCommand command, CancellationToken cancellationToken) {
 			try {
 				switch (command.Command) {
 					case "/flip":
@@ -157,6 +158,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 	}
 }

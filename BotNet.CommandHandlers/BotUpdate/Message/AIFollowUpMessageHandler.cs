@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
+using Mediator;
 using BotNet.Commands.AI.OpenAI;
 using BotNet.Commands.BotUpdate.Message;
 
@@ -8,7 +9,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ICommandQueue commandQueue,
 		ITelegramMessageCache telegramMessageCache
 	) : ICommandHandler<AiFollowUpMessage> {
-		public async Task Handle(AiFollowUpMessage command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(AiFollowUpMessage command, CancellationToken cancellationToken) {
 			switch (command.CallSign) {
 				// OpenAI GPT-4 Chat
 				case "GPT":
@@ -33,7 +34,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						)
 					);
 					break;
+		return default;
 			}
+	return default;
 		}
 	}
 }

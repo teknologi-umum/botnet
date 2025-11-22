@@ -1,4 +1,5 @@
 using BotNet.Commands.QrCode;
+using Mediator;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.QrCode;
 using BotNet.Services.RateLimit;
@@ -14,7 +15,7 @@ namespace BotNet.CommandHandlers.QrCode {
 	) : ICommandHandler<QrCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(1));
 
-		public async Task Handle(QrCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(QrCommand command, CancellationToken cancellationToken) {
 			// Rate limiting
 			try {
 				RateLimiter.ValidateActionRate(
@@ -27,7 +28,7 @@ namespace BotNet.CommandHandlers.QrCode {
 					text: $"Rate limit exceeded. Try again {exc.Cooldown}.",
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			try {
@@ -52,6 +53,7 @@ namespace BotNet.CommandHandlers.QrCode {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 	}
 }

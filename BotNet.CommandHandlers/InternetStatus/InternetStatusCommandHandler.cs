@@ -1,4 +1,5 @@
 using System;
+using Mediator;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace BotNet.CommandHandlers.InternetStatus {
 	) : ICommandHandler<InternetStatusCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerChat(1, TimeSpan.FromMinutes(2));
 
-		public async Task Handle(InternetStatusCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(InternetStatusCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(
 					chatId: command.Chat.Id,
@@ -32,7 +33,8 @@ namespace BotNet.CommandHandlers.InternetStatus {
 					parseMode: ParseMode.Html,
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
+		return default;
 			}
 
 			// Send "checking..." message
@@ -94,6 +96,7 @@ namespace BotNet.CommandHandlers.InternetStatus {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 	}
 }

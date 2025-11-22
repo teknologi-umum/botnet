@@ -1,4 +1,5 @@
 using System;
+using Mediator;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -20,7 +21,7 @@ namespace BotNet.CommandHandlers.Movie {
 	) : ICommandHandler<MovieCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
 
-		public async Task Handle(MovieCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(MovieCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(
 					chatId: command.Chat.Id,
@@ -33,7 +34,7 @@ namespace BotNet.CommandHandlers.Movie {
 					parseMode: ParseMode.Html,
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			try {
@@ -140,6 +141,7 @@ namespace BotNet.CommandHandlers.Movie {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 	}
 }

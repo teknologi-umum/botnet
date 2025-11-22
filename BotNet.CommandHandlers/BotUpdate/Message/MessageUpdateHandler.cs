@@ -1,5 +1,6 @@
 ﻿using BotNet.Commands;
 using BotNet.Commands.BotUpdate.Message;
+using Mediator;
 using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
@@ -21,7 +22,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		CommandPriorityCategorizer commandPriorityCategorizer,
 		ILogger<MessageUpdateHandler> logger
 	) : ICommandHandler<MessageUpdate> {
-		public async Task Handle(
+		public async ValueTask<Unit> Handle(
 			MessageUpdate update,
 			CancellationToken cancellationToken
 		) {
@@ -41,7 +42,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					);
 				}
 
-				return;
+				return default;
 			}
 
 			// Handle Social Link (better preview)
@@ -62,7 +63,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 							);
 						}
 					}, logger);
-					return;
+					return default;
 				}
 			}
 
@@ -87,7 +88,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						cancellationToken: cancellationToken
 					);
 				}, logger);
-				return;
+				return default;
 			}
 
 			if (update.Message.Entities?.FirstOrDefault(
@@ -106,7 +107,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						cancellationToken: cancellationToken
 					);
 				}, logger);
-				return;
+				return default;
 			}
 
 			// Handle AI calls
@@ -128,7 +129,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				await commandQueue.DispatchAsync(
 					command: aiCallCommand
 				);
-				return;
+				return default;
 			}
 
 			// Handle AI follow up message
@@ -149,7 +150,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					    commandPriorityCategorizer: commandPriorityCategorizer,
 					    out AiFollowUpMessage? aiFollowUpMessage
 				    )) {
-					return;
+					return default;
 				}
 
 				// Cache follow up message
@@ -158,7 +159,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				);
 
 				await commandQueue.DispatchAsync(aiFollowUpMessage);
-				return;
+				return default;
 			}
 
 			// Handle SQL
@@ -180,7 +181,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 								cancellationToken: cancellationToken
 							);
 						}, logger);
-						return;
+						return default;
 					}
 
 					if (ast[0] is not Statement.Select) {
@@ -194,7 +195,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 								cancellationToken: cancellationToken
 							);
 						}, logger);
-						return;
+						return default;
 					}
 
 					if (SqlCommand.TryCreate(
@@ -218,6 +219,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 					// Suppress
 				}
 			}
+			return default;
 		}
 	}
 }

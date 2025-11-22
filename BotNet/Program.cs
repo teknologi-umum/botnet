@@ -117,13 +117,9 @@ builder.Services.AddOmdbClient();
 builder.Services.AddStatusPageClient();
 builder.Services.AddTechEmpowerScraper();
 
-// MediatR
-builder.Services.AddMediatR(config => {
-	config.Lifetime = ServiceLifetime.Transient;
-	config.AutoRegisterRequestProcessors = true;
-	config.RegisterServicesFromAssemblies(
-		typeof(SlashCommandHandler).Assembly
-	);
+// Mediator
+builder.Services.AddMediator(options => {
+	options.ServiceLifetime = ServiceLifetime.Transient;
 });
 
 // Hosted Services

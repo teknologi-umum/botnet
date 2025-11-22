@@ -1,4 +1,5 @@
 using BotNet.Commands.ChatAggregate;
+using Mediator;
 using BotNet.Commands.No;
 using BotNet.Commands.SenderAggregate;
 using BotNet.Services.NoAsAService;
@@ -16,7 +17,7 @@ namespace BotNet.CommandHandlers.No {
 		private static readonly RateLimiter GroupChatRateLimiter = RateLimiter.PerUserPerChat(2, TimeSpan.FromMinutes(2));
 		private static readonly RateLimiter PrivateChatRateLimiter = RateLimiter.PerUserPerChat(20, TimeSpan.FromMinutes(2));
 
-		public async Task Handle(NoCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(NoCommand command, CancellationToken cancellationToken) {
 			// No rate limit for VIP
 			if (command.Command.Sender is not VipSender) {
 				try {
@@ -40,6 +41,7 @@ namespace BotNet.CommandHandlers.No {
 								userId: command.Command.Sender.Id
 							);
 							break;
+		return default;
 					}
 			} catch (RateLimitExceededException exc) {
 				await telegramBotClient.SendMessage(
@@ -51,7 +53,7 @@ namespace BotNet.CommandHandlers.No {
 						},
 						cancellationToken: cancellationToken
 					);
-					return;
+					return default;
 				}
 			}
 
@@ -66,6 +68,7 @@ namespace BotNet.CommandHandlers.No {
 				},
 				cancellationToken: cancellationToken
 			);
+	return default;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using BotNet.CommandHandlers.AI.RateLimit;
+using Mediator;
 using BotNet.Commands;
 using BotNet.Commands.AI.Gemini;
 using BotNet.Commands.BotUpdate.Message;
@@ -28,7 +29,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 
 		private readonly ITelegramBotClient _telegramBotClient = telegramBotClient;
 
-		public Task Handle(
+		public async ValueTask<Unit> Handle(
 			GeminiTextPrompt textPrompt,
 			CancellationToken cancellationToken
 		) {
@@ -149,6 +150,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 							replyParameters: new ReplyParameters { MessageId = textPrompt.Command.MessageId },
 							cancellationToken: cancellationToken
 						);
+								return default;
 						return;
 					}
 
@@ -164,7 +166,7 @@ namespace BotNet.CommandHandlers.AI.Gemini {
 				}, logger
 			);
 
-			return Task.CompletedTask;
+			return default;
 		}
 	}
 }

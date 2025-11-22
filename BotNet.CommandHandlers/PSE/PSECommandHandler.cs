@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Mediator;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace BotNet.CommandHandlers.PSE {
 	) : ICommandHandler<PSECommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
 
-		public async Task Handle(PSECommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(PSECommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Chat.Id, command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
@@ -30,7 +31,7 @@ namespace BotNet.CommandHandlers.PSE {
 					replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 			ImmutableList<DigitalService> result = await pseCrawler.SearchAsync(command.Keyword, take: 5, cancellationToken);
 
@@ -42,7 +43,7 @@ namespace BotNet.CommandHandlers.PSE {
 					replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = command.CommandMessageId },
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			string text = string.Join("\n",
@@ -65,6 +66,7 @@ namespace BotNet.CommandHandlers.PSE {
 				replyParameters: new Telegram.Bot.Types.ReplyParameters { MessageId = command.CommandMessageId },
 				cancellationToken: cancellationToken
 			);
+	return default;
 		}
 	}
 }

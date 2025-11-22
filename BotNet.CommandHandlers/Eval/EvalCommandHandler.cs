@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Mediator;
 using BotNet.Commands.Eval;
 using BotNet.Services.ClearScript;
 using BotNet.Services.DynamicExpresso;
@@ -16,7 +17,7 @@ namespace BotNet.CommandHandlers.Eval {
 	) : ICommandHandler<EvalCommand> {
 		private static readonly JsonSerializerOptions JsonSerializerOptions = new() { WriteIndented = true };
 
-		public async Task Handle(EvalCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(EvalCommand command, CancellationToken cancellationToken) {
 			string result;
 			switch (command.Command) {
 				case "/evaljs":
@@ -33,7 +34,7 @@ namespace BotNet.CommandHandlers.Eval {
 							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
-						return;
+						return default;
 					} catch (OperationCanceledException) {
 						await telegramBotClient.SendMessage(
 							chatId: command.Chat.Id,
@@ -42,7 +43,7 @@ namespace BotNet.CommandHandlers.Eval {
 							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
-						return;
+						return default;
 					} catch (JsonException exc) when (exc.Message.Contains("A possible object cycle was detected.")) {
 						await telegramBotClient.SendMessage(
 							chatId: command.Chat.Id,
@@ -51,7 +52,8 @@ namespace BotNet.CommandHandlers.Eval {
 							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
-						return;
+						return default;
+		return default;
 					}
 					break;
 				case "/evalcs":
@@ -70,7 +72,7 @@ namespace BotNet.CommandHandlers.Eval {
 							replyParameters: new ReplyParameters { MessageId = command.CodeMessageId },
 							cancellationToken: cancellationToken
 						);
-						return;
+						return default;
 					}
 					break;
 				default:
@@ -96,6 +98,7 @@ namespace BotNet.CommandHandlers.Eval {
 					cancellationToken: cancellationToken
 				);
 			}
+	return default;
 		}
 	}
 }

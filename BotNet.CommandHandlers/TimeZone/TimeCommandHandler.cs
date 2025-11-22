@@ -1,4 +1,5 @@
 using System;
+using Mediator;
 using System.Threading;
 using System.Threading.Tasks;
 using BotNet.Commands.BotUpdate.Message;
@@ -15,7 +16,7 @@ namespace BotNet.CommandHandlers.TimeZone {
 	) : ICommandHandler<TimeCommand> {
 		private static readonly RateLimiter RateLimiter = RateLimiter.PerUserPerChat(3, TimeSpan.FromMinutes(2));
 
-		public async Task Handle(TimeCommand command, CancellationToken cancellationToken) {
+		public async ValueTask<Unit> Handle(TimeCommand command, CancellationToken cancellationToken) {
 			try {
 				RateLimiter.ValidateActionRate(command.Command.Chat.Id, command.Command.Sender.Id);
 			} catch (RateLimitExceededException exc) {
@@ -28,7 +29,7 @@ namespace BotNet.CommandHandlers.TimeZone {
 					},
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			TimeInfo timeInfo = timeZoneService.GetTimeInfo(command.CityOrTimeZone);
@@ -43,7 +44,7 @@ namespace BotNet.CommandHandlers.TimeZone {
 					},
 					cancellationToken: cancellationToken
 				);
-				return;
+				return default;
 			}
 
 			string utcOffsetString = timeInfo.UtcOffset >= TimeSpan.Zero
@@ -67,6 +68,7 @@ namespace BotNet.CommandHandlers.TimeZone {
 				},
 				cancellationToken: cancellationToken
 			);
+	return default;
 		}
 	}
 }
