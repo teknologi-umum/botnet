@@ -19,6 +19,7 @@ using BotNet.Commands.Pick;
 using BotNet.Commands.Plot;
 using BotNet.Commands.Pop;
 using BotNet.Commands.Primbon;
+using BotNet.Commands.PSE;
 using BotNet.Commands.Privilege;
 using BotNet.Commands.QrCode;
 using BotNet.Commands.Soundtrack;
@@ -96,6 +97,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/primbon":
 						await commandQueue.DispatchAsync(PrimbonCommand.FromSlashCommand(command));
+						break;
+					case "/pse":
+						await commandQueue.DispatchAsync(PSECommand.FromSlashCommand(command));
 						break;
 					case "/art":
 						await commandQueue.DispatchAsync(ArtCommand.FromSlashCommand(command));
