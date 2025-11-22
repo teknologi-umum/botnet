@@ -1,7 +1,32 @@
-# BotNet - Telegram Bot Architecture Guide
+# GitHub Copilot Instructions for BotNet
+
+> **Purpose**: This file provides coding guidelines and architecture patterns for GitHub Copilot when working with the BotNet repository. Following these instructions ensures consistency with project conventions and prevents common pitfalls.
 
 ## Project Overview
 BotNet is a .NET 10.0 Telegram bot with a modular, command-based architecture built on MediatR. The bot supports slash commands, AI interactions, code execution, image generation, and various integrations.
+
+## Getting Started
+
+### Quick Build & Test
+```bash
+# Restore dependencies
+dotnet restore
+
+# Build the solution
+dotnet build
+
+# Run tests
+dotnet test BotNet.Tests/BotNet.Tests.csproj
+
+# Run the bot (requires secrets configured)
+dotnet run --project BotNet/BotNet.csproj
+```
+
+### Essential Files to Know
+- `BotNet/Bot/UpdateHandler.cs` - Entry point for all Telegram updates
+- `BotNet.CommandHandlers/BotUpdate/Message/SlashCommandHandler.cs` - Command routing
+- `BotNet/Program.cs` - Dependency injection and service registration
+- `BotNet.CommandHandlers/CommandQueue.cs` - Bounded command queue implementation
 
 ## Architecture Pattern: Command-Handler with Queue
 
@@ -321,9 +346,213 @@ Each external API gets:
 - Logs: `ILogger<T>` injected into services
 - Metrics: Monitor `/metrics` endpoint with Prometheus/Grafana for production insights
 
+## Common Pitfalls to Avoid
+
+### ❌ DON'T: Call MediatR Directly from Handlers
+```csharp
+// This causes infinite recursion risk!
+public async Task Handle(MyCommand command, CancellationToken ct) {
+    await _mediator.Send(new AnotherCommand(...)); // ❌ WRONG
+}
+```
+
+### ✅ DO: Dispatch to Command Queue
+```csharp
+public async Task Handle(MyCommand command, CancellationToken ct) {
+    await _commandQueue.DispatchAsync(AnotherCommand.FromSlashCommand(command)); // ✅ CORRECT
+}
+```
+
+### ❌ DON'T: Use `var` for Type Declarations
+```csharp
+var client = new HttpClient(); // ❌ WRONG - reduces clarity
+```
+
+### ✅ DO: Use Explicit Types
+```csharp
+HttpClient client = new HttpClient(); // ✅ CORRECT - enhances readability
+```
+
+### ❌ DON'T: Skip Rate Limiting for Expensive Operations
+```csharp
+// Missing rate limit check before expensive AI call
+await _openAiClient.GetCompletionAsync(...); // ❌ WRONG
+```
+
+### ✅ DO: Always Check Rate Limits First
+```csharp
+try {
+    AiRateLimiters.GroupChatRateLimiter.ValidateActionRate(
+        chatId: command.Chat.Id,
+        userId: command.Sender.Id
+    );
+    await _openAiClient.GetCompletionAsync(...); // ✅ CORRECT
+} catch (RateLimitExceededException exc) {
+    // Handle rate limit
+}
+```
+
+### ❌ DON'T: Forget Cancellation Tokens
+```csharp
+await _telegramBotClient.SendMessage(...); // ❌ WRONG - missing cancellationToken
+```
+
+### ✅ DO: Always Pass Cancellation Tokens
+```csharp
+await _telegramBotClient.SendMessage(..., cancellationToken: ct); // ✅ CORRECT
+```
+
+### ❌ DON'T: Use Fire-and-Forget Without BackgroundTask
+```csharp
+_ = Task.Run(async () => await LongOperation()); // ❌ WRONG - unhandled exceptions
+```
+
+### ✅ DO: Use BackgroundTask.Run for Fire-and-Forget
+```csharp
+BackgroundTask.Run(async () => await LongOperation(), _logger); // ✅ CORRECT
+```
+
 ## Resources
 
 - Telegram Bot API: https://core.telegram.org/bots/api
 - MediatR: https://github.com/jbogard/MediatR
 - Prometheus Metrics: https://prometheus.io/docs/concepts/metric_types/
 - Project repo: teknologi-umum/botnet
+
+## Security Best Practices
+
+### Input Sanitization
+- **Always sanitize** user input before displaying in Telegram messages
+- Use `MarkdownV2Sanitizer.Sanitize()` for MarkdownV2 content
+- Use `HtmlSanitizer` for HTML content
+- Never trust user input directly
+
+### Secret Management
+- **Never commit** secrets to source code
+- Use User Secrets for development: `dotnet user-secrets set "Key" "Value" --project BotNet`
+- Use environment variables in production
+- Store sensitive config in `/run/secrets/` for containerized deployments
+
+### Rate Limiting
+- **Always implement** rate limiting for expensive operations (AI, image generation, external APIs)
+- Use appropriate rate limiter types:
+  - `PerUserPerChatRateLimiter` - For chat-specific features
+  - `PerUserRateLimiter` - For user-wide limits
+  - `PerUserPerDayRateLimiter` - For daily quotas
+- Configure limits based on resource cost and abuse potential
+
+### Dependency Security
+- Keep dependencies up to date
+- Review security advisories regularly
+- Use `dotnet list package --vulnerable` to check for vulnerabilities
+
+## Quick Reference
+
+### Adding a New Command (Step-by-Step)
+
+1. **Create the Command** (`BotNet.Commands/YourFeature/YourCommand.cs`):
+   ```csharp
+   public sealed record YourCommand : ICommand {
+       public SlashCommand Command { get; }
+       
+       private YourCommand(SlashCommand command) => Command = command;
+       
+       public static YourCommand FromSlashCommand(SlashCommand command) {
+           // Add validation here
+           return new(command);
+       }
+   }
+   ```
+
+2. **Create the Handler** (`BotNet.CommandHandlers/YourFeature/YourCommandHandler.cs`):
+   ```csharp
+   public sealed class YourCommandHandler(
+       ITelegramBotClient telegramBotClient,
+       ILogger<YourCommandHandler> logger
+   ) : ICommandHandler<YourCommand> {
+       public async Task Handle(YourCommand command, CancellationToken ct) {
+           // Implement logic here
+       }
+   }
+   ```
+
+3. **Register in SlashCommandHandler** (`BotNet.CommandHandlers/BotUpdate/Message/SlashCommandHandler.cs`):
+   ```csharp
+   case "/yourcommand":
+       await _commandQueue.DispatchAsync(
+           YourCommand.FromSlashCommand(command),
+           cancellationToken
+       );
+       break;
+   ```
+
+4. **Add tests** (`BotNet.Tests/YourFeature/YourCommandHandlerTests.cs`):
+   ```csharp
+   public sealed class YourCommandHandlerTests {
+       [Fact]
+       public async Task Handle_ShouldProcessCommand() {
+           // Arrange, Act, Assert
+       }
+   }
+   ```
+
+### Adding a New Service
+
+1. **Create the Service** (`BotNet.Services/YourFeature/YourService.cs`):
+   ```csharp
+   public sealed class YourService(
+       HttpClient httpClient,
+       ILogger<YourService> logger
+   ) {
+       public async Task<Result> DoSomethingAsync(string input) {
+           // Implementation
+       }
+   }
+   ```
+
+2. **Create Extension Method** (`BotNet.Services/YourFeature/ServiceCollectionExtensions.cs`):
+   ```csharp
+   public static class ServiceCollectionExtensions {
+       public static IServiceCollection AddYourService(
+           this IServiceCollection services
+       ) {
+           services.AddTransient<YourService>();
+           services.AddHttpClient<YourService>();
+           return services;
+       }
+   }
+   ```
+
+3. **Register in Program.cs** (`BotNet/Program.cs`):
+   ```csharp
+   builder.Services.AddYourService();
+   ```
+
+### Running Specific Tests
+```bash
+# Run all tests
+dotnet test
+
+# Run tests for specific project
+dotnet test BotNet.Tests/BotNet.Tests.csproj
+
+# Run tests with filter
+dotnet test --filter "FullyQualifiedName~YourCommandHandlerTests"
+
+# Run with verbose output
+dotnet test --verbosity detailed
+```
+
+### Checking Metrics Locally
+```bash
+# Start the bot
+dotnet run --project BotNet/BotNet.csproj
+
+# In another terminal, check metrics
+curl http://localhost:5000/metrics
+```
+
+---
+
+**Last Updated**: 2025-11-22  
+**For Questions**: See [README.md](../README.md) or open an issue
