@@ -41,9 +41,9 @@ MIT License:
 - SqlParserCS (SqlParserCS contributors)
 - DynamicExpresso.Core (Davide Icardi)
 - RG.Ninja (RG contributors)
+- Mediator (Martin Othamar)
 
 Apache License 2.0:
-- MediatR (Jimmy Bogard)
 - Google.Apis.Sheets.v4 (Google Inc.)
 - Grpc.Net.Client (Google Inc.)
 - Google.Protobuf (Google Inc.)

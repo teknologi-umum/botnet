@@ -5,7 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace BotNet.CommandHandlers.FlipFlop {
-	internal sealed class FlipFlopCommandHandler(
+	public sealed class FlipFlopCommandHandler(
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<FlipFlopCommand> {
 		public async ValueTask<Unit> Handle(FlipFlopCommand command, CancellationToken cancellationToken) {

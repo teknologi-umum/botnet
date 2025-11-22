@@ -28,7 +28,7 @@ namespace BotNet.Bot {
 						// Execution strategy is defined here.
 						// Current strategy is sequential, not concurrent, no DLQ, in single queue.
 						Stopwatch waitTimer = Stopwatch.StartNew();
-						ICommand command = await commandQueue.ReceiveAsync(_cancellationTokenSource.Token);
+						Commands.ICommand command = await commandQueue.ReceiveAsync(_cancellationTokenSource.Token);
 						waitTimer.Stop();
 						CommandQueueMetrics.RecordQueueWaitTime(waitTimer.Elapsed.TotalSeconds);
 						
