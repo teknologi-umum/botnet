@@ -16,7 +16,7 @@ namespace BotNet.CommandHandlers.PSE {
 		ILogger<PSECommandHandler> logger
 	) : ICommandHandler<PSECommand> {
 		public async Task Handle(PSECommand command, CancellationToken cancellationToken) {
-			ImmutableList<(Domicile Domicile, DigitalService DigitalService)> result = pseCrawler.Search(command.Keyword, take: 5);
+			ImmutableList<DigitalService> result = await pseCrawler.SearchAsync(command.Keyword, take: 5, cancellationToken);
 
 			if (result.IsEmpty) {
 				await telegramBotClient.SendMessage(
@@ -30,12 +30,12 @@ namespace BotNet.CommandHandlers.PSE {
 			}
 
 			string text = string.Join("\n",
-				from r in result
-				let domicile = r.Domicile
-				let digitalService = r.DigitalService
-				select $"<b>{digitalService.Attributes.Name} ({digitalService.Attributes.CompanyName})</b>\n"
-					+ $"🔗 {digitalService.Attributes.Website}\n"
-					+ $"{digitalService.Attributes.Status.ToStatusEmoji()} {domicile.ToFriendlyDomicile()}, {digitalService.Attributes.Status.ToFriendlyStatus()}\n"
+				from digitalService in result
+				select $"<b>{digitalService.NamaSe} ({digitalService.PseName})</b>\n"
+					+ $"🔗 {digitalService.Domain}\n"
+					+ $"📋 {digitalService.NomorTdpse}\n"
+					+ $"📅 {digitalService.TanggalTerdaftar}\n"
+					+ $"{(digitalService.IsDomestik ? "🇮🇩 Domestik" : "🌐 Asing")}\n"
 			);
 
 			if (result.Count == 5) {

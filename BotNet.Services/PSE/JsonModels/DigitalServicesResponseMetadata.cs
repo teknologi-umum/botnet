@@ -1,7 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Immutable;
+using System.Text.Json.Serialization;
 
 namespace BotNet.Services.PSE.JsonModels {
-	public record DigitalServicesResponseMetadata(
-		[property: JsonPropertyName("page")] PaginationMetadata PaginationMetadata
+	public sealed record DigitalServicesData(
+		[property: JsonPropertyName("data")] ImmutableList<DigitalService> Data,
+		[property: JsonPropertyName("total_rows")] int TotalRows
 	);
 }

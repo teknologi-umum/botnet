@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BotNet.Services.PSE {
 	public class PSEClient {
-		private const string BASE_URL = "https://pse.kominfo.go.id/static/json-static";
+		private const string BASE_URL = "https://pse.komdigi.go.id/api/v1/tdpse/tdpse-list";
 		private readonly HttpClient _httpClient;
 		private readonly ILogger<PSEClient> _logger;
 
@@ -19,69 +20,48 @@ namespace BotNet.Services.PSE {
 		) {
 			_httpClient = httpClient;
 			_logger = logger;
-		}
-
-		public async Task<DateTime> GetLastGeneratedAsync(CancellationToken cancellationToken) {
-			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(10));
-			using CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutSource.Token, cancellationToken);
-			cancellationToken = linkedSource.Token;
-
-			string url = $"{BASE_URL}/generationInfo.json";
-			_logger.LogInformation("GET {0}", url);
-			using HttpResponseMessage httpResponse = await _httpClient.GetAsync(
-				requestUri: url,
-				cancellationToken: cancellationToken
-			);
-			httpResponse.EnsureSuccessStatusCode();
-			string json = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-			TimestampsResponse? response = JsonSerializer.Deserialize<TimestampsResponse>(json);
-
-			if (response is null) {
-				throw new HttpRequestException();
-			}
-
-			return response.Timestamps.LastGenerated;
+			_httpClient.DefaultRequestHeaders.Add("Origin", "https://pse.komdigi.go.id");
+			_httpClient.DefaultRequestHeaders.Add("Referer", "https://pse.komdigi.go.id/pse");
 		}
 
 		public async Task<(
 			ImmutableList<DigitalService> DigitalServices,
-			PaginationMetadata PaginationMetadata
-		)> GetDigitalServicesAsync(
-			Domicile domicile,
-			Status status,
-			int page,
+			int TotalRows
+		)> SearchAsync(
+			string keyword,
+			int length,
+			int start,
 			CancellationToken cancellationToken
 		) {
-			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(5));
+			using CancellationTokenSource timeoutSource = new(TimeSpan.FromSeconds(10));
 			using CancellationTokenSource linkedSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutSource.Token, cancellationToken);
 			cancellationToken = linkedSource.Token;
 
-			string url = $"{BASE_URL}/{domicile.ToPSEDomicile()}_{status.ToPSEStatus()}/{page - 1}.json";
-			_logger.LogInformation("GET {0}", url);
+			object requestBody = new {
+				keyword = keyword,
+				length = length,
+				start = start,
+				category = "terdaftar"
+			};
 
-			using HttpResponseMessage httpResponse = await _httpClient.GetAsync(
-				requestUri: url,
+			_logger.LogInformation("POST {Url} with keyword={Keyword}, length={Length}, start={Start}", BASE_URL, keyword, length, start);
+
+			using HttpResponseMessage httpResponse = await _httpClient.PostAsJsonAsync(
+				requestUri: BASE_URL,
+				value: requestBody,
 				cancellationToken: cancellationToken
 			);
 			httpResponse.EnsureSuccessStatusCode();
 			string json = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-
-			if (json.StartsWith("<!doctype html>", StringComparison.OrdinalIgnoreCase)) {
-				return (
-					DigitalServices: ImmutableList<DigitalService>.Empty,
-					PaginationMetadata: new PaginationMetadata(1, 1, 0, 0, 10, 0)
-				);
-			}
-
 			DigitalServicesResponse? response = JsonSerializer.Deserialize<DigitalServicesResponse>(json);
 
-			if (response is null) {
-				throw new HttpRequestException();
+			if (response is null || response.Status != "success") {
+				throw new HttpRequestException($"API returned error: {response?.Error ?? "Unknown error"}");
 			}
 
 			return (
-				DigitalServices: response.DigitalServices,
-				PaginationMetadata: response.Metadata.PaginationMetadata
+				DigitalServices: response.Data.Data,
+				TotalRows: response.Data.TotalRows
 			);
 		}
 	}
