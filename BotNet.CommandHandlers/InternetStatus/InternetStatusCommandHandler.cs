@@ -75,7 +75,7 @@ namespace BotNet.CommandHandlers.InternetStatus {
 					.OrderBy(s => s.ServiceName)
 					.ToList();
 
-					StringBuilder messageBuilder = new();
+				StringBuilder messageBuilder = new();
 				messageBuilder.AppendLine("🌐 <b>Internet Service Status</b>");
 				messageBuilder.AppendLine();
 				
@@ -123,7 +123,7 @@ namespace BotNet.CommandHandlers.InternetStatus {
 					parseMode: ParseMode.Html,
 					cancellationToken: cancellationToken
 				);
-				} catch (Exception exc) {
+			} catch (Exception exc) {
 				logger.LogError(exc, "Failed to check internet service status");
 				await telegramBotClient.EditMessageText(
 					chatId: command.Chat.Id,
