@@ -36,6 +36,7 @@ using BotNet.Services.Soundtrack;
 using BotNet.Services.Sqlite;
 using BotNet.Services.Stability;
 using BotNet.Services.StatusPage;
+using BotNet.Services.Downdetector;
 using BotNet.Services.TechEmpower;
 using BotNet.Services.ThisXDoesNotExist;
 using BotNet.Services.Tiktok;
@@ -115,6 +116,7 @@ builder.Services.AddQrCodeGenerator();
 builder.Services.AddMathPlotRenderer();
 builder.Services.AddOmdbClient();
 builder.Services.AddStatusPageClient();
+builder.Services.AddDowndetectorClient();
 builder.Services.AddTechEmpowerScraper();
 
 // Mediator
