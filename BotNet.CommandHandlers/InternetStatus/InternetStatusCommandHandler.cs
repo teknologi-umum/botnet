@@ -47,92 +47,92 @@ namespace BotNet.CommandHandlers.InternetStatus {
 
 			try {
 				// Check both status pages and Downdetector concurrently
-			Task<List<ServiceStatus>> statusPageTask = statusPageClient.CheckAllServicesAsync(cancellationToken);
-			Task<List<DowndetectorServiceStatus>> downdetectorTask = downdetectorClient.CheckServicesAsync(cancellationToken);
-			
-			await Task.WhenAll(statusPageTask, downdetectorTask);
-			
-			List<ServiceStatus> serviceStatuses = await statusPageTask;
-			List<DowndetectorServiceStatus> downdetectorStatuses = await downdetectorTask;
+				Task<List<ServiceStatus>> statusPageTask = statusPageClient.CheckAllServicesAsync(cancellationToken);
+				Task<List<DowndetectorServiceStatus>> downdetectorTask = downdetectorClient.CheckServicesAsync(cancellationToken);
+				
+				await Task.WhenAll(statusPageTask, downdetectorTask);
+				
+				List<ServiceStatus> serviceStatuses = await statusPageTask;
+				List<DowndetectorServiceStatus> downdetectorStatuses = await downdetectorTask;
 
-			List<ServiceStatus> operational = serviceStatuses
-				.Where(s => s.IsOperational)
-				.OrderBy(s => s.ServiceName)
-				.ToList();
+				List<ServiceStatus> operational = serviceStatuses
+					.Where(s => s.IsOperational)
+					.OrderBy(s => s.ServiceName)
+					.ToList();
 
-			List<ServiceStatus> degraded = serviceStatuses
-				.Where(s => !s.IsOperational)
-				.OrderBy(s => s.ServiceName)
-				.ToList();
-			
-			List<DowndetectorServiceStatus> downdetectorIssues = downdetectorStatuses
-				.Where(s => s.HasIssues == true)
-				.OrderBy(s => s.ServiceName)
-				.ToList();
-			
-			List<DowndetectorServiceStatus> downdetectorOperational = downdetectorStatuses
-				.Where(s => s.HasIssues == false)
-				.OrderBy(s => s.ServiceName)
-				.ToList();
+				List<ServiceStatus> degraded = serviceStatuses
+					.Where(s => !s.IsOperational)
+					.OrderBy(s => s.ServiceName)
+					.ToList();
+				
+				List<DowndetectorServiceStatus> downdetectorIssues = downdetectorStatuses
+					.Where(s => s.HasIssues == true)
+					.OrderBy(s => s.ServiceName)
+					.ToList();
+				
+				List<DowndetectorServiceStatus> downdetectorOperational = downdetectorStatuses
+					.Where(s => s.HasIssues == false)
+					.OrderBy(s => s.ServiceName)
+					.ToList();
 
-			StringBuilder messageBuilder = new();
-			messageBuilder.AppendLine("🌐 <b>Internet Service Status</b>");
-			messageBuilder.AppendLine();
-			
-			// Show Downdetector issues first if any
-			if (downdetectorIssues.Count > 0) {
-				messageBuilder.AppendLine("⚠️ <b>Downdetector - Services with Issues:</b>");
-				foreach (DowndetectorServiceStatus service in downdetectorIssues) {
-					messageBuilder.AppendLine($"  • <b>{service.ServiceName}</b>");
-					if (!string.IsNullOrWhiteSpace(service.Description)) {
-						messageBuilder.AppendLine($"    {service.Description}");
+					StringBuilder messageBuilder = new();
+				messageBuilder.AppendLine("🌐 <b>Internet Service Status</b>");
+				messageBuilder.AppendLine();
+				
+				// Show Downdetector issues first if any
+				if (downdetectorIssues.Count > 0) {
+					messageBuilder.AppendLine("⚠️ <b>Downdetector - Services with Issues:</b>");
+					foreach (DowndetectorServiceStatus service in downdetectorIssues) {
+						messageBuilder.AppendLine($"  • <b>{service.ServiceName}</b>");
+						if (!string.IsNullOrWhiteSpace(service.Description)) {
+							messageBuilder.AppendLine($"    {service.Description}");
+						}
 					}
+					messageBuilder.AppendLine();
 				}
-				messageBuilder.AppendLine();
-			}
 
-			if (degraded.Count > 0) {
-				messageBuilder.AppendLine("🔴 <b>Status Pages - Services with Issues:</b>");
-				foreach (ServiceStatus service in degraded) {
-					messageBuilder.AppendLine($"  • <b>{service.ServiceName}</b>");
-					if (!string.IsNullOrWhiteSpace(service.Description)) {
-						messageBuilder.AppendLine($"    {service.Description}");
+				if (degraded.Count > 0) {
+					messageBuilder.AppendLine("🔴 <b>Status Pages - Services with Issues:</b>");
+					foreach (ServiceStatus service in degraded) {
+						messageBuilder.AppendLine($"  • <b>{service.ServiceName}</b>");
+						if (!string.IsNullOrWhiteSpace(service.Description)) {
+							messageBuilder.AppendLine($"    {service.Description}");
+						}
 					}
+					messageBuilder.AppendLine();
 				}
-				messageBuilder.AppendLine();
-			}
 
-			if (operational.Count > 0) {
-				messageBuilder.AppendLine($"✅ <b>Status Pages - Operational ({operational.Count} services):</b>");
-				messageBuilder.AppendLine(string.Join(", ", operational.Select(s => s.ServiceName)));
-				messageBuilder.AppendLine();
-			}
-			
-			if (downdetectorOperational.Count > 0) {
-				messageBuilder.AppendLine($"✅ <b>Downdetector - No Issues ({downdetectorOperational.Count} services):</b>");
-				messageBuilder.AppendLine(string.Join(", ", downdetectorOperational.Select(s => s.ServiceName)));
-				messageBuilder.AppendLine();
-			}
+				if (operational.Count > 0) {
+					messageBuilder.AppendLine($"✅ <b>Status Pages - Operational ({operational.Count} services):</b>");
+					messageBuilder.AppendLine(string.Join(", ", operational.Select(s => s.ServiceName)));
+					messageBuilder.AppendLine();
+				}
+				
+				if (downdetectorOperational.Count > 0) {
+					messageBuilder.AppendLine($"✅ <b>Downdetector - No Issues ({downdetectorOperational.Count} services):</b>");
+					messageBuilder.AppendLine(string.Join(", ", downdetectorOperational.Select(s => s.ServiceName)));
+					messageBuilder.AppendLine();
+				}
 
-			messageBuilder.AppendLine($"<i>Checked {serviceStatuses.Count + downdetectorStatuses.Count} services</i>");
+				messageBuilder.AppendLine($"<i>Checked {serviceStatuses.Count + downdetectorStatuses.Count} services</i>");
 
-			await telegramBotClient.EditMessageText(
-				chatId: command.Chat.Id,
-				messageId: statusMessage.MessageId,
-				text: messageBuilder.ToString(),
-				parseMode: ParseMode.Html,
-				cancellationToken: cancellationToken
-			);
-		} catch (Exception exc) {
-			logger.LogError(exc, "Failed to check internet service status");
-			await telegramBotClient.EditMessageText(
-				chatId: command.Chat.Id,
-				messageId: statusMessage.MessageId,
-				text: "❌ Failed to check service status. Please try again later.",
-				cancellationToken: cancellationToken
-			);
-		}
-		return default;
+				await telegramBotClient.EditMessageText(
+					chatId: command.Chat.Id,
+					messageId: statusMessage.MessageId,
+					text: messageBuilder.ToString(),
+					parseMode: ParseMode.Html,
+					cancellationToken: cancellationToken
+				);
+				} catch (Exception exc) {
+				logger.LogError(exc, "Failed to check internet service status");
+				await telegramBotClient.EditMessageText(
+					chatId: command.Chat.Id,
+					messageId: statusMessage.MessageId,
+					text: "❌ Failed to check service status. Please try again later.",
+					cancellationToken: cancellationToken
+				);
+			}
+			return default;
 		}
 	}
 }
