@@ -5,6 +5,7 @@ using BotNet.Commands.Art;
 using BotNet.Commands.Benchmark;
 using BotNet.Commands.BMKG;
 using BotNet.Commands.BotUpdate.Message;
+using BotNet.Commands.Clean;
 using BotNet.Commands.Common;
 using BotNet.Commands.Eval;
 using BotNet.Commands.Exec;
@@ -147,6 +148,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
             break;
 					case "/plot":
 						await commandQueue.DispatchAsync(PlotCommand.FromSlashCommand(command));
+						break;
+					case "/clean":
+						await commandQueue.DispatchAsync(CleanCommand.FromSlashCommand(command));
 						break;
 				}
 			} catch (UsageException exc) {
