@@ -17,37 +17,17 @@ namespace BotNet.CommandHandlers.Clean {
 		ILogger<CleanCommandHandler> logger
 	) : ICommandHandler<CleanCommand> {
 		public async ValueTask<Unit> Handle(CleanCommand command, CancellationToken cancellationToken) {
-			string textToSanitize;
-			int replyToMessageId;
-
-			// Check if there's a command argument
-			if (!string.IsNullOrWhiteSpace(command.Command.Text)) {
-				textToSanitize = command.Command.Text;
-				replyToMessageId = command.Command.MessageId;
-			}
-			// Otherwise check if replying to a message
-			else if (command.Command.ReplyToMessage?.Text is { } repliedToMessage) {
-				textToSanitize = repliedToMessage;
-				replyToMessageId = command.Command.ReplyToMessage.MessageId;
-			}
-			else {
-				await SendMessageAsync(
-					command.Command.Chat.Id,
-					"<code>Tidak ada teks untuk dibersihkan. Balas pesan yang berisi link atau kirim link setelah perintah /clean.</code>",
-					ParseMode.Html,
-					command.Command.MessageId,
-					cancellationToken
-				);
-				return default;
-			}
+			// Determine which text to sanitize and which message to reply to
+			string textToSanitize = command.TextToClean ?? command.ReplyToMessageText!;
+			int replyToMessageId = command.ReplyToMessageId?.Value ?? command.CommandMessageId.Value;
 
 			// Try to find and sanitize different types of links
 			if (TiktokLinkSanitizer.FindShortenedTiktokLink(textToSanitize) is Uri shortenedTiktokUri) {
 				await SanitizeLinkAsync(
 					async () => await tiktokLinkSanitizer.SanitizeAsync(shortenedTiktokUri, cancellationToken),
-					command.Command.Chat.Id,
+					command.Chat.Id,
 					replyToMessageId,
-					command.Command.MessageId,
+					command.CommandMessageId.Value,
 					"TikTok",
 					cancellationToken
 				);
@@ -55,7 +35,7 @@ namespace BotNet.CommandHandlers.Clean {
 				Uri sanitizedLinkUri = TwitterLinkSanitizer.Sanitize(trackedTwitterUri);
 				await SendCleanedLinkAsync(
 					sanitizedLinkUri,
-					command.Command.Chat.Id,
+					command.Chat.Id,
 					replyToMessageId,
 					cancellationToken
 				);
@@ -63,7 +43,7 @@ namespace BotNet.CommandHandlers.Clean {
 				Uri sanitizedLinkUri = XLinkSanitizer.Sanitize(trackedXUri);
 				await SendCleanedLinkAsync(
 					sanitizedLinkUri,
-					command.Command.Chat.Id,
+					command.Chat.Id,
 					replyToMessageId,
 					cancellationToken
 				);
@@ -71,25 +51,25 @@ namespace BotNet.CommandHandlers.Clean {
 				Uri sanitizedLinkUri = InstagramLinkSanitizer.Sanitize(trackedInstagramUri);
 				await SendCleanedLinkAsync(
 					sanitizedLinkUri,
-					command.Command.Chat.Id,
+					command.Chat.Id,
 					replyToMessageId,
 					cancellationToken
 				);
 			} else if (TokopediaLinkSanitizer.FindShortenedLink(textToSanitize) is Uri trackerTokopediaUri) {
 				await SanitizeLinkAsync(
 					async () => await tokopediaLinkSanitizer.SanitizeAsync(trackerTokopediaUri, cancellationToken),
-					command.Command.Chat.Id,
+					command.Chat.Id,
 					replyToMessageId,
-					command.Command.MessageId,
+					command.CommandMessageId.Value,
 					"Tokopedia",
 					cancellationToken
 				);
 			} else {
 				await SendMessageAsync(
-					command.Command.Chat.Id,
+					command.Chat.Id,
 					"<code>Tidak ada link kotor yang dikenali.</code>",
 					ParseMode.Html,
-					command.Command.MessageId,
+					command.CommandMessageId.Value,
 					cancellationToken
 				);
 			}
