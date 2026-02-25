@@ -33,7 +33,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				
 				if (messageText.Contains("netlify.app")) {
 					try {
-						await telegramBotClient.BanChatMemberAsync(
+						await telegramBotClient.BanChatMember(
 							chatId: update.Message.Chat.Id,
 							userId: user.Id,
 							cancellationToken: cancellationToken
@@ -47,7 +47,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						);
 						
 						// Delete the spam message
-						await telegramBotClient.DeleteMessageAsync(
+						await telegramBotClient.DeleteMessage(
 							chatId: update.Message.Chat.Id,
 							messageId: update.Message.MessageId,
 							cancellationToken: cancellationToken
