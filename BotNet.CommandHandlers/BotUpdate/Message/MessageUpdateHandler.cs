@@ -26,6 +26,45 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 			MessageUpdate update,
 			CancellationToken cancellationToken
 		) {
+			// Ban new users posting netlify.app links
+			if (update.Message.From is { Id: > 7000000000 } user &&
+			    update.Message.Chat.Type is ChatType.Group or ChatType.Supergroup) {
+				string messageText = (update.Message.Text ?? update.Message.Caption ?? string.Empty).ToLowerInvariant();
+				
+				if (messageText.Contains("netlify.app")) {
+					try {
+						await telegramBotClient.BanChatMemberAsync(
+							chatId: update.Message.Chat.Id,
+							userId: user.Id,
+							cancellationToken: cancellationToken
+						);
+						
+						logger.LogInformation(
+							"Banned user {UserId} ({UserName}) from chat {ChatId} for posting netlify.app link",
+							user.Id,
+							user.FirstName + (user.LastName != null ? $" {user.LastName}" : string.Empty),
+							update.Message.Chat.Id
+						);
+						
+						// Delete the spam message
+						await telegramBotClient.DeleteMessageAsync(
+							chatId: update.Message.Chat.Id,
+							messageId: update.Message.MessageId,
+							cancellationToken: cancellationToken
+						);
+					} catch (Exception exc) {
+						logger.LogError(
+							exc,
+							"Failed to ban user {UserId} from chat {ChatId}",
+							user.Id,
+							update.Message.Chat.Id
+						);
+					}
+					
+					return default;
+				}
+			}
+
 			// Handle slash commands
 			if (update.Message.Entities?.FirstOrDefault() is {
 				    Type: MessageEntityType.BotCommand,
