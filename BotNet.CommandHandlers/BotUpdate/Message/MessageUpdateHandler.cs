@@ -5,6 +5,7 @@ using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
+using BotNet.Services.SpamProtection;
 using Microsoft.Extensions.Logging;
 using RG.Ninja;
 using SqlParser;
@@ -20,6 +21,7 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ITelegramMessageCache telegramMessageCache,
 		BotProfileAccessor botProfileAccessor,
 		CommandPriorityCategorizer commandPriorityCategorizer,
+		SpamBanNotifier spamBanNotifier,
 		ILogger<MessageUpdateHandler> logger
 	) : ICommandHandler<MessageUpdate> {
 		public async ValueTask<Unit> Handle(
@@ -39,10 +41,12 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 							cancellationToken: cancellationToken
 						);
 						
+						string displayName = user.FirstName + (user.LastName != null ? $" {user.LastName}" : string.Empty);
+						
 						logger.LogInformation(
 							"Banned user {UserId} ({UserName}) from chat {ChatId} for posting netlify.app link",
 							user.Id,
-							user.FirstName + (user.LastName != null ? $" {user.LastName}" : string.Empty),
+							displayName,
 							update.Message.Chat.Id
 						);
 						
@@ -50,6 +54,13 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						await telegramBotClient.DeleteMessage(
 							chatId: update.Message.Chat.Id,
 							messageId: update.Message.MessageId,
+							cancellationToken: cancellationToken
+						);
+						
+						// Send rate-limited notification
+						await spamBanNotifier.NotifyBanAsync(
+							chatId: update.Message.Chat.Id,
+							displayName: displayName,
 							cancellationToken: cancellationToken
 						);
 					} catch (Exception exc) {
