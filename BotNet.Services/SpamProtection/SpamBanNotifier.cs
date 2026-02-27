@@ -11,6 +11,7 @@ using Telegram.Bot.Types.Enums;
 namespace BotNet.Services.SpamProtection {
 	public sealed class SpamBanNotifier(
 		ITelegramBotClient telegramBotClient,
+		TimeProvider timeProvider,
 		ILogger<SpamBanNotifier> logger
 	) {
 		private readonly ConcurrentDictionary<long, BanQueue> _banQueuesByChat = new();
@@ -25,7 +26,7 @@ namespace BotNet.Services.SpamProtection {
 			BanQueue queue = _banQueuesByChat.GetOrAdd(chatId, _ => new BanQueue());
 
 			lock (queue.Lock) {
-				DateTime now = DateTime.Now;
+				DateTimeOffset now = timeProvider.GetUtcNow();
 				
 				// Remove expired timestamps
 				while (queue.NotificationTimestamps.Count > 0 && 
@@ -49,7 +50,7 @@ namespace BotNet.Services.SpamProtection {
 				// Schedule batch notification if not already scheduled
 				if (!queue.HasScheduledNotification) {
 					queue.HasScheduledNotification = true;
-					DateTime oldestTimestamp = queue.NotificationTimestamps.Peek();
+					DateTimeOffset oldestTimestamp = queue.NotificationTimestamps.Peek();
 					TimeSpan delay = _rateWindow - (now - oldestTimestamp);
 					
 					_ = ScheduleBatchNotificationAsync(chatId, delay, cancellationToken);
@@ -85,7 +86,17 @@ namespace BotNet.Services.SpamProtection {
 			CancellationToken cancellationToken
 		) {
 			try {
-				await Task.Delay(delay, cancellationToken);
+				// Create a task that completes after the delay, respecting the TimeProvider
+				TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+				ITimer timer = timeProvider.CreateTimer(_ => tcs.TrySetResult(true), null, delay, Timeout.InfiniteTimeSpan);
+				
+				using CancellationTokenRegistration registration = cancellationToken.Register(() => tcs.TrySetCanceled());
+				
+				try {
+					await tcs.Task;
+				} finally {
+					await timer.DisposeAsync();
+				}
 
 				if (!_banQueuesByChat.TryGetValue(chatId, out BanQueue? queue)) {
 					return;
@@ -103,7 +114,7 @@ namespace BotNet.Services.SpamProtection {
 					queue.HasScheduledNotification = false;
 					
 					// Add timestamp for this batch notification
-					queue.NotificationTimestamps.Enqueue(DateTime.Now);
+					queue.NotificationTimestamps.Enqueue(timeProvider.GetUtcNow());
 				}
 
 				// Send batch notification
@@ -133,11 +144,11 @@ namespace BotNet.Services.SpamProtection {
 
 		private sealed class BanQueue {
 			public object Lock { get; } = new object();
-			public Queue<DateTime> NotificationTimestamps { get; } = new();
+			public Queue<DateTimeOffset> NotificationTimestamps { get; } = new();
 			public List<BanRecord> PendingBans { get; } = new();
 			public bool HasScheduledNotification { get; set; }
 		}
 
-		private sealed record BanRecord(string DisplayName, DateTime BannedAt);
+		private sealed record BanRecord(string DisplayName, DateTimeOffset BannedAt);
 	}
 }
