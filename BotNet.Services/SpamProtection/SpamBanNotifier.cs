@@ -23,38 +23,14 @@ namespace BotNet.Services.SpamProtection {
 			string displayName,
 			CancellationToken cancellationToken
 		) {
-			BanQueue queue = _banQueuesByChat.GetOrAdd(chatId, _ => new BanQueue());
+			BanQueue queue = _banQueuesByChat.GetOrAdd(chatId, _ => new BanQueue(_rateWindow, MaxImmediateNotifications));
 
-			lock (queue.Lock) {
-				DateTimeOffset now = timeProvider.GetUtcNow();
-				
-				// Remove expired timestamps
-				while (queue.NotificationTimestamps.Count > 0 && 
-				       now - queue.NotificationTimestamps.Peek() > _rateWindow) {
-					queue.NotificationTimestamps.Dequeue();
-				}
+			BanQueue.NotificationDecision decision = queue.RecordBan(displayName, timeProvider.GetUtcNow());
 
-				// Check if we can send immediate notification
-				if (queue.NotificationTimestamps.Count < MaxImmediateNotifications) {
-					queue.NotificationTimestamps.Enqueue(now);
-					
-					// Send immediate notification
-					_ = SendNotificationAsync(chatId, displayName, cancellationToken);
-					
-					return;
-				}
-
-				// Add to pending list
-				queue.PendingBans.Add(new BanRecord(displayName, now));
-				
-				// Schedule batch notification if not already scheduled
-				if (!queue.HasScheduledNotification) {
-					queue.HasScheduledNotification = true;
-					DateTimeOffset oldestTimestamp = queue.NotificationTimestamps.Peek();
-					TimeSpan delay = _rateWindow - (now - oldestTimestamp);
-					
-					_ = ScheduleBatchNotificationAsync(chatId, delay, cancellationToken);
-				}
+			if (decision.ShouldSendImmediate) {
+				_ = SendNotificationAsync(chatId, displayName, cancellationToken);
+			} else if (decision.ShouldScheduleBatch) {
+				_ = ScheduleBatchNotificationAsync(chatId, decision.BatchDelay!.Value, cancellationToken);
 			}
 		}
 
@@ -102,28 +78,19 @@ namespace BotNet.Services.SpamProtection {
 					return;
 				}
 
-				List<BanRecord> bansToReport;
-				lock (queue.Lock) {
-					if (queue.PendingBans.Count == 0) {
-						queue.HasScheduledNotification = false;
-						return;
-					}
+				BanQueue.BatchResult batchResult = queue.GetBatchAndMarkAsSent(timeProvider.GetUtcNow());
 
-					bansToReport = new List<BanRecord>(queue.PendingBans);
-					queue.PendingBans.Clear();
-					queue.HasScheduledNotification = false;
-					
-					// Add timestamp for this batch notification
-					queue.NotificationTimestamps.Enqueue(timeProvider.GetUtcNow());
+				if (batchResult.BansToReport.Count == 0) {
+					return;
 				}
 
 				// Send batch notification
 				string userList = string.Join("\n", 
-					bansToReport.Select(b => $"• {b.DisplayName}"));
+					batchResult.BansToReport.Select(b => $"• {b.DisplayName}"));
 				
-				string message = bansToReport.Count == 1
-					? $"User {bansToReport[0].DisplayName} has been banned for posting phishing link"
-					: $"The following {bansToReport.Count} users have been banned for posting phishing links:\n{userList}";
+				string message = batchResult.BansToReport.Count == 1
+					? $"User {batchResult.BansToReport[0].DisplayName} has been banned for posting phishing link"
+					: $"The following {batchResult.BansToReport.Count} users have been banned for posting phishing links:\n{userList}";
 
 				await telegramBotClient.SendMessage(
 					chatId: chatId,
@@ -143,10 +110,89 @@ namespace BotNet.Services.SpamProtection {
 		}
 
 		private sealed class BanQueue {
-			public object Lock { get; } = new object();
-			public Queue<DateTimeOffset> NotificationTimestamps { get; } = new();
-			public List<BanRecord> PendingBans { get; } = new();
-			public bool HasScheduledNotification { get; set; }
+			private readonly object _lock = new object();
+			private readonly Queue<DateTimeOffset> _notificationTimestamps = new();
+			private readonly List<BanRecord> _pendingBans = new();
+			private readonly TimeSpan _rateWindow;
+			private readonly int _maxImmediateNotifications;
+			private bool _hasScheduledNotification;
+
+			public BanQueue(TimeSpan rateWindow, int maxImmediateNotifications) {
+				_rateWindow = rateWindow;
+				_maxImmediateNotifications = maxImmediateNotifications;
+			}
+
+			public NotificationDecision RecordBan(string displayName, DateTimeOffset now) {
+				lock (_lock) {
+					// Remove expired timestamps
+					RemoveExpiredTimestamps(now);
+
+					// Check if we can send immediate notification
+					if (_notificationTimestamps.Count < _maxImmediateNotifications) {
+						_notificationTimestamps.Enqueue(now);
+						return new NotificationDecision(
+							ShouldSendImmediate: true,
+							ShouldScheduleBatch: false,
+							BatchDelay: null
+						);
+					}
+
+					// Add to pending list
+					_pendingBans.Add(new BanRecord(displayName, now));
+
+					// Schedule batch notification if not already scheduled
+					if (!_hasScheduledNotification) {
+						_hasScheduledNotification = true;
+						DateTimeOffset oldestTimestamp = _notificationTimestamps.Peek();
+						TimeSpan delay = _rateWindow - (now - oldestTimestamp);
+						
+						return new NotificationDecision(
+							ShouldSendImmediate: false,
+							ShouldScheduleBatch: true,
+							BatchDelay: delay
+						);
+					}
+
+					return new NotificationDecision(
+						ShouldSendImmediate: false,
+						ShouldScheduleBatch: false,
+						BatchDelay: null
+					);
+				}
+			}
+
+			public BatchResult GetBatchAndMarkAsSent(DateTimeOffset now) {
+				lock (_lock) {
+					if (_pendingBans.Count == 0) {
+						_hasScheduledNotification = false;
+						return new BatchResult(new List<BanRecord>());
+					}
+
+					List<BanRecord> bansToReport = new List<BanRecord>(_pendingBans);
+					_pendingBans.Clear();
+					_hasScheduledNotification = false;
+					
+					// Add timestamp for this batch notification
+					_notificationTimestamps.Enqueue(now);
+
+					return new BatchResult(bansToReport);
+				}
+			}
+
+			private void RemoveExpiredTimestamps(DateTimeOffset now) {
+				while (_notificationTimestamps.Count > 0 && 
+				       now - _notificationTimestamps.Peek() > _rateWindow) {
+					_notificationTimestamps.Dequeue();
+				}
+			}
+
+			public sealed record NotificationDecision(
+				bool ShouldSendImmediate,
+				bool ShouldScheduleBatch,
+				TimeSpan? BatchDelay
+			);
+
+			public sealed record BatchResult(List<BanRecord> BansToReport);
 		}
 
 		private sealed record BanRecord(string DisplayName, DateTimeOffset BannedAt);
