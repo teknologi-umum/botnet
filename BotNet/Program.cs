@@ -33,6 +33,7 @@ using BotNet.Services.Primbon;
 using BotNet.Services.ProgrammerHumor;
 using BotNet.Services.QrCode;
 using BotNet.Services.Soundtrack;
+using BotNet.Services.SpamProtection;
 using BotNet.Services.Sqlite;
 using BotNet.Services.Stability;
 using BotNet.Services.StatusPage;
@@ -116,6 +117,7 @@ builder.Services.AddMathPlotRenderer();
 builder.Services.AddOmdbClient();
 builder.Services.AddStatusPageClient();
 builder.Services.AddTechEmpowerScraper();
+builder.Services.AddSpamProtection();
 
 // Mediator
 builder.Services.AddMediator(options => {

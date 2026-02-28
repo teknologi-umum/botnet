@@ -5,6 +5,7 @@ using BotNet.Commands.CommandPrioritization;
 using BotNet.Commands.SQL;
 using BotNet.Services.BotProfile;
 using BotNet.Services.SocialLink;
+using BotNet.Services.SpamProtection;
 using Microsoft.Extensions.Logging;
 using RG.Ninja;
 using SqlParser;
@@ -20,12 +21,61 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 		ITelegramMessageCache telegramMessageCache,
 		BotProfileAccessor botProfileAccessor,
 		CommandPriorityCategorizer commandPriorityCategorizer,
+		SpamBanNotifier spamBanNotifier,
 		ILogger<MessageUpdateHandler> logger
 	) : ICommandHandler<MessageUpdate> {
 		public async ValueTask<Unit> Handle(
 			MessageUpdate update,
 			CancellationToken cancellationToken
 		) {
+			// Ban new users posting netlify.app links
+			if (update.Message.From is { Id: > 7000000000 } user &&
+			    update.Message.Chat.Type is ChatType.Group or ChatType.Supergroup) {
+				string messageText = (update.Message.Text ?? update.Message.Caption ?? string.Empty).ToLowerInvariant();
+				
+				if (messageText.Contains("netlify.app")) {
+					try {
+						await telegramBotClient.BanChatMember(
+							chatId: update.Message.Chat.Id,
+							userId: user.Id,
+							cancellationToken: cancellationToken
+						);
+						
+						string displayName = user.FirstName + (user.LastName != null ? $" {user.LastName}" : string.Empty);
+						
+						logger.LogInformation(
+							"Banned user {UserId} ({UserName}) from chat {ChatId} for posting netlify.app link",
+							user.Id,
+							displayName,
+							update.Message.Chat.Id
+						);
+						
+						// Delete the spam message
+						await telegramBotClient.DeleteMessage(
+							chatId: update.Message.Chat.Id,
+							messageId: update.Message.MessageId,
+							cancellationToken: cancellationToken
+						);
+						
+						// Send rate-limited notification
+						await spamBanNotifier.NotifyBanAsync(
+							chatId: update.Message.Chat.Id,
+							displayName: displayName,
+							cancellationToken: cancellationToken
+						);
+					} catch (Exception exc) {
+						logger.LogError(
+							exc,
+							"Failed to ban user {UserId} from chat {ChatId}",
+							user.Id,
+							update.Message.Chat.Id
+						);
+					}
+					
+					return default;
+				}
+			}
+
 			// Handle slash commands
 			if (update.Message.Entities?.FirstOrDefault() is {
 				    Type: MessageEntityType.BotCommand,
