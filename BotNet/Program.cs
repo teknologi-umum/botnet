@@ -117,6 +117,7 @@ builder.Services.AddMathPlotRenderer();
 builder.Services.AddOmdbClient();
 builder.Services.AddStatusPageClient();
 builder.Services.AddTechEmpowerScraper();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSpamProtection();
 
 // Mediator
