@@ -17,8 +17,8 @@ namespace BotNet.Services.SocialLink {
 				"www.twitter.com" => url.Replace("//www.twitter.com/", "//www.vxtwitter.com/"),
 				"x.com" => url.Replace("//x.com/", "//vxtwitter.com/"),
 				"www.x.com" => url.Replace("//www.x.com/", "//www.vxtwitter.com/"),
-				"instagram.com" => url.Replace("//instagram.com/", "//ddinstagram.com/"),
-				"www.instagram.com" => url.Replace("//www.instagram.com/", "//www.ddinstagram.com/"),
+				"instagram.com" => url.Replace("//instagram.com/", "//eeinstagram.com/"),
+				"www.instagram.com" => url.Replace("//www.instagram.com/", "//www.eeinstagram.com/"),
 				_ => url
 			};
 			return new Uri(newUrl);
