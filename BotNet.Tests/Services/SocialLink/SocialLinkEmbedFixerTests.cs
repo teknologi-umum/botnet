@@ -8,8 +8,8 @@ using Xunit;
 namespace BotNet.Tests.Services.SocialLink {
 	public class SocialLinkEmbedFixerTests {
 		[Theory]
-		[InlineData("https://www.instagram.com/reel/C0XXKVnpRUI/", "https://www.ddinstagram.com/reel/C0XXKVnpRUI/")]
-		[InlineData("https://instagram.com/reel/C0XXKVnpRUI/", "https://ddinstagram.com/reel/C0XXKVnpRUI/")]
+		[InlineData("https://www.instagram.com/reel/C0XXKVnpRUI/", "https://www.eeinstagram.com/reel/C0XXKVnpRUI/")]
+		[InlineData("https://instagram.com/reel/C0XXKVnpRUI/", "https://eeinstagram.com/reel/C0XXKVnpRUI/")]
 		[InlineData("https://twitter.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19",
 			"https://vxtwitter.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19")]
 		[InlineData("https://www.twitter.com/ShowwcaseHQ/status/1556259601829576707?t=S6GuFx37mAXOLI2wdusfXg&s=19",
