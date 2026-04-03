@@ -70,6 +70,9 @@ namespace BotNet.Commands.Mbg {
 
 		internal static decimal ParseRupiah(string text) {
 			string cleaned = text.Replace(",", "");
+			if (string.IsNullOrWhiteSpace(cleaned)) {
+				throw new FormatException("Input is empty after removing commas.");
+			}
 			return decimal.Parse(cleaned, CultureInfo.InvariantCulture);
 		}
 
