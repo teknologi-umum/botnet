@@ -15,6 +15,7 @@ using BotNet.Commands.GoogleMaps;
 using BotNet.Commands.Humor;
 using BotNet.Commands.InternetStatus;
 using BotNet.Commands.Khodam;
+using BotNet.Commands.Mbg;
 using BotNet.Commands.Movie;
 using BotNet.Commands.No;
 using BotNet.Commands.Pick;
@@ -142,6 +143,9 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 						break;
 					case "/internetstatus":
 						await commandQueue.DispatchAsync(InternetStatusCommand.FromSlashCommand(command));
+						break;
+					case "/mbg":
+						await commandQueue.DispatchAsync(MbgCommand.FromSlashCommand(command));
 						break;
 					case "/benchmark":
 						await commandQueue.DispatchAsync(BenchmarkCommand.FromSlashCommand(command));
