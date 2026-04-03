@@ -10,6 +10,7 @@ namespace BotNet.CommandHandlers.Mbg {
 		ITelegramBotClient telegramBotClient
 	) : ICommandHandler<MbgCommand> {
 		public async ValueTask<Unit> Handle(MbgCommand command, CancellationToken cancellationToken) {
+			// Use comma as thousands separator to match the format shown in the issue spec (e.g. Rp 1,000,000)
 			string formattedRupiah = command.RupiahAmount.ToString("N0", CultureInfo.InvariantCulture);
 			string mbgTime = MbgCommand.FormatMbgTime(command.RupiahAmount);
 			string responseText = $"Rp {formattedRupiah} setara dengan {mbgTime}";

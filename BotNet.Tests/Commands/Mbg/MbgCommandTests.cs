@@ -88,7 +88,7 @@ namespace BotNet.Tests.Commands.Mbg {
 		[InlineData("")]
 		public void ParseRupiah_InvalidInput_ThrowsFormatException(string input) {
 			// Act & Assert
-			Should.Throw<Exception>(() => MbgCommand.ParseRupiah(input));
+			Should.Throw<FormatException>(() => MbgCommand.ParseRupiah(input));
 		}
 	}
 }
