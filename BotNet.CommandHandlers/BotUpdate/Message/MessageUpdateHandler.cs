@@ -76,6 +76,54 @@ namespace BotNet.CommandHandlers.BotUpdate.Message {
 				}
 			}
 
+			// Ban new users sharing non-Indonesian contacts in home group
+			if (update.Message.Contact is { PhoneNumber: { } phoneNumber } &&
+			    update.Message.From is { Id: > 7000000000 } contactUser &&
+			    commandPriorityCategorizer.IsHomeGroup(update.Message.Chat.Id)) {
+				string normalizedPhone = phoneNumber.TrimStart('+');
+				if (!normalizedPhone.StartsWith("62")) {
+					try {
+						await telegramBotClient.BanChatMember(
+							chatId: update.Message.Chat.Id,
+							userId: contactUser.Id,
+							cancellationToken: cancellationToken
+						);
+
+						string displayName = contactUser.FirstName + (contactUser.LastName != null ? $" {contactUser.LastName}" : string.Empty);
+
+						logger.LogInformation(
+							"Banned user {UserId} ({UserName}) from chat {ChatId} for sharing non-Indonesian contact",
+							contactUser.Id,
+							displayName,
+							update.Message.Chat.Id
+						);
+
+						// Delete the contact message
+						await telegramBotClient.DeleteMessage(
+							chatId: update.Message.Chat.Id,
+							messageId: update.Message.MessageId,
+							cancellationToken: cancellationToken
+						);
+
+						// Send rate-limited notification
+						await spamBanNotifier.NotifyBanAsync(
+							chatId: update.Message.Chat.Id,
+							displayName: displayName,
+							cancellationToken: cancellationToken
+						);
+					} catch (Exception exc) {
+						logger.LogError(
+							exc,
+							"Failed to ban user {UserId} from chat {ChatId}",
+							contactUser.Id,
+							update.Message.Chat.Id
+						);
+					}
+
+					return default;
+				}
+			}
+
 			// Handle slash commands
 			if (update.Message.Entities?.FirstOrDefault() is {
 				    Type: MessageEntityType.BotCommand,
